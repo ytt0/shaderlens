@@ -47,7 +47,7 @@ It supports source files hot reload, making it easy to work with any code editor
 ## Documentation and Examples
 
 Documentation can be found [here](https://ytt0.github.io/shaderlens).  
-Project examples can be found under the [examples](https://github.com/ytt0/shaderlens/examples) folder.
+Project examples can be found under the [examples](https://github.com/ytt0/shaderlens/tree/main/examples) folder.
 
 
 ## Build from Source
