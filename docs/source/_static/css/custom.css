@@ -1,0 +1,78 @@
+.wy-nav-side {
+    background-color: #111;
+}
+
+.wy-nav-top {
+    background-color: #111;
+}
+
+.wy-side-nav-search {
+    background-color: inherit;
+}
+
+.rst-content code {
+    font-size: 100%;
+}
+
+.rst-content .guilabel, .rst-content .menuselection {
+    font-size: 100%;
+    font-weight: normal;
+}
+
+.rst-content .guilabel {
+    border: 1px solid #bbb;
+    background: #eee;
+}
+
+.rst-content .menuselection {
+    border: 1px solid #38c838;
+    background: #f0fbf0;
+}
+
+.rst-content :not(dl.option-list) > :not(dt):not(kbd):not(.kbd) > .kbd {
+    font-size: 90%;
+    box-shadow: 0 1px gray;
+    padding: 1px 6px;
+}
+
+.rst-content div[class^="highlight"] pre {
+    font-size: 100%;
+}
+
+.rst-content code.literal:not(.xref) {
+    color: #000000;
+}
+
+.wy-side-nav-search .wy-dropdown > a img.logo, .wy-side-nav-search > a img.logo {
+    width: 128px;
+    margin: 0;
+    padding: 0;
+}
+
+.wy-nav-content-wrap {
+    background: inherit;
+}
+
+.wy-menu-vertical header, .wy-menu-vertical p.caption {
+    color: #e99cff
+}
+
+.wy-menu-vertical a:active {
+    background: #ad54c6
+}
+
+.rst-content .admonition-title, .rst-content .note .admonition-title {
+    background: #ca93da;
+}
+
+.rst-content .admonition {
+    background: #fbeaff;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-family: Lato,proxima-nova,Helvetica Neue,Arial,sans-serif
+}
+
+body, div, input[type="text"], .btn {
+    font-family: Lato,proxima-nova,Helvetica Neue,Arial,sans-serif
+}

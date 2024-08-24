@@ -1,0 +1,11 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <LangVersion>10.0</LangVersion>
+    <RootNamespace>Shaderlens</RootNamespace>
+    <Nullable>disable</Nullable>
+    <RootNamespace>Shaderlens</RootNamespace>
+  </PropertyGroup>
+
+</Project>

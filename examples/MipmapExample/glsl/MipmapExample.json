@@ -1,0 +1,15 @@
+{
+  "Buffer1": "Buffer1.glsl",
+  "Image": {
+    "Source": "Image.glsl",
+    "Channel0": {
+      "Source": "Buffer1",
+
+      //"TextureFilter": "Nearest",
+      "TextureFilter": "Linear",
+
+      //"MipmapFilter": "Nearest"
+      "MipmapFilter": "Linear"
+    }
+  }
+}

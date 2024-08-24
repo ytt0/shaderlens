@@ -1,0 +1,46 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <IsPublishable>true</IsPublishable>
+    <AssemblyName>Shaderlens</AssemblyName>
+    <RootNamespace>Shaderlens</RootNamespace>
+    <ApplicationIcon>..\..\resources\Images\Logo\Logo.ico</ApplicationIcon>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Shaderlens.Common\Shaderlens.Common.csproj" />
+    <ProjectReference Include="..\Shaderlens.Serialization\Shaderlens.Serialization.csproj" />
+    <ProjectReference Include="..\Shaderlens.Render\Shaderlens.Render.csproj" />
+    <ProjectReference Include="..\Shaderlens.Presentation\Shaderlens.Presentation.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="..\..\resources\Images\Logo\Logo512.png" Link="Resources\Logo.png" />
+    <EmbeddedResource Include="Resources\Viewer.Default.glsl" />
+    <EmbeddedResource Include="Resources\Viewer.Overlay.glsl" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.Text.Json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="..\Shaderlens.Environment\*.cs"/>
+    <None Include="..\Shaderlens.Environment\*.cs">
+      <Link>Resources\CSharpEnvironment\%(RecursiveDir)%(Filename)%(Extension)</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+
+    <None Include="..\..\resources\Templates\**\*.*">
+      <Link>Resources\Templates\%(RecursiveDir)%(Filename)%(Extension)</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,13 @@
+# files
+*.*proj.*
+*.cache
+
+# folders
+bin/
+obj/
+.packages/
+.vs/
+.shaderlens/
+
+# paths
+/docs/build/

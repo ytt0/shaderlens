@@ -1,0 +1,17 @@
+{
+  "DisplayName": "Single pass project",
+  "Description": "A project with a single image pass",
+  "Index": 2,
+
+  "ProjectName": "Shader1",
+  "ProjectNameReplace": "ProjectName",
+  "ProjectFile": "ProjectName.json",
+
+  "Parameters": [
+    {
+      "DisplayName": "Image Pass Name",
+      "Value": "Image",
+      "Replace": "ImagePassName"
+    }
+  ]
+}

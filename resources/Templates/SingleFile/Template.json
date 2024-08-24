@@ -1,0 +1,11 @@
+{
+  "DisplayName": "Single glsl file",
+  "Description": "A single glsl file, without a project definition file",
+  "Index": 1,
+
+  "ProjectName": "Shader1",
+  "ProjectNameReplace": "ImagePassName",
+  "ProjectFile": "ImagePassName.glsl",
+
+  "CreateDirectory": false
+}

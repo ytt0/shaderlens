@@ -1,0 +1,6 @@
+{
+  "Image": {
+    "Source": "Image.cs",
+    "Channel0": "Keyboard"
+  }
+}

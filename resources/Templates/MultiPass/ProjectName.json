@@ -1,0 +1,8 @@
+{
+  "Common": "Common.glsl",
+  "Buffer1": "BufferPassName.glsl",
+  "Image": {
+    "Source": "ImagePassName.glsl",
+    "Channel0": "Buffer1"
+  }
+}

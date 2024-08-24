@@ -1,0 +1,57 @@
+name: Build
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build
+    strategy:
+      matrix:
+        Configuration: [Debug, Release]
+
+    runs-on: windows-latest  # For a list of available runner types, refer to
+                             # https://help.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idruns-on
+
+    env:
+      SolutionPath: Shaderlens.sln
+      ProjectName: Shaderlens.App
+      ProjectPath: src\Shaderlens.App
+      TargetFramework: net8.0-windows
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    # Install the .NET Core workload
+    - name: Install .NET Core
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 8.0.x
+
+    # Restore the application
+    - name: Restore
+      run: dotnet restore $env:SolutionPath
+
+    # Build the application
+    - name: Build
+      run: dotnet build $env:SolutionPath --configuration $env:Configuration
+      env:
+        Configuration: ${{ matrix.Configuration }}
+
+    # Execute all unit tests in the solution
+    - name: Test
+      run: dotnet test $env:SolutionPath
+
+    # Upload build artifacts: https://github.com/marketplace/actions/upload-a-build-artifact
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ env.ProjectName }}-${{ matrix.Configuration }}
+        path: ${{ env.ProjectPath }}\bin\${{ matrix.Configuration }}\${{ env.TargetFramework }}\*

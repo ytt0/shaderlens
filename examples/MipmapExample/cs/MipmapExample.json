@@ -1,0 +1,15 @@
+{
+  "Buffer1": "Buffer1.cs",
+  "Image": {
+    "Source": "Image.cs",
+    "Channel0": {
+      "Source": "Buffer1",
+
+      //"TextureFilter": "Nearest",
+      "TextureFilter": "Linear",
+
+      //"MipmapFilter": "Nearest"
+      "MipmapFilter": "Linear"
+    }
+  }
+}

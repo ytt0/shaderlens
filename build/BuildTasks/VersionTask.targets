@@ -1,0 +1,61 @@
+<Project>
+  <PropertyGroup>
+    <EnableVersion Condition="'$(EnableVersion)' == ''">true</EnableVersion>
+  </PropertyGroup>
+
+  <UsingTask TaskName="VersionTask" TaskFactory="RoslynCodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll" >
+    <ParameterGroup>
+      <GitDescribeOutput Required="true" />
+      <GitBranchOutput Required="true" />
+      <Major Output="true" ParameterType="System.Int32" />
+      <Minor Output="true" ParameterType="System.Int32" />
+      <Patch Output="true" ParameterType="System.Int32" />
+      <Label Output="true" />
+      <Commits Output="true" ParameterType="System.Int32" />
+      <Sha Output="true" />
+      <Dirty Output="true" ParameterType="System.Boolean" />
+      <MajorMinorPatch Output="true" />
+      <AssemblyVersion Output="true" />
+      <SemVer Output="true" />
+      <FullSemVer Output="true" />
+      <InformationalVersion Output="true" />
+    </ParameterGroup>
+    <Task>
+      <Code Type="Class" Language="cs" Source="$(MSBuildThisFileDirectory)VersionTask.cs" />
+    </Task>
+  </UsingTask>
+
+  <!-- Run git and set version properties before assembly's attributes are auto generated -->
+  <Target Name="SetVersionProperties" BeforeTargets="GetAssemblyVersion" Condition="'$(EnableVersion)' == 'true'">
+    <PropertyGroup>
+      <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
+    </PropertyGroup>
+
+    <!-- Run git describe -->
+    <Exec Command="git describe --tags --always --long --dirty --abbrev=40" ConsoleToMSBuild="true" StandardOutputImportance="low">
+      <Output TaskParameter="ConsoleOutput" PropertyName="GitDescribeOutput" />
+    </Exec>
+
+    <!-- Run git branch -->
+    <Exec Command="git branch --show-current" ConsoleToMSBuild="true" StandardOutputImportance="low">
+      <Output TaskParameter="ConsoleOutput" PropertyName="GitBranchOutput" />
+    </Exec>
+
+    <PropertyGroup>
+      <GitBranchOutput Condition="'$(GitBranchOutput)' == ''">HEAD</GitBranchOutput>
+    </PropertyGroup>
+
+    <!-- Parse output -->
+    <VersionTask GitDescribeOutput="$(GitDescribeOutput)" GitBranchOutput="$(GitBranchOutput)">
+      <Output TaskParameter="AssemblyVersion" PropertyName="AssemblyVersion" />
+      <Output TaskParameter="AssemblyVersion" PropertyName="FileVersion" />
+      <Output TaskParameter="InformationalVersion" PropertyName="InformationalVersion" />
+      <Output TaskParameter="SemVer" PropertyName="SemVer" />
+    </VersionTask>
+  </Target>
+
+  <Target Name="PrintVersionProperties" DependsOnTargets="SetVersionProperties">
+    <Message Text="SemVer=$(SemVer)" Importance="high" />
+    <Message Text="InformationalVersion=$(InformationalVersion)" Importance="high" />
+  </Target>
+</Project>

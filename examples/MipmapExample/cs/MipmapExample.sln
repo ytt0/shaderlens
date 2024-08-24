@@ -1,0 +1,25 @@
+
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.9.34728.123
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9BB49123-41B9-4C75-8C38-81047D5EF148}") = "MipmapExample", "MipmapExample.csproj", "{1C51AD94-06C4-4465-A4F0-1FA42E870F5F}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{1C51AD94-06C4-4465-A4F0-1FA42E870F5F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1C51AD94-06C4-4465-A4F0-1FA42E870F5F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1C51AD94-06C4-4465-A4F0-1FA42E870F5F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1C51AD94-06C4-4465-A4F0-1FA42E870F5F}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {31BB5FB4-4AB2-44CB-85CF-253BFF50AEBE}
+	EndGlobalSection
+EndGlobal

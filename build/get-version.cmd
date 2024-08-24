@@ -1,0 +1,1 @@
+@dotnet msbuild build\BuildTasks\VersionTask.targets /t:PrintVersionProperties /verbosity:minimal /noLogo

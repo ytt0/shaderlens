@@ -1,0 +1,19 @@
+name: Documentation correction
+description: Report an incorrect or an outdated documentation
+body:
+
+- type: textarea
+  attributes:
+    label: Description
+    description: |
+      Please describe the documentation that needs to be corrected.
+  validations:
+    required: true
+
+- type: textarea
+  attributes:
+    label: Link
+    description: |
+      Please provide a link to the relevant documentation page.
+  validations:
+    required: true

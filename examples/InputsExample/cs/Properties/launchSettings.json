@@ -1,0 +1,9 @@
+{
+  "profiles": {
+    "InputsExample": {
+      "commandName": "Executable",
+      "executablePath": "..\\..\\..\\..\\..\\..\\src\\Shaderlens.App\\bin\\Debug\\net8.0-windows\\Shaderlens.exe",
+      "commandLineArgs": "..\\..\\..\\InputsExample.json"
+    }
+  }
+}

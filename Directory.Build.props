@@ -1,0 +1,13 @@
+<Project>
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <IsPackable>false</IsPackable>
+    <IsPublishable>false</IsPublishable>
+    <SatelliteResourceLanguages>none</SatelliteResourceLanguages>
+    <PublishDir>$(MSBuildThisFileDirectory)bin\$(Configuration)</PublishDir>
+  </PropertyGroup>
+
+  <Import Project="$(MSBuildThisFileDirectory)build\BuildTasks\VersionTask.targets"/>
+</Project>

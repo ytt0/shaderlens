@@ -1,0 +1,8 @@
+{
+  "Common": "Common.cs",
+  "Buffer1": "BufferPassName.cs",
+  "Image": {
+    "Source": "ImagePassName.cs",
+    "Channel0": "Buffer1"
+  }
+}

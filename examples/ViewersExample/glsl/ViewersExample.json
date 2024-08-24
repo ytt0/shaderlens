@@ -1,0 +1,20 @@
+{
+  "Image": {
+    "Source": "Image.glsl",
+    "DefaultViewer": "Normals"
+  },
+  "Viewers": {
+    "Normals": {
+      "DisplayName": "Normals Overlay",
+      "Source": "NormalsViewer.glsl"
+    },
+    "Opacity": {
+      "DisplayName": "Opacity Background",
+      "Source": "OpacityViewer.glsl"
+    },
+    "ColorAdjustment": {
+      "DisplayName": "Color Adjustment",
+      "Source": "ColorAdjustmentViewer.glsl"
+    }
+  }
+}

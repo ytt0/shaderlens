@@ -1,0 +1,20 @@
+{
+  "Image": {
+    "Source": "Image.cs",
+    "DefaultViewer": "Normals"
+  },
+  "Viewers": {
+    "Normals": {
+      "DisplayName": "Normals Overlay",
+      "Source": "NormalsViewer.cs"
+    },
+    "Opacity": {
+      "DisplayName": "Opacity Background",
+      "Source": "OpacityViewer.cs"
+    },
+    "ColorAdjustment": {
+      "DisplayName": "Color Adjustment",
+      "Source": "ColorAdjustmentViewer.cs"
+    }
+  }
+}

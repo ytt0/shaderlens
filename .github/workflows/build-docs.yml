@@ -1,0 +1,45 @@
+name: Build Docs
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build Docs
+
+    runs-on: windows-latest  # For a list of available runner types, refer to
+                             # https://help.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idruns-on
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 1
+
+    # Install Python to build documentation
+    - name: Install Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
+        cache: 'pip' # caching pip dependencies
+        cache-dependency-path: 'docs/requirements.txt'
+
+    - name: Install Packages
+      run: pip install -r docs/requirements.txt
+
+    - name: List Packages
+      run: pip freeze
+
+    - name: Build Documentation
+      run: sphinx-build -M html docs\source docs\build -W
+
+    # Upload build artifacts: https://github.com/marketplace/actions/upload-a-build-artifact
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: Shaderlens-docs
+        path: docs\build

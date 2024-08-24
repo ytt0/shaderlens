@@ -1,0 +1,25 @@
+{
+  "DisplayName": "Multi pass project",
+  "Description": "A project with a buffer and an image pass",
+  "Index": 3,
+
+  "ProjectName": "Shader1",
+  "ProjectNameReplace": "ProjectName",
+  "ProjectFile": "ProjectName.json",
+  "ReplaceContentExtensions": [ "json", "cs", "csproj", "sln" ],
+
+  "Parameters": [
+    {
+      "Type": "String",
+      "DisplayName": "Buffer Pass Name",
+      "Value": "Buffer1",
+      "Replace": "BufferPassName"
+    },
+    {
+      "Type": "String",
+      "DisplayName": "Image Pass Name",
+      "Value": "Image",
+      "Replace": "ImagePassName"
+    }
+  ]
+}

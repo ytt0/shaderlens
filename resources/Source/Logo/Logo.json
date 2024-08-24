@@ -1,0 +1,17 @@
+{
+  "Common": "Common.cs",
+  "Image": {
+    "Source": "Image.cs",
+    "DefaultViewer": "OpacityViewer",
+    //"RenderSize": "512,512",
+    "Scalable": true
+  },
+  "Viewers": {
+    "OpacityViewer": {
+      "Source": "OpacityViewer.cs",
+      "Channel0": "Viewer",
+      "IncludeCommon": true
+    }
+  },
+  "Paused": true
+}

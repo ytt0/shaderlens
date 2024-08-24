@@ -1,0 +1,111 @@
+name: Release
+
+on:
+  push:
+    tags: [ "*" ]
+  workflow_dispatch:
+
+jobs:
+  release:
+    name: Release
+
+    runs-on: windows-latest  # For a list of available runner types, refer to
+                             # https://help.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idruns-on
+
+    permissions: write-all # https://docs.github.com/en/actions/writing-workflows/workflow-syntax-for-github-actions#permissions
+
+    env:
+      SolutionPath: Shaderlens.sln
+      ProjectName: Shaderlens.App
+      ProjectPath: src\Shaderlens.App
+      Configuration: Release
+      TargetFramework: net8.0-windows
+      PublishPath: bin
+      PublishArchiveName: Shaderlens
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    # Install the .NET Core workload
+    - name: Install .NET Core
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 8.0.x
+
+    - name: Determine Version
+      id: version
+      run: dotnet msbuild build\BuildTasks\VersionTask.targets /t:PrintVersionProperties /verbosity:minimal /noLogo | foreach { echo $_.Trim() >> $env:GITHUB_OUTPUT }
+
+    - name: Print Version
+      run: |
+        echo "SemVer: $env:SemVer"
+        echo "InformationalVersion: $env:InformationalVersion"
+      env:
+        SemVer: ${{ steps.version.outputs.SemVer }}
+        InformationalVersion: ${{ steps.version.outputs.InformationalVersion }}
+
+    # Restore the application
+    - name: Restore
+      run: dotnet restore $env:SolutionPath
+
+    # Build the application
+    - name: Build
+      run: dotnet build $env:SolutionPath --configuration $env:Configuration
+
+    # Execute all unit tests in the solution
+    - name: Test
+      run: dotnet test $env:SolutionPath --configuration $env:Configuration
+
+    # Execute all unit tests in the solution
+    - name: Publish
+      run: dotnet publish $env:SolutionPath --configuration $env:Configuration
+
+    # Upload publish artifacts: https://github.com/marketplace/actions/upload-a-build-artifact
+    - name: Upload Artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ env.PublishArchiveName }}-${{ steps.version.outputs.SemVer }}
+        path: ${{ env.PublishPath }}\${{ env.Configuration }}\*
+
+    # Archive publish artifacts
+    - name: Archive Artifacts # (PowerShell)
+      run: |
+        Compress-Archive -Path $env:PublishPath\$env:Configuration\* -DestinationPath $env:PublishPath\$env:PublishArchiveName-$env:Configuration.zip
+        Compress-Archive -Path examples\* -DestinationPath $env:PublishPath\$env:PublishArchiveName-examples.zip
+
+    # Create the release: https://github.com/actions/create-release
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
+      with:
+        tag_name: ${{ github.ref }}
+        release_name: Shaderlens ${{ steps.version.outputs.SemVer }}
+        draft: true
+        prerelease: false
+
+    # Upload release asset: https://github.com/actions/upload-release-asset
+    - name: Upload Asset
+      id: upload-release-asset
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}  # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps
+        asset_name: ${{ env.PublishArchiveName }}-${{ steps.version.outputs.SemVer }}.zip
+        asset_path: ${{ env.PublishPath }}\${{ env.PublishArchiveName }}-${{ env.Configuration }}.zip
+        asset_content_type: application/zip
+
+    - name: Upload Examples Asset
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_name: ${{ env.PublishArchiveName }}-examples.zip
+        asset_path: ${{ env.PublishPath }}\${{ env.PublishArchiveName }}-examples.zip
+        asset_content_type: application/zip

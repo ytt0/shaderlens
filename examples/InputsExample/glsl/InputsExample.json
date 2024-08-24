@@ -1,0 +1,6 @@
+{
+  "Image": {
+    "Source": "Image.glsl",
+    "Channel0": "Keyboard"
+  }
+}

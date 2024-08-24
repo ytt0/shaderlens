@@ -1,0 +1,23 @@
+﻿global using System.Diagnostics;
+global using System.Diagnostics.CodeAnalysis;
+global using System.IO;
+global using System.Runtime.CompilerServices;
+global using System.Runtime.InteropServices;
+global using System.Security;
+global using System.Text;
+global using System.Text.Json;
+global using System.Text.Json.Nodes;
+global using System.Text.RegularExpressions;
+global using Shaderlens.Extensions;
+global using Shaderlens.Render;
+global using Shaderlens.Render.Interop;
+global using Shaderlens.Render.Project;
+global using Shaderlens.Render.Resources;
+global using Shaderlens.Render.Uniforms;
+global using Shaderlens.Serialization;
+global using Shaderlens.Serialization.Json;
+global using Shaderlens.Serialization.Project;
+global using Shaderlens.Serialization.Text;
+global using Shaderlens.Storage;
+global using Shaderlens.Threading;
+

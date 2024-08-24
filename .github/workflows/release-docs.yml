@@ -1,0 +1,80 @@
+name: Release Docs
+
+on:
+  workflow_dispatch:
+
+# Allow only one concurrent deployment
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
+
+jobs:
+  release:
+    name: Release Docs
+
+    runs-on: windows-latest  # For a list of available runner types, refer to
+                             # https://help.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idruns-on
+
+    permissions: write-all # https://docs.github.com/en/actions/writing-workflows/workflow-syntax-for-github-actions#permissions
+
+    env:
+      SolutionPath: Shaderlens.sln
+      ProjectName: Shaderlens.App
+      ProjectPath: src\Shaderlens.App
+      Configuration: Release
+      TargetFramework: net8.0-windows
+      PublishPath: bin
+      PublishArchiveName: Shaderlens
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    # Install the .NET Core workload
+    - name: Install .NET Core
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 8.0.x
+
+    - name: Determine Version
+      id: version
+      run: dotnet msbuild build\BuildTasks\VersionTask.targets /t:PrintVersionProperties /verbosity:minimal /noLogo | foreach { echo $_.Trim() >> $env:GITHUB_OUTPUT }
+
+    - name: Print Version
+      run: |
+        echo "SemVer: $env:SemVer"
+        echo "InformationalVersion: $env:InformationalVersion"
+      env:
+        SemVer: ${{ steps.version.outputs.SemVer }}
+        InformationalVersion: ${{ steps.version.outputs.InformationalVersion }}
+
+    # Install Python to build documentation
+    - name: Install Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
+        cache: 'pip' # caching pip dependencies
+        cache-dependency-path: 'docs/requirements.txt'
+
+    - name: Install Packages
+      run: pip install -r docs/requirements.txt
+
+    - name: Build Documentation
+      run: sphinx-build -M html docs\source docs\build -W
+      env:
+        DOCS_VERSION: ${{ steps.version.outputs.SemVer }}
+
+    - name: Setup Pages
+      uses: actions/configure-pages@v5
+
+    # Publish documentation
+    - name: Upload Artifacts
+      uses: actions/upload-pages-artifact@v3
+      with:
+        # Upload entire repository
+        path: docs\build\html
+
+    - name: Deploy to GitHub Pages
+      uses: actions/deploy-pages@v4

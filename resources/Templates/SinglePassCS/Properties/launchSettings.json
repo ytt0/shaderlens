@@ -1,0 +1,9 @@
+{
+  "profiles": {
+    "ProjectName": {
+      "commandName": "Executable",
+      "executablePath": "ApplicationPath",
+      "commandLineArgs": "..\\..\\..\\ProjectName.json"
+    }
+  }
+}
