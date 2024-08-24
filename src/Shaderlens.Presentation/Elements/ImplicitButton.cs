@@ -23,6 +23,14 @@
             set { SetValue(PressedBackgroundProperty, value); }
         }
 
+        public ImplicitButton(IApplicationTheme theme)
+        {
+            theme.IconForeground.SetReference(this, Icon.ForegroundProperty);
+            theme.ControlHoveredBackground.SetReference(this, HoverBackgroundProperty);
+            theme.ControlPressedBackground.SetReference(this, PressedBackgroundProperty);
+            this.Background = Brushes.Transparent;
+        }
+
         protected override void OnRender(DrawingContext drawingContext)
         {
             var capturedElement = Mouse.PrimaryDevice.Captured;

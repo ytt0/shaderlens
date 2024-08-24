@@ -215,20 +215,20 @@
         private double lastTargetAlpha;
         private TextBoxMode textBoxMode;
 
-        public ColorEditor()
+        public ColorEditor(IApplicationTheme theme)
         {
             this.colorPicker = new ColorPicker();
 
-            this.colorTextBox1 = new NumberTextBox { StepSize = 0.001, MinValue = 0.0, MaxValue = 1.0 };
-            this.colorTextBox2 = new NumberTextBox { StepSize = 0.001, MinValue = 0.0, MaxValue = 1.0 };
-            this.colorTextBox3 = new NumberTextBox { StepSize = 0.001, MinValue = 0.0, MaxValue = 1.0 };
-            this.alphaTextBox = new NumberTextBox { StepSize = 0.001, MinValue = 0.0, MaxValue = 1.0, Visibility = Visibility.Collapsed };
+            this.colorTextBox1 = new NumberTextBox(theme) { StepSize = 0.001, MinValue = 0.0, MaxValue = 1.0 };
+            this.colorTextBox2 = new NumberTextBox(theme) { StepSize = 0.001, MinValue = 0.0, MaxValue = 1.0 };
+            this.colorTextBox3 = new NumberTextBox(theme) { StepSize = 0.001, MinValue = 0.0, MaxValue = 1.0 };
+            this.alphaTextBox = new NumberTextBox(theme) { StepSize = 0.001, MinValue = 0.0, MaxValue = 1.0, Visibility = Visibility.Collapsed };
             this.dragSensitivity = this.colorTextBox1.DragSensitivity;
 
             this.textBoxMode = TextBoxMode.Okhsv;
             this.modeTextBlock = new TextBlock { Text = "Okhsv", TextAlignment = TextAlignment.Center };
 
-            var modeButton = new ImplicitButton
+            var modeButton = new ImplicitButton(theme)
             {
                 Child = this.modeTextBlock
             };
@@ -270,6 +270,13 @@
 
             this.Focusable = true;
             this.FocusVisualStyle = null;
+
+            theme.TextEditForeground.SetReference(this, NumberTextBox.EditForegroundProperty);
+            theme.TextDragForeground.SetReference(this, NumberTextBox.DragForegroundProperty);
+            theme.ControlPressedBackground.SetReference(this, ImplicitButton.PressedBackgroundProperty);
+            theme.ControlHoveredBackground.SetReference(this, ImplicitButton.HoverBackgroundProperty);
+            theme.IconForeground.SetReference(this, DockContainer.IconForegroundProperty);
+            theme.CodeFontFamily.SetReference(this, TextFontFamilyProperty);
         }
 
         public void ResetLastColors()

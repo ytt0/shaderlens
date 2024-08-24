@@ -15,7 +15,8 @@
 
             private readonly Pen pen;
 
-            public CloseButton()
+            public CloseButton(IApplicationTheme theme) :
+                base(theme)
             {
                 this.pen = new Pen(this.Foreground, 1);
             }
@@ -185,12 +186,12 @@
         private readonly ResizeBorder resizeBorder;
         private readonly FrameworkElement[] visualChildren;
 
-        public DockContainer()
+        public DockContainer(IApplicationTheme theme)
         {
             this.Height = 200;
             this.MinHeight = 100;
 
-            this.closeButton = new CloseButton { Width = 20, Height = 20 };
+            this.closeButton = new CloseButton(theme) { Width = 20, Height = 20 };
             this.closeButton.MouseDown += (sender, e) =>
             {
                 this.Visibility = Visibility.Collapsed;

@@ -32,7 +32,8 @@
             private readonly Pen pen;
             private readonly Geometry geometry;
 
-            public ResetButton()
+            public ResetButton(IApplicationTheme theme) :
+                base(theme)
             {
                 this.pen = new Pen(this.Foreground, 1.25) { StartLineCap = PenLineCap.Round, EndLineCap = PenLineCap.Round };
                 this.geometry = ResetGeometry;
@@ -76,7 +77,7 @@
             this.theme = theme;
             this.clipboard = clipboard;
             this.dragSensitivity = dragSensitivity;
-            this.dockContainer = new DockContainer
+            this.dockContainer = new DockContainer(theme)
             {
                 Visibility = Visibility.Collapsed,
                 Height = this.projectSettings.UniformDockHeight.Value,
@@ -108,13 +109,7 @@
                 SetColumnSize();
             };
 
-            this.colorEditor = new ColorEditor { DragSensitivity = this.dragSensitivity };
-            this.colorEditor.SetReference(NumberTextBox.EditForegroundProperty, theme.TextEditForeground);
-            this.colorEditor.SetReference(NumberTextBox.DragForegroundProperty, theme.TextDragForeground);
-            this.colorEditor.SetReference(ImplicitButton.PressedBackgroundProperty, theme.ControlPressedBackground);
-            this.colorEditor.SetReference(ImplicitButton.HoverBackgroundProperty, theme.ControlHoveredBackground);
-            this.colorEditor.SetReference(DockContainer.IconForegroundProperty, theme.IconForeground);
-            this.colorEditor.SetReference(ColorEditor.TextFontFamilyProperty, theme.CodeFontFamily);
+            this.colorEditor = new ColorEditor(this.theme) { DragSensitivity = this.dragSensitivity };
 
             this.colorEditor.ColorChanged += (sender, e) => OnColorEdited();
             this.colorEditor.AlphaChanged += (sender, e) => OnColorEdited();
@@ -144,15 +139,11 @@
             var groupElement = new StackPanel();
             var groupContent = new RowsPanel { Margin = new Thickness(0, 4, 0, 0) };
 
-            var groupHeader = new GroupHeader
+            var groupHeader = new GroupHeader(this.theme)
             {
                 IsExpanded = expandedSettingsValue.Value,
                 Child = new TextBlock { Text = displayName, FontWeight = FontWeights.Bold },
-            }.
-            WithReference(Icon.ForegroundProperty, this.theme.IconForeground).
-            WithReference(Border.BackgroundProperty, this.theme.GroupBackground).
-            WithReference(ImplicitButton.HoverBackgroundProperty, this.theme.ControlHoveredBackground).
-            WithReference(ImplicitButton.PressedBackgroundProperty, this.theme.ControlPressedBackground);
+            };
 
             groupHeader.MouseDown += (sender, e) =>
             {
@@ -712,7 +703,7 @@
 
         private NumberTextBox CreateNumberTextBox(double value, double minValue, double maxValue, double step)
         {
-            return new NumberTextBox
+            return new NumberTextBox(theme)
             {
                 MinValue = minValue,
                 MaxValue = maxValue,
@@ -721,24 +712,16 @@
                 DragSensitivity = this.dragSensitivity,
                 RequireScrollModifierKey = true,
                 HorizontalAlignment = HorizontalAlignment.Stretch
-            }.
-            WithReference(NumberTextBox.ProgressTrackBrushProperty, this.theme.TextProgressTrack).
-            WithReference(NumberTextBox.EditForegroundProperty, this.theme.TextEditForeground).
-            WithReference(NumberTextBox.DragForegroundProperty, this.theme.TextDragForeground).
-            WithReference(NumberTextBox.HoverBackgroundProperty, this.theme.ControlHoveredBackground).
-            WithReference(NumberTextBox.PressedBackgroundProperty, this.theme.ControlPressedBackground).
-            WithReference(TextElement.FontFamilyProperty, this.theme.CodeFontFamily);
+            };
         }
 
         private ResetButton CreateResetButton(bool isVisible)
         {
-            return new ResetButton
+            return new ResetButton(this.theme)
             {
                 Margin = new Thickness(4, -8, 4, -8),
                 Visibility = isVisible ? Visibility.Visible : Visibility.Collapsed,
-            }.
-            WithReference(ResetButton.ForegroundProperty, this.theme.IconForeground).
-            WithReference(ImplicitButton.HoverBackgroundProperty, this.theme.ControlHoveredBackground);
+            };
         }
 
         private static DockPanel CreateUniformHeaderElement(string displayName, FrameworkElement resetButton)

@@ -28,7 +28,8 @@
         private static readonly Geometry CollapseGeometry = Geometry.Parse("M 3,6 7,2 11,6").WithFreeze();
         private readonly Path path;
 
-        public GroupHeader()
+        public GroupHeader(IApplicationTheme theme) :
+            base(theme)
         {
             this.isExpanded = true;
             this.Padding = new Thickness(4, 2, 4, 2);
@@ -47,6 +48,8 @@
             };
 
             AddVisualChild(this.path);
+
+            theme.GroupBackground.SetReference(this, BackgroundProperty);
         }
 
         protected override Visual GetVisualChild(int index)

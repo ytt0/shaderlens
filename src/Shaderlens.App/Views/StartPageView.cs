@@ -72,7 +72,7 @@ namespace Shaderlens.Views
 
                 var icon = System.IO.Path.GetExtension(path).Equals(".json", StringComparison.InvariantCultureIgnoreCase) ? resources.CreateProjectIcon() : resources.CreateFileCodeIcon();
 
-                this.content = new ImplicitButton
+                this.content = new ImplicitButton(theme)
                 {
                     Child = new StackPanel().WithChildren
                     (
@@ -82,9 +82,7 @@ namespace Shaderlens.Views
                     Background = Brushes.Transparent,
                     Padding = Spacing,
                     CornerRadius = new CornerRadius(4)
-                }.
-                WithReference(ImplicitButton.PressedBackgroundProperty, this.theme.ControlPressedBackground).
-                WithReference(ImplicitButton.HoverBackgroundProperty, this.theme.ControlHoveredBackground);
+                };
 
                 this.content.Click += OnClick;
 
@@ -228,7 +226,7 @@ namespace Shaderlens.Views
             SetVisibleItemsList();
             SetHeadersVisiblity();
 
-            var clearSearchButton = new ImplicitButton
+            var clearSearchButton = new ImplicitButton(theme)
             {
                 Child = CreatePath(ClearGeometry.Value, this.theme.IconForeground),
                 Background = Brushes.Transparent,
@@ -236,8 +234,7 @@ namespace Shaderlens.Views
                 HorizontalAlignment = HorizontalAlignment.Right,
                 Visibility = Visibility.Collapsed,
                 CornerRadius = new CornerRadius(4)
-            }.
-            WithReference(ImplicitButton.PressedBackgroundProperty, this.theme.ControlPressedBackground);
+            };
 
             this.searchTextBox = new StyledTextBox(this.theme) { Padding = new Thickness(3, 0, 24, 0) };
 

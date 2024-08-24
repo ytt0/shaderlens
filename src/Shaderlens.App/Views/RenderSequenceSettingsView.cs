@@ -634,7 +634,7 @@ namespace Shaderlens.Views
 
         private NumberTextBox CreateNumberTextBox(double value, double minValue, double maxValue, double stepSize)
         {
-            var textBox = new NumberTextBox
+            return new NumberTextBox(this.theme)
             {
                 MinValue = minValue,
                 MaxValue = maxValue,
@@ -642,17 +642,6 @@ namespace Shaderlens.Views
                 Value = value,
                 Margin = Spacing
             };
-
-            textBox.SetReference(NumberTextBox.ProgressTrackBrushProperty, this.theme.TextProgressTrack);
-            textBox.SetReference(NumberTextBox.EditForegroundProperty, this.theme.TextEditForeground);
-            textBox.SetReference(NumberTextBox.DragForegroundProperty, this.theme.TextDragForeground);
-            textBox.SetReference(NumberTextBox.HoverBackgroundProperty, this.theme.ControlHoveredBackground);
-            textBox.SetReference(NumberTextBox.PressedBackgroundProperty, this.theme.ControlPressedBackground);
-            textBox.SetReference(NumberTextBox.SelectionBrushProperty, this.theme.TextSelectionBackground);
-            textBox.SetReference(NumberTextBox.SelectionOpacityProperty, this.theme.TextSelectionOpacity);
-            textBox.SetReference(TextElement.FontFamilyProperty, this.theme.CodeFontFamily);
-
-            return textBox;
         }
     }
 }

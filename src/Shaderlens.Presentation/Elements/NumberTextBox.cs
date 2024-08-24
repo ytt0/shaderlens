@@ -132,7 +132,7 @@
         private DateTime dragTime;
         private bool dragWithinBounds;
 
-        public NumberTextBox()
+        public NumberTextBox(IApplicationTheme theme)
         {
             this.textBox = new TextBox
             {
@@ -188,6 +188,15 @@
             this.DragSensitivity = 1.0;
 
             SetValue(KeyboardNavigation.TabNavigationProperty, KeyboardNavigationMode.None);
+
+            theme.TextProgressTrack.SetReference(this, ProgressTrackBrushProperty);
+            theme.TextEditForeground.SetReference(this, EditForegroundProperty);
+            theme.TextDragForeground.SetReference(this, DragForegroundProperty);
+            theme.ControlHoveredBackground.SetReference(this, HoverBackgroundProperty);
+            theme.ControlPressedBackground.SetReference(this, PressedBackgroundProperty);
+            theme.TextSelectionBackground.SetReference(this, SelectionBrushProperty);
+            theme.TextSelectionOpacity.SetReference(this, SelectionOpacityProperty);
+            theme.CodeFontFamily.SetReference(this, TextElement.FontFamilyProperty);
         }
 
         protected override Size MeasureOverride(Size availableSize)
