@@ -48,7 +48,7 @@
             void SetCopyValue(string copyValue);
         }
 
-        private class CopyMenuItemHeader : FrameworkElement
+        private class CopyMenuItemHeader : VisualChildContainer
         {
             public string Header
             {
@@ -89,25 +89,11 @@
                 }.WithReference(Border.BorderBrushProperty, theme.ValueBorder);
 
                 this.child = new StackPanel { Orientation = Orientation.Horizontal }.WithChildren(this.headerTextBlock, this.valueBorder);
-
-                AddVisualChild(this.child);
             }
 
-            protected override Visual GetVisualChild(int index)
+            protected override FrameworkElement GetChild()
             {
-                return index == 0 ? this.child : throw new IndexOutOfRangeException();
-            }
-
-            protected override Size MeasureOverride(Size availableSize)
-            {
-                this.child.Measure(availableSize);
-                return this.child.DesiredSize;
-            }
-
-            protected override Size ArrangeOverride(Size finalSize)
-            {
-                this.child.Arrange(new Rect(finalSize));
-                return finalSize;
+                return this.child;
             }
         }
 
