@@ -1,11 +1,28 @@
 ﻿namespace Shaderlens
 {
-    public struct Vec4
+    public readonly struct Vec4 : IVector<double>
     {
-        public double X { get; set; }
-        public double Y { get; set; }
-        public double Z { get; set; }
-        public double W { get; set; }
+        public double this[int index]
+        {
+            get
+            {
+                switch (index)
+                {
+                    case 0: return this.X;
+                    case 1: return this.Y;
+                    case 2: return this.Z;
+                    case 3: return this.W;
+                    default: throw new IndexOutOfRangeException();
+                }
+            }
+        }
+
+        public readonly int Length { get { return 4; } }
+
+        public double X { get; }
+        public double Y { get; }
+        public double Z { get; }
+        public double W { get; }
 
         public Vec4(double value) :
             this(value, value, value, value)
@@ -23,6 +40,16 @@
             this.Y = y;
             this.Z = z;
             this.W = w;
+        }
+
+        public readonly IEnumerator<double> GetEnumerator()
+        {
+            return new[] { this.X, this.Y, this.Z, this.W }.Cast<double>().GetEnumerator();
+        }
+
+        readonly IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
         }
     }
 }

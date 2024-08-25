@@ -1,10 +1,26 @@
 ﻿namespace Shaderlens
 {
-    public struct Vec3
+    public readonly struct Vec3 : IVector<double>
     {
-        public double X { get; set; }
-        public double Y { get; set; }
-        public double Z { get; set; }
+        public double this[int index]
+        {
+            get
+            {
+                switch (index)
+                {
+                    case 0: return this.X;
+                    case 1: return this.Y;
+                    case 2: return this.Z;
+                    default: throw new IndexOutOfRangeException();
+                }
+            }
+        }
+
+        public readonly int Length { get { return 3; } }
+
+        public double X { get; }
+        public double Y { get; }
+        public double Z { get; }
 
         public Vec3(double value) :
             this(value, value, value)
@@ -21,6 +37,16 @@
             this.X = x;
             this.Y = y;
             this.Z = z;
+        }
+
+        public readonly IEnumerator<double> GetEnumerator()
+        {
+            return new[] { this.X, this.Y, this.Z }.Cast<double>().GetEnumerator();
+        }
+
+        readonly IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
         }
     }
 }
