@@ -50,6 +50,11 @@
             return new SrgbColor(MathExtensions.Clamp(this.R, 0.0, 1.0), MathExtensions.Clamp(this.G, 0.0, 1.0), MathExtensions.Clamp(this.B, 0.0, 1.0), MathExtensions.Clamp(this.A, 0.0, 1.0));
         }
 
+        public readonly SrgbColor Round(double scale)
+        {
+            return new SrgbColor(Math.Round(this.R / scale) * scale, Math.Round(this.G / scale) * scale, Math.Round(this.B / scale) * scale, Math.Round(this.A / scale) * scale);
+        }
+
         private static double SrgbTransferInverse(double x)
         {
             return 0.04045 < x ? Math.Pow((x + 0.055) / 1.055, 2.4) : x / 12.92;

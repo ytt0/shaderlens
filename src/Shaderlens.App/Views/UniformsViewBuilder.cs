@@ -66,8 +66,7 @@
         private Panel target;
         private bool isValueChanging;
         private ISettingsValue<SrgbColor>? editedSettingsValue;
-        private ColorView? editedColorViewElement;
-        private FrameworkElement? editedColorResetButton;
+        private ColorUniformElement? editedColorUniformElement;
         private readonly StyledScrollViewer scrollViewer;
 
         public UniformsViewBuilder(IApplication application, IProjectSettings projectSettings, IApplicationTheme theme, Transform scrollBarTransform, IClipboard clipboard, double dragSensitivity)
@@ -83,10 +82,7 @@
                 Height = this.projectSettings.UniformDockHeight.Value,
             }.
             WithValue(DockPanel.DockProperty, Dock.Bottom).
-            WithValue(Panel.ZIndexProperty, 1).
-            WithReference(ImplicitButton.HoverBackgroundProperty, theme.ControlHoveredBackground).
-            WithReference(Border.BorderBrushProperty, theme.Separator).
-            WithReference(DockContainer.IconForegroundProperty, theme.IconForeground);
+            WithValue(Panel.ZIndexProperty, 1);
 
             this.dockContainer.Closed += (sender, e) =>
             {
@@ -175,76 +171,37 @@
 
         public void AddColorElement(ISettingsValue<SrgbColor> settingsValue, bool editAlpha, string name, string displayName)
         {
-            var resetButton = CreateResetButton(!settingsValue.IsDefaultValue());
-
-            var colorViewUnderline = new Border
+            var element = new ColorUniformElement(settingsValue, displayName, this.theme);
+            element.ValueChanged += (sender, e) =>
             {
-                Height = 1,
-                VerticalAlignment = VerticalAlignment.Bottom,
-            }.WithReference(Border.BackgroundProperty, this.theme.TextProgressTrack).WithValue(Grid.ColumnSpanProperty, 2);
-
-            var alphaBackgroundElement = new AlphaBackgroundView().WithValue(Grid.ColumnProperty, 1);
-
-            var colorViewElement = new ColorView { Color = settingsValue.Value.ToColor() }.WithValue(Grid.ColumnSpanProperty, 2);
-
-            var colorViewPanel = new Grid().WithChildren(alphaBackgroundElement, colorViewElement, colorViewUnderline);
-            colorViewPanel.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
-            colorViewPanel.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
-
-            ClickBehavior.Register(colorViewPanel, (sender, e) =>
-            {
-                ToggleColorEdit(settingsValue, editAlpha, colorViewElement, resetButton);
-                e.Handled = true;
-            });
-
-            colorViewPanel.KeyDown += (sender, e) =>
-            {
-                if (e.Key == Key.C && Keyboard.PrimaryDevice.Modifiers == ModifierKeys.Control)
+                if (this.editedSettingsValue == settingsValue && !this.isValueChanging)
                 {
-                    this.clipboard.SetColor(settingsValue.Value);
-                    e.Handled = true;
-                }
-
-                if (e.Key == Key.V && Keyboard.PrimaryDevice.Modifiers == ModifierKeys.Control)
-                {
-                    if (this.clipboard.TryGetColor(System.Windows.Clipboard.GetText(), out var srgbColor))
+                    this.isValueChanging = true;
+                    try
                     {
-                        if (!editAlpha)
-                        {
-                            srgbColor.A = 1.0;
-                        }
-
-                        SetColor(settingsValue, colorViewElement, resetButton, srgbColor);
+                        this.colorEditor.Color = OkhsvColor.FromLinearRgb(settingsValue.Value.ToLinearRgb());
+                        ClearTextBoxKeyboardFocus();
+                        this.application.SetProjectChanged();
                     }
-
-                    e.Handled = true;
+                    finally
+                    {
+                        this.isValueChanging = false;
+                    }
                 }
             };
 
-            resetButton.PreviewMouseDown += (sender, e) =>
+            element.Click += (sender, e) =>
             {
-                ResetColor(settingsValue, colorViewElement, resetButton);
+                ToggleColorEdit(settingsValue, editAlpha, element);
                 e.Handled = true;
             };
 
-            var uniformHeaderElement = CreateUniformHeaderElement(displayName, resetButton);
-
-            var uniformRowElement = CreateUniformRowElement(uniformHeaderElement, colorViewPanel);
-            uniformRowElement.KeyDown += (sender, e) =>
-            {
-                if (e.Key == Key.Back && uniformRowElement.IsMouseOver)
-                {
-                    ResetColor(settingsValue, colorViewElement, resetButton);
-                    e.Handled = true;
-                }
-            };
-
-            this.headerElements.Add(uniformHeaderElement);
-            this.target.Children.Add(uniformRowElement);
+            this.rowHeaderContainers.Add(element);
+            this.target.Children.Add(element);
 
             if (this.projectSettings.EditedColor.Value == name)
             {
-                ToggleColorEdit(settingsValue, editAlpha, colorViewElement, resetButton);
+                ToggleColorEdit(settingsValue, editAlpha, element);
             }
         }
 
@@ -259,70 +216,28 @@
             this.application.SetProjectChanged();
         }
 
-        private void SetColor(ISettingsValue<SrgbColor> settingsValue, ColorView colorViewElement, FrameworkElement resetButton, SrgbColor color)
-        {
-            this.isValueChanging = true;
-            try
-            {
-                settingsValue.Value = color;
-                resetButton.Visibility = settingsValue.IsDefaultValue() ? Visibility.Collapsed : Visibility.Visible;
-                colorViewElement.Color = color.ToColor();
-
-                if (this.editedSettingsValue == settingsValue)
-                {
-                    var linearRgb = settingsValue.Value.ToLinearRgb();
-
-                    this.colorEditor.Color = OkhsvColor.FromLinearRgb(linearRgb);
-                    this.colorEditor.Alpha = linearRgb.A;
-                }
-
-                this.application.SetProjectChanged();
-            }
-            finally
-            {
-                this.isValueChanging = false;
-            }
-        }
-
-        private void ResetColor(ISettingsValue<SrgbColor> settingsValue, ColorView colorViewElement, FrameworkElement resetButton)
-        {
-            this.isValueChanging = true;
-            try
-            {
-                ClearTextBoxKeyboardFocus();
-                settingsValue.ResetValue();
-                resetButton.Visibility = Visibility.Collapsed;
-                colorViewElement.Color = settingsValue.Value.ToColor();
-
-                if (this.editedSettingsValue == settingsValue)
-                {
-                    this.colorEditor.Color = OkhsvColor.FromLinearRgb(settingsValue.Value.ToLinearRgb());
-                    this.colorEditor.Alpha = settingsValue.Value.A;
-                }
-
-                this.application.SetProjectChanged();
-            }
-            finally
-            {
-                this.isValueChanging = false;
-            }
-        }
-
         private void OnColorEdited()
         {
-            if (!this.isValueChanging && this.editedSettingsValue is not null)
+            if (!this.isValueChanging && this.editedSettingsValue != null && this.editedColorUniformElement != null)
             {
-                var color = this.colorEditor.Color.ToLinearRgb().Round(0.001).ToSrgb();
-                color.A = this.colorEditor.Alpha;
+                this.isValueChanging = true;
+                try
+                {
+                    var color = this.colorEditor.Color.ToLinearRgb().Round(0.001).ToSrgb();
+                    color.A = this.colorEditor.Alpha;
 
-                this.editedSettingsValue.Value = color;
-                this.editedColorViewElement!.Color = color.ToColor();
-                this.editedColorResetButton!.Visibility = this.editedSettingsValue.IsDefaultValue() ? Visibility.Collapsed : Visibility.Visible;
-                this.application.SetProjectChanged();
+                    this.editedSettingsValue.Value = color;
+                    this.editedColorUniformElement.InvalidateValue();
+                    this.application.SetProjectChanged();
+                }
+                finally
+                {
+                    this.isValueChanging = false;
+                }
             }
         }
 
-        private void ToggleColorEdit(ISettingsValue<SrgbColor> settingsValue, bool editAlpha, ColorView colorViewElement, FrameworkElement resetButton)
+        private void ToggleColorEdit(ISettingsValue<SrgbColor> settingsValue, bool editAlpha, ColorUniformElement colorUniformElement)
         {
             if (this.editedSettingsValue == settingsValue && this.dockContainer.Visibility == Visibility.Visible)
             {
@@ -339,8 +254,7 @@
                 var alpha = settingsValue.Value.A;
 
                 this.editedSettingsValue = settingsValue;
-                this.editedColorViewElement = colorViewElement;
-                this.editedColorResetButton = resetButton;
+                this.editedColorUniformElement = colorUniformElement;
                 this.colorEditor.Color = hsv;
                 this.colorEditor.SourceColor = hsv;
                 this.colorEditor.Alpha = alpha;
@@ -353,7 +267,7 @@
 
                 this.projectSettings.EditedColor.Value = settingsValue.Name;
 
-                colorViewElement.BringIntoView();
+                colorUniformElement.BringIntoView();
             }
             finally
             {
@@ -373,34 +287,6 @@
             {
                 header.HeaderWidth = width;
             }
-        }
-
-        private ResetButton CreateResetButton(bool isVisible)
-        {
-            return new ResetButton(this.theme)
-            {
-                Margin = new Thickness(4, -8, 4, -8),
-                Visibility = isVisible ? Visibility.Visible : Visibility.Collapsed,
-            };
-        }
-
-        private static DockPanel CreateUniformHeaderElement(string displayName, FrameworkElement resetButton)
-        {
-            return new DockPanel { LastChildFill = true }.WithChildren
-            (
-                resetButton.WithDock(Dock.Right),
-                new TextBlock { Text = displayName, TextTrimming = TextTrimming.CharacterEllipsis, VerticalAlignment = VerticalAlignment.Center }
-            );
-        }
-
-        private static DockPanel CreateUniformRowElement(FrameworkElement headerElement, FrameworkElement valueElement)
-        {
-            return new DockPanel { LastChildFill = true, Focusable = false, Margin = new Thickness(4, 0, 4, 0) }.WithChildren
-            (
-                headerElement,
-                new FrameworkElement { Width = 4 },
-                valueElement
-            );
         }
 
         private static void ClearTextBoxKeyboardFocus()
