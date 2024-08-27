@@ -315,11 +315,13 @@
             this.target.Children.Add(uniformRowElement);
         }
 
-        public void AddVec2Element(ISettingsValue<Vec2> settingsValue, string displayName, Vec2 minValue, Vec2 maxValue, Vec2 step)
+        public void AddVectorElement(ISettingsValue<Vector<double>> settingsValue, string displayName, Vector<double> minValue, Vector<double> maxValue, Vector<double> step)
         {
             var resetButton = CreateResetButton(!settingsValue.IsDefaultValue);
-            var value1TextBox = CreateNumberTextBox(settingsValue.Value.X, minValue.X, maxValue.X, step.X);
-            var value2TextBox = CreateNumberTextBox(settingsValue.Value.Y, minValue.Y, maxValue.Y, step.Y);
+
+            var count = settingsValue.Value.Count;
+
+            var valuesTextBox = Enumerable.Range(0, count).Select(i => CreateNumberTextBox(settingsValue.Value[i], minValue[i], maxValue[i], step[i])).ToArray();
 
             var isValueChanging = false;
 
@@ -327,11 +329,11 @@
             {
                 if (!isValueChanging)
                 {
-                    settingsValue.Value = new Vec2(value1TextBox.Value, value2TextBox.Value);
+                    settingsValue.Value = new Vector<double>(valuesTextBox.Select(textBox => textBox.Value).ToArray());
                     resetButton.Visibility = settingsValue.IsDefaultValue ? Visibility.Collapsed : Visibility.Visible;
                     this.application.SetProjectChanged();
                 }
-            };
+            }
 
             void ResetValue()
             {
@@ -340,8 +342,10 @@
                 {
                     ClearTextBoxKeyboardFocus();
                     settingsValue.ResetValue();
-                    value1TextBox.Value = settingsValue.Value.X;
-                    value2TextBox.Value = settingsValue.Value.Y;
+                    for (var i = 0; i < count; i++)
+                    {
+                        valuesTextBox[i].Value = settingsValue.Value[i];
+                    }
                     resetButton.Visibility = Visibility.Collapsed;
                     this.application.SetProjectChanged();
                 }
@@ -357,144 +361,13 @@
                 e.Handled = true;
             };
 
-            value1TextBox.ValueChanged += ValueChanged;
-            value2TextBox.ValueChanged += ValueChanged;
-
-            var uniformHeaderElement = CreateUniformHeaderElement(displayName, resetButton);
-            var uniformValueElement = new ColumnPanel().WithChildren(value1TextBox, value2TextBox);
-
-            var uniformRowElement = CreateUniformRowElement(uniformHeaderElement, uniformValueElement);
-            uniformRowElement.KeyDown += (sender, e) =>
+            for (var i = 0; i < count; i++)
             {
-                if (e.Key == Key.Back && uniformRowElement.IsMouseOver)
-                {
-                    ResetValue();
-                    e.Handled = true;
-                }
-            };
-
-            this.headers.Add(uniformHeaderElement);
-            this.target.Children.Add(uniformRowElement);
-        }
-
-        public void AddVec3Element(ISettingsValue<Vec3> settingsValue, string displayName, Vec3 minValue, Vec3 maxValue, Vec3 step)
-        {
-            var resetButton = CreateResetButton(!settingsValue.IsDefaultValue);
-            var value1TextBox = CreateNumberTextBox(settingsValue.Value.X, minValue.X, maxValue.X, step.X);
-            var value2TextBox = CreateNumberTextBox(settingsValue.Value.Y, minValue.Y, maxValue.Y, step.Y);
-            var value3TextBox = CreateNumberTextBox(settingsValue.Value.Z, minValue.Z, maxValue.Z, step.Z);
-
-            var isValueChanging = false;
-
-            void ValueChanged(object sender, RoutedEventArgs e)
-            {
-                if (!isValueChanging)
-                {
-                    settingsValue.Value = new Vec3(value1TextBox.Value, value2TextBox.Value, value3TextBox.Value);
-                    resetButton.Visibility = settingsValue.IsDefaultValue ? Visibility.Collapsed : Visibility.Visible;
-                    this.application.SetProjectChanged();
-                }
+                valuesTextBox[i].ValueChanged += ValueChanged;
             }
 
-            void ResetValue()
-            {
-                isValueChanging = true;
-                try
-                {
-                    ClearTextBoxKeyboardFocus();
-                    settingsValue.ResetValue();
-                    value1TextBox.Value = settingsValue.Value.X;
-                    value2TextBox.Value = settingsValue.Value.Y;
-                    value3TextBox.Value = settingsValue.Value.Z;
-                    resetButton.Visibility = Visibility.Collapsed;
-                    this.application.SetProjectChanged();
-                }
-                finally
-                {
-                    isValueChanging = false;
-                }
-            }
-
-            resetButton.PreviewMouseDown += (sender, e) =>
-            {
-                ResetValue();
-                e.Handled = true;
-            };
-
-            value1TextBox.ValueChanged += ValueChanged;
-            value2TextBox.ValueChanged += ValueChanged;
-            value3TextBox.ValueChanged += ValueChanged;
-
             var uniformHeaderElement = CreateUniformHeaderElement(displayName, resetButton);
-            var uniformValueElement = new ColumnPanel().WithChildren(value1TextBox, value2TextBox, value3TextBox);
-
-            var uniformRowElement = CreateUniformRowElement(uniformHeaderElement, uniformValueElement);
-            uniformRowElement.KeyDown += (sender, e) =>
-            {
-                if (e.Key == Key.Back && uniformRowElement.IsMouseOver)
-                {
-                    ResetValue();
-                    e.Handled = true;
-                }
-            };
-
-            this.headers.Add(uniformHeaderElement);
-            this.target.Children.Add(uniformRowElement);
-        }
-
-        public void AddVec4Element(ISettingsValue<Vec4> settingsValue, string displayName, Vec4 minValue, Vec4 maxValue, Vec4 step)
-        {
-            var resetButton = CreateResetButton(!settingsValue.IsDefaultValue);
-            var value1TextBox = CreateNumberTextBox(settingsValue.Value.X, minValue.X, maxValue.X, step.X);
-            var value2TextBox = CreateNumberTextBox(settingsValue.Value.Y, minValue.Y, maxValue.Y, step.Y);
-            var value3TextBox = CreateNumberTextBox(settingsValue.Value.Z, minValue.Z, maxValue.Z, step.Z);
-            var value4TextBox = CreateNumberTextBox(settingsValue.Value.W, minValue.W, maxValue.W, step.W);
-
-            var isValueChanging = false;
-
-            void ValueChanged(object sender, RoutedEventArgs e)
-            {
-                if (!isValueChanging)
-                {
-                    settingsValue.Value = new Vec4(value1TextBox.Value, value2TextBox.Value, value3TextBox.Value, value4TextBox.Value);
-                    resetButton.Visibility = settingsValue.IsDefaultValue ? Visibility.Collapsed : Visibility.Visible;
-                    this.application.SetProjectChanged();
-                }
-            }
-
-            void ResetValue()
-            {
-                isValueChanging = true;
-                try
-                {
-                    ClearTextBoxKeyboardFocus();
-                    settingsValue.ResetValue();
-                    value1TextBox.Value = settingsValue.Value.X;
-                    value2TextBox.Value = settingsValue.Value.Y;
-                    value3TextBox.Value = settingsValue.Value.Z;
-                    value4TextBox.Value = settingsValue.Value.W;
-                    resetButton.Visibility = Visibility.Collapsed;
-                    this.application.SetProjectChanged();
-                }
-                finally
-                {
-                    isValueChanging = false;
-                }
-            };
-
-            resetButton.PreviewMouseDown += (sender, e) =>
-            {
-                ResetValue();
-                e.Handled = true;
-            };
-
-            value1TextBox.ValueChanged += ValueChanged;
-            value2TextBox.ValueChanged += ValueChanged;
-            value3TextBox.ValueChanged += ValueChanged;
-            value4TextBox.ValueChanged += ValueChanged;
-
-            var uniformHeaderElement = CreateUniformHeaderElement(displayName, resetButton);
-            var uniformValueElement = new ColumnPanel().WithChildren(value1TextBox, value2TextBox, value3TextBox, value4TextBox);
+            var uniformValueElement = new ColumnPanel().WithChildren(valuesTextBox);
 
             var uniformRowElement = CreateUniformRowElement(uniformHeaderElement, uniformValueElement);
             uniformRowElement.KeyDown += (sender, e) =>
@@ -703,7 +576,7 @@
 
         private NumberTextBox CreateNumberTextBox(double value, double minValue, double maxValue, double step)
         {
-            return new NumberTextBox(theme)
+            return new NumberTextBox(this.theme)
             {
                 MinValue = minValue,
                 MaxValue = maxValue,

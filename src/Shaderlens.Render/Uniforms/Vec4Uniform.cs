@@ -2,14 +2,14 @@
 {
     using static OpenGL.Gl;
 
-    public class Vec4Uniform : Uniform<Vec4>
+    public class Vec4Uniform : Uniform<Vector<double>>
     {
         private readonly string displayName;
-        private readonly Vec4 minValue;
-        private readonly Vec4 maxValue;
-        private readonly Vec4 step;
+        private readonly Vector<double> minValue;
+        private readonly Vector<double> maxValue;
+        private readonly Vector<double> step;
 
-        public Vec4Uniform(IDispatcherThread renderThread, string name, string displayName, Vec4 minValue, Vec4 maxValue, Vec4 step, ISettingsValue<Vec4> settingsValue) :
+        public Vec4Uniform(IDispatcherThread renderThread, string name, string displayName, Vector<double> minValue, Vector<double> maxValue, Vector<double> step, ISettingsValue<Vector<double>> settingsValue) :
             base(renderThread, name, settingsValue)
         {
             this.displayName = displayName;
@@ -18,14 +18,14 @@
             this.step = step;
         }
 
-        protected override void AddViewElement(IUniformsViewBuilder uniformElementBuilder, ISettingsValue<Vec4> settingsValue)
+        protected override void AddViewElement(IUniformsViewBuilder uniformElementBuilder, ISettingsValue<Vector<double>> settingsValue)
         {
-            uniformElementBuilder.AddVec4Element(settingsValue, this.displayName, this.minValue, this.maxValue, this.step);
+            uniformElementBuilder.AddVectorElement(settingsValue, this.displayName, this.minValue, this.maxValue, this.step);
         }
 
-        protected override void SetUniformValue(int location, Vec4 value)
+        protected override void SetUniformValue(int location, Vector<double> value)
         {
-            glUniform4f(location, (float)value.X, (float)value.Y, (float)value.Z, (float)value.W);
+            glUniform4f(location, (float)value[0], (float)value[1], (float)value[2], (float)value[3]);
         }
     }
 }

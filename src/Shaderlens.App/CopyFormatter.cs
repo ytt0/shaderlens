@@ -26,15 +26,15 @@
 
         public string FormatString(ICopySource value)
         {
-            var color = new SrgbColor(value.Value.X, value.Value.Y, value.Value.Z, value.Value.W).Clamp();
+            var color = new SrgbColor(value.Value).Clamp();
             var linearColor = color.ToLinearRgb();
 
             var parameters = new Dictionary<string, object>
             {
-                { "x", value.Value.X },
-                { "y", value.Value.Y },
-                { "z", value.Value.Z },
-                { "w", value.Value.W },
+                { "x", value.Value[0] },
+                { "y", value.Value[1] },
+                { "z", value.Value[2] },
+                { "w", value.Value[3] },
                 { "r", Math.Clamp(color.R, 0.0, 1.0) },
                 { "g", Math.Clamp(color.G, 0.0, 1.0) },
                 { "b", Math.Clamp(color.B, 0.0, 1.0) },

@@ -17,23 +17,13 @@
         {
         }
 
-        public SrgbColor(double[] values) :
-            this(values[0], values[1], values[2], values.Length == 3 ? 1.0 : values[3])
+        public SrgbColor(IEnumerable<double> values) :
+            this(values.ElementAt(0), values.ElementAt(1), values.ElementAt(2), values.Count() == 4 ? 1.0 : values.ElementAt(3))
         {
         }
 
         public SrgbColor(double r, double g, double b) :
             this(r, g, b, 1.0)
-        {
-        }
-
-        public SrgbColor(Vec3 value) :
-            this(value.X, value.Y, value.Z)
-        {
-        }
-
-        public SrgbColor(Vec4 value) :
-            this(value.X, value.Y, value.Z, value.W)
         {
         }
 
@@ -50,14 +40,9 @@
             return new LinearRgbColor(SrgbTransferInverse(this.R), SrgbTransferInverse(this.G), SrgbTransferInverse(this.B), this.A);
         }
 
-        public readonly Vec3 ToVec3()
+        public readonly Vector<double> ToVector(bool includeAlpha)
         {
-            return new Vec3(this.R, this.G, this.B);
-        }
-
-        public readonly Vec4 ToVec4()
-        {
-            return new Vec4(this.R, this.G, this.B, this.A);
+            return Vector.Create(includeAlpha ? new[] { this.R, this.G, this.B, this.A } : new[] { this.R, this.G, this.B });
         }
 
         public readonly SrgbColor Clamp()

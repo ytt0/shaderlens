@@ -3,7 +3,7 @@
     public interface ICopySource
     {
         ITextureBuffer? Texture { get; }
-        Vec4 Value { get; }
+        Vector<double> Value { get; }
         int X { get; }
         int Y { get; }
     }
@@ -11,7 +11,7 @@
     public class CopySource : ICopySource
     {
         public ITextureBuffer? Texture { get; }
-        public Vec4 Value { get; }
+        public Vector<double> Value { get; }
         public int X { get; }
         public int Y { get; }
 

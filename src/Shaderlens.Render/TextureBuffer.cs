@@ -9,15 +9,15 @@
 
     public static class TextureBufferExtensions
     {
-        public static Vec4 GetValue(this ITextureBuffer texture, int x, int y)
+        public static Vector<double> GetValue(this ITextureBuffer texture, int x, int y)
         {
             var offset = (y * texture.Width + x) * 4;
             if (x >= 0 && y >= 0 && x < texture.Width && y < texture.Height && offset < texture.Buffer.Length - 3)
             {
-                return new Vec4(texture.Buffer.Skip(offset).Take(4).ToArray().Select(value => (double)value).ToArray());
+                return Vector.Create(texture.Buffer.Skip(offset).Take(4).ToArray().Select(value => (double)value).ToArray());
             }
 
-            return default;
+            return Vector.Create(4, 0.0);
         }
     }
 

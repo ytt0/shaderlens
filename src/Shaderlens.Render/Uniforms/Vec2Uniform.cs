@@ -2,14 +2,14 @@
 {
     using static OpenGL.Gl;
 
-    public class Vec2Uniform : Uniform<Vec2>
+    public class Vec2Uniform : Uniform<Vector<double>>
     {
         private readonly string displayName;
-        private readonly Vec2 minValue;
-        private readonly Vec2 maxValue;
-        private readonly Vec2 step;
+        private readonly Vector<double> minValue;
+        private readonly Vector<double> maxValue;
+        private readonly Vector<double> step;
 
-        public Vec2Uniform(IDispatcherThread renderThread, string name, string displayName, Vec2 minValue, Vec2 maxValue, Vec2 step, ISettingsValue<Vec2> settingsValue) :
+        public Vec2Uniform(IDispatcherThread renderThread, string name, string displayName, Vector<double> minValue, Vector<double> maxValue, Vector<double> step, ISettingsValue<Vector<double>> settingsValue) :
             base(renderThread, name, settingsValue)
         {
             this.displayName = displayName;
@@ -18,14 +18,14 @@
             this.step = step;
         }
 
-        protected override void AddViewElement(IUniformsViewBuilder uniformElementBuilder, ISettingsValue<Vec2> settingsValue)
+        protected override void AddViewElement(IUniformsViewBuilder uniformElementBuilder, ISettingsValue<Vector<double>> settingsValue)
         {
-            uniformElementBuilder.AddVec2Element(settingsValue, this.displayName, this.minValue, this.maxValue, this.step);
+            uniformElementBuilder.AddVectorElement(settingsValue, this.displayName, this.minValue, this.maxValue, this.step);
         }
 
-        protected override void SetUniformValue(int location, Vec2 value)
+        protected override void SetUniformValue(int location, Vector<double> value)
         {
-            glUniform2f(location, (float)value.X, (float)value.Y);
+            glUniform2f(location, (float)value[0], (float)value[1]);
         }
     }
 }
