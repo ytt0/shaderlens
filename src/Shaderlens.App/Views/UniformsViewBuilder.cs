@@ -175,7 +175,7 @@
 
         public void AddColorElement(ISettingsValue<SrgbColor> settingsValue, bool editAlpha, string name, string displayName)
         {
-            var resetButton = CreateResetButton(!settingsValue.IsDefaultValue);
+            var resetButton = CreateResetButton(!settingsValue.IsDefaultValue());
 
             var colorViewUnderline = new Border
             {
@@ -265,7 +265,7 @@
             try
             {
                 settingsValue.Value = color;
-                resetButton.Visibility = settingsValue.IsDefaultValue ? Visibility.Collapsed : Visibility.Visible;
+                resetButton.Visibility = settingsValue.IsDefaultValue() ? Visibility.Collapsed : Visibility.Visible;
                 colorViewElement.Color = color.ToColor();
 
                 if (this.editedSettingsValue == settingsValue)
@@ -317,7 +317,7 @@
 
                 this.editedSettingsValue.Value = color;
                 this.editedColorViewElement!.Color = color.ToColor();
-                this.editedColorResetButton!.Visibility = this.editedSettingsValue.IsDefaultValue ? Visibility.Collapsed : Visibility.Visible;
+                this.editedColorResetButton!.Visibility = this.editedSettingsValue.IsDefaultValue() ? Visibility.Collapsed : Visibility.Visible;
                 this.application.SetProjectChanged();
             }
         }

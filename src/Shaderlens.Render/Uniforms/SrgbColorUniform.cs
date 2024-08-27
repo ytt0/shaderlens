@@ -14,28 +14,17 @@
                 set { this.settingsValue.Value = value.ToVector(false); }
             }
 
-            public bool IsDefaultValue { get { return this.settingsValue.IsDefaultValue; } }
+            public SrgbColor BaseValue { get; }
+            public SrgbColor DefaultValue { get; }
 
             private readonly ISettingsValue<Vector<double>> settingsValue;
 
             public Vec3Adapter(ISettingsValue<Vector<double>> settingsValue)
             {
                 this.settingsValue = settingsValue;
-            }
 
-            public SrgbColor GetMergedValue(SrgbColor newSettingsValue, SrgbColor newDefaultValue)
-            {
-                return new SrgbColor(this.settingsValue.GetMergedValue(newSettingsValue.ToVector(false), newDefaultValue.ToVector(false)));
-            }
-
-            public void ResetValue()
-            {
-                this.settingsValue.ResetValue();
-            }
-
-            public void SaveValue()
-            {
-                this.settingsValue.SaveValue();
+                this.BaseValue = new SrgbColor(this.settingsValue.BaseValue);
+                this.DefaultValue = new SrgbColor(this.settingsValue.DefaultValue);
             }
         }
 

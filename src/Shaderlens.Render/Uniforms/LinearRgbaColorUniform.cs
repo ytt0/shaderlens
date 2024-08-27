@@ -1,5 +1,6 @@
 ﻿namespace Shaderlens.Render.Uniforms
 {
+    using Shaderlens.Serialization.Project;
     using static OpenGL.Gl;
 
     public class LinearRgbaColorUniform : Uniform<Vector<double>>
@@ -14,28 +15,17 @@
                 set { this.settingsValue.Value = value.ToVector(true); }
             }
 
-            public bool IsDefaultValue { get { return this.settingsValue.IsDefaultValue; } }
+            public LinearRgbColor BaseValue { get; }
+            public LinearRgbColor DefaultValue { get; }
 
             private readonly ISettingsValue<Vector<double>> settingsValue;
 
             public VectorAdapter(ISettingsValue<Vector<double>> settingsValue)
             {
                 this.settingsValue = settingsValue;
-            }
 
-            public LinearRgbColor GetMergedValue(LinearRgbColor newSettingsValue, LinearRgbColor newDefaultValue)
-            {
-                return new LinearRgbColor(this.settingsValue.GetMergedValue(newSettingsValue.ToVector(true), newDefaultValue.ToVector(true)));
-            }
-
-            public void ResetValue()
-            {
-                this.settingsValue.ResetValue();
-            }
-
-            public void SaveValue()
-            {
-                this.settingsValue.SaveValue();
+                this.BaseValue = new LinearRgbColor(this.settingsValue.BaseValue);
+                this.DefaultValue = new LinearRgbColor(this.settingsValue.DefaultValue);
             }
         }
 

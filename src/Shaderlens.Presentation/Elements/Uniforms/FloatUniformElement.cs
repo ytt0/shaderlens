@@ -33,7 +33,7 @@
             this.child = new UniformElement(theme)
             {
                 Header = displayName,
-                IsResetButtonVisible = !settingsValue.IsDefaultValue,
+                IsResetButtonVisible = !settingsValue.IsDefaultValue(),
                 ValueContent = valueTextBox
             };
 
@@ -48,7 +48,7 @@
             valueTextBox.ValueChanged += (sender, e) =>
             {
                 settingsValue.Value = valueTextBox.Value;
-                this.child.IsResetButtonVisible = !settingsValue.IsDefaultValue;
+                this.child.IsResetButtonVisible = !settingsValue.IsDefaultValue();
                 RaiseEvent(new RoutedEventArgs(ValueChangedEvent));
             };
         }

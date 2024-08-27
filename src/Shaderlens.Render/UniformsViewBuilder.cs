@@ -22,28 +22,14 @@
                 set { this.settingsValue.Value = (int)Math.Round(value); }
             }
 
-            public bool IsDefaultValue { get { return this.settingsValue.IsDefaultValue; } }
+            public double DefaultValue { get { return this.settingsValue.DefaultValue; } }
+            public double BaseValue { get { return this.settingsValue.BaseValue; } }
 
             private readonly ISettingsValue<int> settingsValue;
 
             public IntAdapter(ISettingsValue<int> settingsValue)
             {
                 this.settingsValue = settingsValue;
-            }
-
-            public double GetMergedValue(double newSettingsValue, double newDefaultValue)
-            {
-                return this.settingsValue.GetMergedValue((int)Math.Round(newSettingsValue), (int)Math.Round(newDefaultValue));
-            }
-
-            public void ResetValue()
-            {
-                this.settingsValue.ResetValue();
-            }
-
-            public void SaveValue()
-            {
-                this.settingsValue.SaveValue();
             }
         }
 
@@ -57,28 +43,16 @@
                 set { this.settingsValue.Value = value.ToLinearRgb(); }
             }
 
-            public bool IsDefaultValue { get { return this.settingsValue.IsDefaultValue; } }
+            public SrgbColor DefaultValue { get; }
+            public SrgbColor BaseValue { get; }
 
             private readonly ISettingsValue<LinearRgbColor> settingsValue;
 
             public SrgbColorAdapter(ISettingsValue<LinearRgbColor> settingsValue)
             {
                 this.settingsValue = settingsValue;
-            }
-
-            public SrgbColor GetMergedValue(SrgbColor newSettingsValue, SrgbColor newDefaultValue)
-            {
-                return this.settingsValue.GetMergedValue(newSettingsValue.ToLinearRgb(), newDefaultValue.ToLinearRgb()).ToSrgb();
-            }
-
-            public void ResetValue()
-            {
-                this.settingsValue.ResetValue();
-            }
-
-            public void SaveValue()
-            {
-                this.settingsValue.SaveValue();
+                this.DefaultValue = this.settingsValue.DefaultValue.ToSrgb();
+                this.BaseValue = this.settingsValue.BaseValue.ToSrgb();
             }
         }
 

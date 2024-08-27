@@ -24,7 +24,7 @@
             this.child = new UniformElement(theme)
             {
                 Header = displayName,
-                IsResetButtonVisible = !settingsValue.IsDefaultValue,
+                IsResetButtonVisible = !settingsValue.IsDefaultValue(),
                 ValueContent = valueCheckBox
             };
 
@@ -39,7 +39,7 @@
             valueCheckBox.Click += (sender, e) =>
             {
                 settingsValue.Value = valueCheckBox.IsChecked == true;
-                this.child.IsResetButtonVisible = !settingsValue.IsDefaultValue;
+                this.child.IsResetButtonVisible = !settingsValue.DefaultValue;
                 RaiseEvent(new RoutedEventArgs(ValueChangedEvent));
             };
         }

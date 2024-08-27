@@ -42,7 +42,8 @@
                 }
             }
 
-            public bool IsDefaultValue { get { return this.settingsValue.IsDefaultValue; } }
+            public T DefaultValue { get { return this.settingsValue.DefaultValue; } }
+            public T BaseValue { get { return this.settingsValue.BaseValue; } }
 
             private readonly Uniform<T> uniform;
             private readonly ISettingsValue<T> settingsValue;
@@ -51,24 +52,6 @@
             {
                 this.uniform = uniform;
                 this.settingsValue = settingsValue;
-            }
-
-            public T GetMergedValue(T newSettingsValue, T newDefaultValue)
-            {
-                return this.settingsValue.GetMergedValue(newSettingsValue, newDefaultValue);
-            }
-
-            public void ResetValue()
-            {
-                this.settingsValue.ResetValue();
-
-                var value = this.settingsValue.Value;
-                this.uniform.renderThread.DispatchAsync(() => this.uniform.value = value);
-            }
-
-            public void SaveValue()
-            {
-                this.settingsValue.SaveValue();
             }
         }
 

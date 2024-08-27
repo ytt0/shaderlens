@@ -38,7 +38,7 @@
             this.child = new UniformElement(theme)
             {
                 Header = displayName,
-                IsResetButtonVisible = !settingsValue.IsDefaultValue
+                IsResetButtonVisible = !settingsValue.IsDefaultValue()
             };
 
             this.child.ResetValue += (sender, e) =>
@@ -81,7 +81,7 @@
             try
             {
                 this.settingsValue.Value = Vector.Create(this.valuesTextBox.Select(textBox => textBox.Value).ToArray());
-                this.child.IsResetButtonVisible = !this.settingsValue.IsDefaultValue;
+                this.child.IsResetButtonVisible = !this.settingsValue.IsDefaultValue();
                 RaiseEvent(new RoutedEventArgs(ValueChangedEvent));
             }
             finally

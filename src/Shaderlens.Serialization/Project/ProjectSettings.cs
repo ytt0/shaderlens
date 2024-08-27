@@ -37,13 +37,13 @@
         private readonly JsonSettingsFile viewJsonSettingsFile;
         private readonly JsonSettingsFile uniformsJsonSettingsFile;
 
-        private readonly IReadOnlyDictionary<string, ISettingsValue>? previousViewValues;
-        private readonly IReadOnlyDictionary<string, ISettingsValue>? previousUniformsValues;
+        private readonly IReadOnlyDictionary<string, IJsonSettingsValue>? previousViewValues;
+        private readonly IReadOnlyDictionary<string, IJsonSettingsValue>? previousUniformsValues;
 
-        private readonly Dictionary<string, ISettingsValue> viewValues;
-        private readonly Dictionary<string, ISettingsValue> uniformsValues;
+        private readonly Dictionary<string, IJsonSettingsValue> viewValues;
+        private readonly Dictionary<string, IJsonSettingsValue> uniformsValues;
 
-        private readonly List<ISettingsValue> settingsValues;
+        private readonly List<IJsonSettingsValue> values;
 
         private readonly IJsonSerializer<bool> boolSerializer;
         private readonly ValueJsonSerializer<int> intSerializer;
@@ -69,10 +69,10 @@
             this.uniformsJsonSettingsFile = CreateJsonSettingsFile(uniformsSettingsFile, jsonSerializerOptions); ;
             this.viewJsonSettingsFile = CreateJsonSettingsFile(viewSettingsFile, jsonSerializerOptions); ;
 
-            this.viewValues = new Dictionary<string, ISettingsValue>();
-            this.uniformsValues = new Dictionary<string, ISettingsValue>();
+            this.viewValues = new Dictionary<string, IJsonSettingsValue>();
+            this.uniformsValues = new Dictionary<string, IJsonSettingsValue>();
 
-            this.settingsValues = new List<ISettingsValue>();
+            this.values = new List<IJsonSettingsValue>();
 
             this.previousViewValues = previousProjectSettings?.viewValues;
             this.previousUniformsValues = previousProjectSettings?.uniformsValues;
@@ -84,14 +84,14 @@
             this.viewerPassSelectionSerializer = NullableJsonSerializer.Create(new ArrayJsonSerializer<ViewerPassSelection>(new ViewerPassSelectionSerializer()!));
             this.renderSequenceSettingsSerializer = new RenderSequenceSettingsSerializer(RenderSequenceSettings.Default);
 
-            this.SaveFramePath = AddSettingsValue(this.viewJsonSettingsFile.Content, this.stringSerializer, nameof(this.SaveFramePath), null!, previousProjectSettings?.SaveFramePath);
-            this.EditedColor = AddSettingsValue(this.viewJsonSettingsFile.Content, this.stringSerializer, nameof(this.EditedColor), null!, previousProjectSettings?.EditedColor);
-            this.UniformScroll = AddSettingsValue(this.viewJsonSettingsFile.Content, this.intSerializer, nameof(this.UniformScroll), 0, previousProjectSettings?.UniformScroll);
-            this.UniformDockHeight = AddSettingsValue(this.viewJsonSettingsFile.Content, this.intSerializer, nameof(this.UniformDockHeight), 200, previousProjectSettings?.UniformDockHeight);
-            this.UniformColumnRatio = AddSettingsValue(this.viewJsonSettingsFile.Content, this.doubleSerializer, nameof(this.UniformColumnRatio), 0.4, previousProjectSettings?.UniformColumnRatio);
-            this.ViewerPasses = AddSettingsValue(this.viewJsonSettingsFile.Content, this.viewerPassSelectionSerializer, nameof(this.ViewerPasses), null, previousProjectSettings?.ViewerPasses);
+            this.SaveFramePath = AddValue(this.viewJsonSettingsFile.Content, this.stringSerializer, nameof(this.SaveFramePath), null!, previousProjectSettings?.SaveFramePath);
+            this.EditedColor = AddValue(this.viewJsonSettingsFile.Content, this.stringSerializer, nameof(this.EditedColor), null!, previousProjectSettings?.EditedColor);
+            this.UniformScroll = AddValue(this.viewJsonSettingsFile.Content, this.intSerializer, nameof(this.UniformScroll), 0, previousProjectSettings?.UniformScroll);
+            this.UniformDockHeight = AddValue(this.viewJsonSettingsFile.Content, this.intSerializer, nameof(this.UniformDockHeight), 200, previousProjectSettings?.UniformDockHeight);
+            this.UniformColumnRatio = AddValue(this.viewJsonSettingsFile.Content, this.doubleSerializer, nameof(this.UniformColumnRatio), 0.4, previousProjectSettings?.UniformColumnRatio);
+            this.ViewerPasses = AddValue(this.viewJsonSettingsFile.Content, this.viewerPassSelectionSerializer, nameof(this.ViewerPasses), null, previousProjectSettings?.ViewerPasses);
 
-            this.RenderSequence = AddSettingsValue(this.viewJsonSettingsFile.Content, this.renderSequenceSettingsSerializer, nameof(this.RenderSequence), RenderSequenceSettings.Default, previousProjectSettings?.RenderSequence);
+            this.RenderSequence = AddValue(this.viewJsonSettingsFile.Content, this.renderSequenceSettingsSerializer, nameof(this.RenderSequence), RenderSequenceSettings.Default, previousProjectSettings?.RenderSequence);
         }
 
         public IProjectSettings CreateMergedSettings(IFileResource<string> projectSettingsFile, IFileResource<string> viewSettingsFile, IFileResource<string> uniformsSettingsFile)
@@ -111,27 +111,27 @@
             name += ".expanded";
             if (!this.viewValues.TryGetValue(name, out var settingsValue))
             {
-                settingsValue = new SettingsValue<bool>(this.viewJsonSettingsFile.Content, this.boolSerializer, name, defaultValue, TryGetSettingsValue<bool>(name, this.previousViewValues));
+                settingsValue = new JsonSettingsValue<bool>(this.viewJsonSettingsFile.Content, this.boolSerializer, name, defaultValue, TryGetSettingsValue<bool>(name, this.previousViewValues));
                 this.viewValues.Add(name, settingsValue);
             }
 
-            return (ISettingsValue<bool>)settingsValue;
+            return ((IJsonSettingsValue<bool>)settingsValue).SettingsValue;
         }
 
         public ISettingsValue<T> GetUniformValue<T>(IJsonSerializer<T> serializer, string name, T defaultValue)
         {
             var previousSettingValue = TryGetSettingsValue<T>(name, this.uniformsValues) ?? TryGetSettingsValue<T>(name, this.previousUniformsValues);
 
-            var settingsValue = new SettingsValue<T>(this.uniformsJsonSettingsFile.Content, serializer, name, defaultValue, previousSettingValue);
+            var settingsValue = new JsonSettingsValue<T>(this.uniformsJsonSettingsFile.Content, serializer, name, defaultValue, previousSettingValue);
             this.uniformsValues[name] = settingsValue;
-            return settingsValue;
+            return settingsValue.SettingsValue;
         }
 
         public void Save()
         {
-            foreach (var settingsValue in this.uniformsValues.Values.Concat(this.viewValues.Values).Concat(this.settingsValues))
+            foreach (var value in this.uniformsValues.Values.Concat(this.viewValues.Values).Concat(this.values))
             {
-                settingsValue.SaveValue();
+                value.SaveValue();
             }
 
             this.uniformsJsonSettingsFile.Content.ClearUnusedValues();
@@ -144,16 +144,16 @@
             this.projectJsonSettingsFile.Save();
         }
 
-        private SettingsValue<T> AddSettingsValue<T>(IJsonSettings settings, IJsonSerializer<T> serializer, string name, T defaultValue, ISettingsValue<T>? previousValue)
+        private ISettingsValue<T> AddValue<T>(IJsonSettings settings, IJsonSerializer<T> serializer, string name, T defaultValue, ISettingsValue<T>? previousValue)
         {
-            var settingsValue = new SettingsValue<T>(settings, serializer, name, defaultValue, previousValue);
-            this.settingsValues.Add(settingsValue);
-            return settingsValue;
+            var value = new JsonSettingsValue<T>(settings, serializer, name, defaultValue, previousValue);
+            this.values.Add(value);
+            return value.SettingsValue;
         }
 
-        private static ISettingsValue<T>? TryGetSettingsValue<T>(string name, IReadOnlyDictionary<string, ISettingsValue>? settingValues)
+        private static ISettingsValue<T>? TryGetSettingsValue<T>(string name, IReadOnlyDictionary<string, IJsonSettingsValue>? settingValues)
         {
-            return settingValues != null && settingValues.TryGetValue(name, out var previousValue) ? previousValue as ISettingsValue<T> : null;
+            return settingValues != null && settingValues.TryGetValue(name, out var previousValue) ? (previousValue as IJsonSettingsValue<T>)?.SettingsValue : null;
         }
 
         private static JsonSettingsFile CreateJsonSettingsFile(IFileResource<string> resource, JsonSerializerOptions options)
