@@ -11,4 +11,4 @@ There are two built in viewers, "None" which only applies the transformation, an
 
 A custom viewer pass can be added to the :ref:`Project definition<definition-project>`, and should be responsible for applying the viewer transformation (using :ref:`iViewerOffset<built-in-uniforms-viewer-offset>`, and :ref:`iViewerScale<built-in-uniforms-viewer-scale>` uniforms), before adding extra information.
 
-See the :doc:`/appendix/viewer-template`, and the `ViewersExample <https://ytt0x.github.com/Shaderlens/examples/ViewersExample>`_ project for implementation examples.
+See the :doc:`/appendix/viewer-template`, and the `ViewersExample <https://github.com/ytt0/shaderlens/tree/main/examples/ViewersExample>`_ project for implementation examples.

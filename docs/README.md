@@ -1,6 +1,6 @@
 # Documentation
 
-The documentation is built with [Sphinx](https://www.sphinx-doc.org/) using [Read the Docs](https://readthedocs.org/) theme.
+The documentation is built with [Sphinx](https://www.sphinx-doc.org/) using [Read the Docs](https://github.com/readthedocs/sphinx_rtd_theme) theme.
 
 The documentation should be updated and checked-in to the `main` branch regularly with new feature updates, the documentation is published when a new release is completed.
 

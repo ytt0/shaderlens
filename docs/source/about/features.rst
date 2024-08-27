@@ -28,7 +28,7 @@ Viewer
     Select a :doc:`/manual/viewer-pass`. |br|
     Viewport menu: :menuselection:`Viewer --> ...`. |br|
     The default "**Values Overlay**" viewer, adds components value information inside each pixel (visible when pixels are scaled above a certain level (:ref:`settings<settings-overlay>`)). |br|
-    Custom :doc:`viewers</manual/viewer-pass>` can be :ref:`defined<definition-viewer-pass>` to display specific intermediate buffer information, such as normal direction that is encoded in one of the pixel components (`example <https://ytt0x.github.com/Shaderlens/examples/ViewersExample/glsl/NormalsViewer.glsl>`_).
+    Custom :doc:`viewers</manual/viewer-pass>` can be :ref:`defined<definition-viewer-pass>` to display specific intermediate buffer information, such as normal direction that is encoded in one of the pixel components (`example <https://github.com/ytt0/shaderlens/tree/main/examples/ViewersExample/glsl/NormalsViewer.glsl>`_).
 
 .. _features-new-project:
 

@@ -8,7 +8,7 @@ The viewer could load C# code and convert it to GLSL with the help of a few :ref
 In addition to that, a few :ref:`line<conversion-rules-line>` and :ref:`text<conversion-rules-text>` conversion rules could also be applied in places where C# and GLSL are still not fully compatible.
 
 The :ref:`New Project<features-new-project>` templates can be used for creating C# projects.
-More C# projects examples can be found `here <https://github.com/ytt0/shaderlens/examples>`_.
+More C# projects examples can be found `here <https://github.com/ytt0/shaderlens/tree/main/examples>`_.
 
 
 Project Structure Example
