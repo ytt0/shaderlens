@@ -61,8 +61,8 @@
         private readonly ColumnSplitContainer columnSplit;
         private readonly ColorEditor colorEditor;
         private readonly DockPanel dockPanel;
-        private readonly List<FrameworkElement> headers;
-
+        private readonly List<FrameworkElement> headerElements;
+        private readonly List<IRowHeaderContainer> rowHeaderContainers;
         private Panel target;
         private bool isValueChanging;
         private ISettingsValue<SrgbColor>? editedSettingsValue;
@@ -130,257 +130,47 @@
             this.dockPanel.Children.Add(this.dockContainer);
             this.dockPanel.Children.Add(this.scrollViewer);
 
-            this.headers = new List<FrameworkElement>();
+            this.headerElements = new List<FrameworkElement>();
+            this.rowHeaderContainers = new List<IRowHeaderContainer>();
             this.target = this.uniformsPanel;
         }
 
         public IDisposable AddGroup(ISettingsValue<bool> expandedSettingsValue, string displayName)
         {
-            var groupElement = new StackPanel();
-            var groupContent = new RowsPanel { Margin = new Thickness(0, 4, 0, 0) };
-
-            var groupHeader = new GroupHeader(this.theme)
-            {
-                IsExpanded = expandedSettingsValue.Value,
-                Child = new TextBlock { Text = displayName, FontWeight = FontWeights.Bold },
-            };
-
-            groupHeader.MouseDown += (sender, e) =>
-            {
-                expandedSettingsValue.Value = !expandedSettingsValue.Value;
-
-                groupHeader.IsExpanded = expandedSettingsValue.Value;
-                groupContent.Visibility = expandedSettingsValue.Value ? Visibility.Visible : Visibility.Collapsed;
-            };
-
-            groupElement.Children.Add(groupHeader);
-            groupElement.Children.Add(groupContent);
-
-            groupContent.Visibility = expandedSettingsValue.Value ? Visibility.Visible : Visibility.Collapsed;
-
+            var groupElement = new UniformGroupElement(expandedSettingsValue, displayName, this.theme);
             this.target.Children.Add(groupElement);
 
             var previousTarget = this.target;
-            this.target = groupContent;
+            this.target = groupElement.Content;
 
             return new DisposableAction(() => this.target = previousTarget);
         }
 
         public void AddBoolElement(ISettingsValue<bool> settingsValue, string displayName)
         {
-            var resetButton = CreateResetButton(!settingsValue.IsDefaultValue);
-            var valueCheckBox = new StyledCheckBox(this.theme) { IsChecked = settingsValue.Value, HorizontalAlignment = HorizontalAlignment.Stretch };
+            var element = new BoolUniformElement(settingsValue, displayName, this.theme);
+            element.ValueChanged += OnUniformElementValueChanged;
 
-            void ValueChanged(object sender, RoutedEventArgs e)
-            {
-                settingsValue.Value = valueCheckBox.IsChecked == true;
-                resetButton.Visibility = settingsValue.IsDefaultValue ? Visibility.Collapsed : Visibility.Visible;
-                this.application.SetProjectChanged();
-            }
-
-            void ResetValue()
-            {
-                ClearTextBoxKeyboardFocus();
-                settingsValue.ResetValue();
-                valueCheckBox.IsChecked = settingsValue.Value;
-                resetButton.Visibility = Visibility.Collapsed;
-                this.application.SetProjectChanged();
-            }
-
-            resetButton.PreviewMouseDown += (sender, e) =>
-            {
-                ResetValue();
-                e.Handled = true;
-            };
-
-            valueCheckBox.Click += ValueChanged;
-
-            var uniformHeaderElement = CreateUniformHeaderElement(displayName, resetButton);
-            var uniformValueElement = new ColumnPanel().WithChildren(valueCheckBox);
-
-            var uniformRowElement = CreateUniformRowElement(uniformHeaderElement, uniformValueElement);
-            uniformRowElement.KeyDown += (sender, e) =>
-            {
-                if (e.Key == Key.Back && uniformRowElement.IsMouseOver)
-                {
-                    ResetValue();
-                    e.Handled = true;
-                }
-            };
-
-            this.headers.Add(uniformHeaderElement);
-            this.target.Children.Add(uniformRowElement);
-        }
-
-        public void AddIntElement(ISettingsValue<int> settingsValue, string displayName, int minValue, int maxValue, int step)
-        {
-            var resetButton = CreateResetButton(!settingsValue.IsDefaultValue);
-            var valueTextBox = CreateNumberTextBox(settingsValue.Value, minValue, maxValue, step);
-
-            void ValueChanged(object sender, RoutedEventArgs e)
-            {
-                settingsValue.Value = (int)Math.Round(valueTextBox.Value);
-                resetButton.Visibility = settingsValue.IsDefaultValue ? Visibility.Collapsed : Visibility.Visible;
-                this.application.SetProjectChanged();
-            }
-
-            void ResetValue()
-            {
-                ClearTextBoxKeyboardFocus();
-                settingsValue.ResetValue();
-                valueTextBox.Value = settingsValue.Value;
-                resetButton.Visibility = Visibility.Collapsed;
-                this.application.SetProjectChanged();
-            };
-
-            resetButton.PreviewMouseDown += (sender, e) =>
-            {
-                ResetValue();
-                e.Handled = true;
-            };
-
-            valueTextBox.ValueChanged += ValueChanged;
-
-            var uniformHeaderElement = CreateUniformHeaderElement(displayName, resetButton);
-            var uniformValueElement = new ColumnPanel().WithChildren(valueTextBox);
-
-            var uniformRowElement = CreateUniformRowElement(uniformHeaderElement, uniformValueElement);
-            uniformRowElement.KeyDown += (sender, e) =>
-            {
-                if (e.Key == Key.Back && uniformRowElement.IsMouseOver)
-                {
-                    ResetValue();
-                    e.Handled = true;
-                }
-            };
-
-            this.headers.Add(uniformHeaderElement);
-            this.target.Children.Add(uniformRowElement);
+            this.rowHeaderContainers.Add(element);
+            this.target.Children.Add(element);
         }
 
         public void AddFloatElement(ISettingsValue<double> settingsValue, string displayName, double minValue, double maxValue, double step)
         {
-            var resetButton = CreateResetButton(!settingsValue.IsDefaultValue);
-            var valueTextBox = CreateNumberTextBox(settingsValue.Value, minValue, maxValue, step);
+            var element = new FloatUniformElement(settingsValue, displayName, minValue, maxValue, step, this.dragSensitivity, this.theme);
+            element.ValueChanged += OnUniformElementValueChanged;
 
-            void ValueChanged(object sender, RoutedEventArgs e)
-            {
-                if (!this.isValueChanging)
-                {
-                    settingsValue.Value = valueTextBox.Value;
-                    resetButton.Visibility = settingsValue.IsDefaultValue ? Visibility.Collapsed : Visibility.Visible;
-                    this.application.SetProjectChanged();
-                }
-            }
-
-            void ResetValue()
-            {
-                this.isValueChanging = true;
-                try
-                {
-                    ClearTextBoxKeyboardFocus();
-                    settingsValue.ResetValue();
-                    valueTextBox.Value = settingsValue.Value;
-                    resetButton.Visibility = Visibility.Collapsed;
-                    this.application.SetProjectChanged();
-                }
-                finally
-                {
-                    this.isValueChanging = false;
-                }
-            };
-
-            resetButton.PreviewMouseDown += (sender, e) =>
-            {
-                ResetValue();
-                e.Handled = true;
-            };
-
-            valueTextBox.ValueChanged += ValueChanged;
-
-            var uniformHeaderElement = CreateUniformHeaderElement(displayName, resetButton);
-            var uniformValueElement = new ColumnPanel().WithChildren(valueTextBox);
-
-            var uniformRowElement = CreateUniformRowElement(uniformHeaderElement, uniformValueElement);
-            uniformRowElement.KeyDown += (sender, e) =>
-            {
-                if (e.Key == Key.Back && uniformRowElement.IsMouseOver)
-                {
-                    ResetValue();
-                    e.Handled = true;
-                }
-            };
-
-            this.headers.Add(uniformHeaderElement);
-            this.target.Children.Add(uniformRowElement);
+            this.rowHeaderContainers.Add(element);
+            this.target.Children.Add(element);
         }
 
         public void AddVectorElement(ISettingsValue<Vector<double>> settingsValue, string displayName, Vector<double> minValue, Vector<double> maxValue, Vector<double> step)
         {
-            var resetButton = CreateResetButton(!settingsValue.IsDefaultValue);
+            var element = new VectorUniformElement(settingsValue, displayName, minValue, maxValue, step, this.dragSensitivity, this.theme);
+            element.ValueChanged += OnUniformElementValueChanged;
 
-            var count = settingsValue.Value.Count;
-
-            var valuesTextBox = Enumerable.Range(0, count).Select(i => CreateNumberTextBox(settingsValue.Value[i], minValue[i], maxValue[i], step[i])).ToArray();
-
-            var isValueChanging = false;
-
-            void ValueChanged(object sender, RoutedEventArgs e)
-            {
-                if (!isValueChanging)
-                {
-                    settingsValue.Value = new Vector<double>(valuesTextBox.Select(textBox => textBox.Value).ToArray());
-                    resetButton.Visibility = settingsValue.IsDefaultValue ? Visibility.Collapsed : Visibility.Visible;
-                    this.application.SetProjectChanged();
-                }
-            }
-
-            void ResetValue()
-            {
-                isValueChanging = true;
-                try
-                {
-                    ClearTextBoxKeyboardFocus();
-                    settingsValue.ResetValue();
-                    for (var i = 0; i < count; i++)
-                    {
-                        valuesTextBox[i].Value = settingsValue.Value[i];
-                    }
-                    resetButton.Visibility = Visibility.Collapsed;
-                    this.application.SetProjectChanged();
-                }
-                finally
-                {
-                    isValueChanging = false;
-                }
-            };
-
-            resetButton.PreviewMouseDown += (sender, e) =>
-            {
-                ResetValue();
-                e.Handled = true;
-            };
-
-            for (var i = 0; i < count; i++)
-            {
-                valuesTextBox[i].ValueChanged += ValueChanged;
-            }
-
-            var uniformHeaderElement = CreateUniformHeaderElement(displayName, resetButton);
-            var uniformValueElement = new ColumnPanel().WithChildren(valuesTextBox);
-
-            var uniformRowElement = CreateUniformRowElement(uniformHeaderElement, uniformValueElement);
-            uniformRowElement.KeyDown += (sender, e) =>
-            {
-                if (e.Key == Key.Back && uniformRowElement.IsMouseOver)
-                {
-                    ResetValue();
-                    e.Handled = true;
-                }
-            };
-
-            this.headers.Add(uniformHeaderElement);
-            this.target.Children.Add(uniformRowElement);
+            this.rowHeaderContainers.Add(element);
+            this.target.Children.Add(element);
         }
 
         public void AddColorElement(ISettingsValue<SrgbColor> settingsValue, bool editAlpha, string name, string displayName)
@@ -449,7 +239,7 @@
                 }
             };
 
-            this.headers.Add(uniformHeaderElement);
+            this.headerElements.Add(uniformHeaderElement);
             this.target.Children.Add(uniformRowElement);
 
             if (this.projectSettings.EditedColor.Value == name)
@@ -461,6 +251,12 @@
         public void SetSettingsState()
         {
             this.scrollViewer.ScrollToVerticalOffset(this.projectSettings.UniformScroll.Value);
+        }
+
+        private void OnUniformElementValueChanged(object sender, RoutedEventArgs e)
+        {
+            ClearTextBoxKeyboardFocus();
+            this.application.SetProjectChanged();
         }
 
         private void SetColor(ISettingsValue<SrgbColor> settingsValue, ColorView colorViewElement, FrameworkElement resetButton, SrgbColor color)
@@ -568,24 +364,15 @@
         private void SetColumnSize()
         {
             var width = this.target.ActualWidth * this.columnSplit.Ratio;
-            foreach (var header in this.headers)
+            foreach (var header in this.headerElements)
             {
                 header.Width = width;
             }
-        }
 
-        private NumberTextBox CreateNumberTextBox(double value, double minValue, double maxValue, double step)
-        {
-            return new NumberTextBox(this.theme)
+            foreach (var header in this.rowHeaderContainers)
             {
-                MinValue = minValue,
-                MaxValue = maxValue,
-                StepSize = step,
-                Value = value,
-                DragSensitivity = this.dragSensitivity,
-                RequireScrollModifierKey = true,
-                HorizontalAlignment = HorizontalAlignment.Stretch
-            };
+                header.HeaderWidth = width;
+            }
         }
 
         private ResetButton CreateResetButton(bool isVisible)

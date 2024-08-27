@@ -22,6 +22,7 @@ global using Shaderlens.Extensions;
 global using Shaderlens.Presentation;
 global using Shaderlens.Presentation.Behaviors;
 global using Shaderlens.Presentation.Elements;
+global using Shaderlens.Presentation.Elements.Uniforms;
 global using Shaderlens.Presentation.Extensions;
 global using Shaderlens.Presentation.Input;
 global using Shaderlens.Presentation.Serialization;

@@ -18,7 +18,7 @@
         public CopySource(ITextureBuffer? texture, int x, int y)
         {
             this.Texture = texture;
-            this.Value = texture?.GetValue(x, y) ?? default;
+            this.Value = texture?.GetValue(x, y) ?? Vector.Create(4, 0.0);
             this.X = x;
             this.Y = y;
         }

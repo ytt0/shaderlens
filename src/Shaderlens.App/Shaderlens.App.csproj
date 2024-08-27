@@ -31,7 +31,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Remove="..\Shaderlens.Environment\*.cs"/>
+    <Compile Remove="..\Shaderlens.Environment\*.cs" />
     <None Include="..\Shaderlens.Environment\*.cs">
       <Link>Resources\CSharpEnvironment\%(RecursiveDir)%(Filename)%(Extension)</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
