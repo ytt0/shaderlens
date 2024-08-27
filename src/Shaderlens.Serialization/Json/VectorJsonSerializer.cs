@@ -39,4 +39,36 @@
             return Vector.Create(source.AsArray().OfType<JsonNode>().Select(item => this.serializer.Deserialize(item)).ToArray());
         }
     }
+
+    public class FixedSizeVectorJsonSerializer<T> : IJsonSerializer<Vector<T>>
+    {
+        private readonly IJsonSerializer<Vector<T>> serializer;
+        private readonly Vector<T> defaultValue;
+
+        public FixedSizeVectorJsonSerializer(IJsonSerializer<Vector<T>> serializer, Vector<T> defaultValue)
+        {
+            this.serializer = serializer;
+            this.defaultValue = defaultValue;
+        }
+
+        public JsonNode? Serialize(Vector<T> value)
+        {
+            return this.serializer.Serialize(SetVectorFixedSize(value, this.defaultValue));
+        }
+
+        public Vector<T> Deserialize(JsonNode? source)
+        {
+            return SetVectorFixedSize(this.serializer.Deserialize(source), this.defaultValue);
+        }
+
+        private static Vector<T> SetVectorFixedSize(Vector<T> value, Vector<T> defaultValue)
+        {
+            if (value.Count != defaultValue.Count)
+            {
+                value = Vector.Create(value.ToArray().Take(defaultValue.Count).Concat(defaultValue.Skip(value.Count)).ToArray());
+            }
+
+            return value;
+        }
+    }
 }

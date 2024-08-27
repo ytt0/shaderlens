@@ -1,4 +1,5 @@
-﻿namespace Shaderlens.Render.Project
+﻿
+namespace Shaderlens.Render.Project
 {
     public interface ISourceUniformFactory
     {
@@ -79,7 +80,7 @@
                 var minValue = GetPropertyValue(annotationReader, name, "min", Vector.Create(2, Double.MinValue));
                 var maxValue = GetPropertyValue(annotationReader, name, "max", Vector.Create(2, Double.MaxValue));
                 var stepValue = GetPropertyValue(annotationReader, name, "step", Vector.Create(2, 0.01));
-                var settingsValue = settings.GetUniformValue(this.vectorSerializer, name, defaultValue);
+                var settingsValue = GetVectorSettingsValue(settings, name, defaultValue);
 
                 annotationReader.ValidateEmpty();
                 return new Vec2Uniform(this.renderThread, name, displayName, minValue, maxValue, stepValue, settingsValue);
@@ -93,7 +94,7 @@
                     var minValue = GetPropertyValue(annotationReader, name, "min", Vector.Create(3, Double.MinValue));
                     var maxValue = GetPropertyValue(annotationReader, name, "max", Vector.Create(3, Double.MaxValue));
                     var stepValue = GetPropertyValue(annotationReader, name, "step", Vector.Create(3, 0.01));
-                    var settingsValue = settings.GetUniformValue(this.vectorSerializer, name, defaultValue);
+                    var settingsValue = GetVectorSettingsValue(settings, name, defaultValue);
 
                     annotationReader.ValidateEmpty();
                     return new Vec3Uniform(this.renderThread, name, displayName, minValue, maxValue, stepValue, settingsValue);
@@ -102,7 +103,7 @@
                 if (conversionType.ToString() == "srgb")
                 {
                     var defaultValue = String.IsNullOrEmpty(value) ? Vector.Create(3, 0.0) : ParseVector(sourceLine, name, "default", value, 3);
-                    var settingsValue = settings.GetUniformValue(this.vectorSerializer, name, defaultValue);
+                    var settingsValue = GetVectorSettingsValue(settings, name, defaultValue);
 
                     annotationReader.ValidateEmpty();
                     return new SrgbColorUniform(this.renderThread, name, displayName, settingsValue);
@@ -111,7 +112,7 @@
                 if (conversionType.ToString() == "linear-rgb")
                 {
                     var defaultValue = String.IsNullOrEmpty(value) ? Vector.Create(3, 0.0) : ParseVector(sourceLine, name, "default", value, 3);
-                    var settingsValue = settings.GetUniformValue(this.vectorSerializer, name, defaultValue);
+                    var settingsValue = GetVectorSettingsValue(settings, name, defaultValue);
 
                     annotationReader.ValidateEmpty();
                     return new LinearRgbColorUniform(this.renderThread, name, displayName, settingsValue);
@@ -124,11 +125,11 @@
             {
                 if (!annotationReader.TryGetValue("type", out var conversionType))
                 {
-                    var defaultValue = String.IsNullOrEmpty(value) ? Vector.Create(4, 0.0): ParseVector(sourceLine, name, "default", value, 4);
+                    var defaultValue = String.IsNullOrEmpty(value) ? Vector.Create(4, 0.0) : ParseVector(sourceLine, name, "default", value, 4);
                     var minValue = GetPropertyValue(annotationReader, name, "min", Vector.Create(4, Double.MinValue));
                     var maxValue = GetPropertyValue(annotationReader, name, "max", Vector.Create(4, Double.MaxValue));
                     var stepValue = GetPropertyValue(annotationReader, name, "step", Vector.Create(4, 0.01));
-                    var settingsValue = settings.GetUniformValue(this.vectorSerializer, name, defaultValue);
+                    var settingsValue = GetVectorSettingsValue(settings, name, defaultValue);
 
                     annotationReader.ValidateEmpty();
                     return new Vec4Uniform(this.renderThread, name, displayName, minValue, maxValue, stepValue, settingsValue);
@@ -136,8 +137,8 @@
 
                 if (conversionType.ToString() == "srgb")
                 {
-                    var defaultValue = String.IsNullOrEmpty(value) ? Vector.Create(4, 0.0): ParseVector(sourceLine, name, "default", value, 4);
-                    var settingsValue = settings.GetUniformValue(this.vectorSerializer, name, defaultValue);
+                    var defaultValue = String.IsNullOrEmpty(value) ? Vector.Create(4, 0.0) : ParseVector(sourceLine, name, "default", value, 4);
+                    var settingsValue = GetVectorSettingsValue(settings, name, defaultValue);
 
                     annotationReader.ValidateEmpty();
                     return new SrgbaColorUniform(this.renderThread, name, displayName, settingsValue);
@@ -145,8 +146,8 @@
 
                 if (conversionType.ToString() == "linear-rgb")
                 {
-                    var defaultValue = String.IsNullOrEmpty(value) ? Vector.Create(4, 0.0): ParseVector(sourceLine, name, "default", value, 4);
-                    var settingsValue = settings.GetUniformValue(this.vectorSerializer, name, defaultValue);
+                    var defaultValue = String.IsNullOrEmpty(value) ? Vector.Create(4, 0.0) : ParseVector(sourceLine, name, "default", value, 4);
+                    var settingsValue = GetVectorSettingsValue(settings, name, defaultValue);
 
                     annotationReader.ValidateEmpty();
                     return new LinearRgbaColorUniform(this.renderThread, name, displayName, settingsValue);
@@ -171,6 +172,11 @@
         private static double GetPropertyValue(ISourceLineAnnotationReader annotationReader, string uniformName, string propertyName, double defaultValue)
         {
             return !annotationReader.TryGetValue(propertyName, out var rawValue) ? defaultValue : ParseFloat(annotationReader.SourceLine, uniformName, propertyName, rawValue);
+        }
+
+        private ISettingsValue<Vector<double>> GetVectorSettingsValue(IProjectSettings settings, string name, Vector<double> defaultValue)
+        {
+            return settings.GetUniformValue(new FixedSizeVectorJsonSerializer<double>(this.vectorSerializer, defaultValue), name, defaultValue);
         }
 
         private static Vector<double> GetPropertyValue(ISourceLineAnnotationReader annotationReader, string uniformName, string propertyName, Vector<double> defaultValue)
