@@ -15,11 +15,16 @@
             set { this.child.HeaderWidth = value; }
         }
 
+        private readonly NumberTextBox valueTextBox;
         private readonly UniformElement child;
+        private readonly ISettingsValue<double> settingsValue;
+        private bool isValueChanging;
 
-        public FloatUniformElement(ISettingsValue<double> settingsValue, string displayName, double minValue, double maxValue, double step, double dragSensitivity, IApplicationTheme theme)
+        public FloatUniformElement(ISettingsValue<double> settingsValue, string displayName, double minValue, double maxValue, double step, double dragSensitivity, IClipboard clipboard, IApplicationTheme theme)
         {
-            var valueTextBox = new NumberTextBox(theme)
+            this.settingsValue = settingsValue;
+
+            this.valueTextBox = new NumberTextBox(theme)
             {
                 Value = settingsValue.Value,
                 MinValue = minValue,
@@ -30,32 +35,45 @@
                 HorizontalAlignment = HorizontalAlignment.Stretch
             };
 
+            this.valueTextBox.ValueChanged += (sender, e) =>
+            {
+                if (!this.isValueChanging)
+                {
+                    this.settingsValue.Value = this.valueTextBox.Value;
+                    this.child!.IsResetButtonVisible = !this.settingsValue.IsDefaultValue();
+                    RaiseEvent(new RoutedEventArgs(ValueChangedEvent));
+                }
+            };
+
             this.child = new UniformElement(theme)
             {
                 Header = displayName,
                 IsResetButtonVisible = !settingsValue.IsDefaultValue(),
-                ValueContent = valueTextBox
+                ValueContent = this.valueTextBox
             };
 
-            this.child.ResetValue += (sender, e) =>
-            {
-                settingsValue.ResetValue();
-                valueTextBox.Value = settingsValue.Value;
-                this.child.IsResetButtonVisible = false;
-                RaiseEvent(new RoutedEventArgs(ValueChangedEvent));
-            };
-
-            valueTextBox.ValueChanged += (sender, e) =>
-            {
-                settingsValue.Value = valueTextBox.Value;
-                this.child.IsResetButtonVisible = !settingsValue.IsDefaultValue();
-                RaiseEvent(new RoutedEventArgs(ValueChangedEvent));
-            };
+            UniformElementResetValueBehavior.Register(this.child, settingsValue, InvalidateValue);
+            UniformElementClipboardBehavior.Register(this.child, settingsValue, clipboard, ValueTextSerializer.Double, InvalidateValue);
         }
 
         protected override FrameworkElement GetChild()
         {
             return this.child;
+        }
+
+        private void InvalidateValue()
+        {
+            this.isValueChanging = true;
+            try
+            {
+                this.valueTextBox.Value = this.settingsValue.Value;
+                this.child.IsResetButtonVisible = !this.settingsValue.IsDefaultValue();
+                RaiseEvent(new RoutedEventArgs(ValueChangedEvent));
+            }
+            finally
+            {
+                this.isValueChanging = false;
+            }
         }
     }
 }

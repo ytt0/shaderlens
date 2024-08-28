@@ -46,6 +46,20 @@
             remove { RemoveHandler(ResetValueEvent, value); }
         }
 
+        public static readonly RoutedEvent CopyValueEvent = EventManager.RegisterRoutedEvent("CopyValue", RoutingStrategy.Direct, typeof(RoutedEventHandler), typeof(UniformElement));
+        public event RoutedEventHandler CopyValue
+        {
+            add { AddHandler(CopyValueEvent, value); }
+            remove { RemoveHandler(CopyValueEvent, value); }
+        }
+
+        public static readonly RoutedEvent PasteValueEvent = EventManager.RegisterRoutedEvent("PasteValue", RoutingStrategy.Direct, typeof(RoutedEventHandler), typeof(UniformElement));
+        public event RoutedEventHandler PasteValue
+        {
+            add { AddHandler(PasteValueEvent, value); }
+            remove { RemoveHandler(PasteValueEvent, value); }
+        }
+
         public string Header
         {
             get { return this.headerTextBlock.Text; }
@@ -107,10 +121,28 @@
 
             this.child.KeyDown += (sender, e) =>
             {
-                if (e.Key == Key.Back && this.child.IsMouseOver)
+                if (!this.child.IsMouseOver)
+                {
+                    return;
+                }
+
+                if (e.Key == Key.Back)
                 {
                     ClearTextBoxKeyboardFocus();
                     RaiseResetValueEvent();
+                    e.Handled = true;
+                }
+
+                if (e.Key == Key.C && e.KeyboardDevice.Modifiers == ModifierKeys.Control)
+                {
+                    RaiseCopyValueEvent();
+                    e.Handled = true;
+                }
+
+                if (e.Key == Key.V && e.KeyboardDevice.Modifiers == ModifierKeys.Control)
+                {
+                    RaisePasteValueEvent();
+                    e.Handled = true;
                 }
             };
         }
@@ -124,10 +156,32 @@
         {
         }
 
+        protected virtual void OnCopyValue(RoutedEventArgs e)
+        {
+        }
+
+        protected virtual void OnPasteValue(RoutedEventArgs e)
+        {
+        }
+
         private void RaiseResetValueEvent()
         {
             var resetValueEvent = new RoutedEventArgs { RoutedEvent = ResetValueEvent };
             OnResetValue(resetValueEvent);
+            RaiseEvent(resetValueEvent);
+        }
+
+        private void RaiseCopyValueEvent()
+        {
+            var resetValueEvent = new RoutedEventArgs { RoutedEvent = CopyValueEvent };
+            OnCopyValue(resetValueEvent);
+            RaiseEvent(resetValueEvent);
+        }
+
+        private void RaisePasteValueEvent()
+        {
+            var resetValueEvent = new RoutedEventArgs { RoutedEvent = PasteValueEvent };
+            OnPasteValue(resetValueEvent);
             RaiseEvent(resetValueEvent);
         }
 
@@ -138,6 +192,93 @@
                 var scope = FocusManager.GetFocusScope(textBox);
                 FocusManager.SetFocusedElement(scope, textBox.GetAncestor<FrameworkElement>());
             }
+        }
+    }
+
+    public static class UniformElementResetValueBehavior
+    {
+        private class Behavior<T> : IDisposable
+        {
+            private readonly UniformElement element;
+            private readonly ISettingsValue<T> settingsValue;
+            private readonly Action invalidateHandler;
+
+            public Behavior(UniformElement element, ISettingsValue<T> settingsValue, Action invalidateHandler)
+            {
+                this.element = element;
+                this.settingsValue = settingsValue;
+                this.invalidateHandler = invalidateHandler;
+
+                this.element.ResetValue += OnResetValue;
+            }
+
+            public void Dispose()
+            {
+                this.element.ResetValue -= OnResetValue;
+            }
+
+            private void OnResetValue(object sender, RoutedEventArgs e)
+            {
+                this.settingsValue.ResetValue();
+                this.invalidateHandler.Invoke();
+                e.Handled = true;
+            }
+        }
+
+        public static IDisposable Register<T>(UniformElement element, ISettingsValue<T> settingsValue, Action invalidateHandler)
+        {
+            return new Behavior<T>(element, settingsValue, invalidateHandler);
+        }
+    }
+
+    public static class UniformElementClipboardBehavior
+    {
+        private class Behavior<T> : IDisposable
+        {
+            private readonly UniformElement element;
+            private readonly ISettingsValue<T> settingsValue;
+            private readonly IClipboard clipboard;
+            private readonly ITextSerializer<T> textSerializer;
+            private readonly Action invalidateHandler;
+
+            public Behavior(UniformElement element, ISettingsValue<T> settingsValue, IClipboard clipboard, ITextSerializer<T> textSerializer, Action invalidateHandler)
+            {
+                this.element = element;
+                this.settingsValue = settingsValue;
+                this.clipboard = clipboard;
+                this.textSerializer = textSerializer;
+                this.invalidateHandler = invalidateHandler;
+
+                this.element.CopyValue += OnCopyValue;
+                this.element.PasteValue += OnPasteValue;
+            }
+
+            public void Dispose()
+            {
+                this.element.CopyValue -= OnCopyValue;
+                this.element.PasteValue -= OnPasteValue;
+            }
+
+            private void OnCopyValue(object sender, RoutedEventArgs e)
+            {
+                this.clipboard.SetText(this.textSerializer.Serialize(this.settingsValue.Value));
+                e.Handled = true;
+            }
+
+            private void OnPasteValue(object sender, RoutedEventArgs e)
+            {
+                if (this.clipboard.TryGetText(out var text) && this.textSerializer.TryDeserialize(text, out var value))
+                {
+                    this.settingsValue.Value = value;
+                    this.invalidateHandler();
+                    e.Handled = true;
+                }
+            }
+        }
+
+        public static IDisposable Register<T>(UniformElement element, ISettingsValue<T> settingsValue, IClipboard clipboard, ITextSerializer<T> textSerializer, Action invalidateHandler)
+        {
+            return new Behavior<T>(element, settingsValue, clipboard, textSerializer, invalidateHandler);
         }
     }
 }

@@ -207,7 +207,7 @@
         private readonly ColorView sourceColorElement;
         private readonly ColorView targetColorElement;
         private readonly Clipboard clipboard;
-
+        private readonly ColorTextSerializer colorTextSerializer;
         private bool isValueChanging;
         private OkhsvColor lastSourceColor;
         private OkhsvColor lastTargetColor;
@@ -267,6 +267,7 @@
             this.alphaTextBox.ValueChanged += AlphaTextBoxValueChanged;
 
             this.clipboard = new Clipboard();
+            this.colorTextSerializer = new ColorTextSerializer();
 
             this.Focusable = true;
             this.FocusVisualStyle = null;
@@ -499,15 +500,15 @@
         {
             if (e.Key == Key.C && Keyboard.PrimaryDevice.Modifiers == ModifierKeys.Control)
             {
-                this.clipboard.SetColor(this.Color.ToLinearRgb().ToSrgb());
+                this.clipboard.SetText(this.colorTextSerializer.Serialize(this.Color.ToLinearRgb().ToSrgb()));
                 e.Handled = true;
             }
 
             if (e.Key == Key.V && Keyboard.PrimaryDevice.Modifiers == ModifierKeys.Control)
             {
-                if (this.clipboard.TryGetColor(System.Windows.Clipboard.GetText(), out var srgbColor))
+                if (this.clipboard.TryGetText(out var text) && this.colorTextSerializer.TryDeserialize(text, out var color))
                 {
-                    this.Color = OkhsvColor.FromLinearRgb(srgbColor.ToLinearRgb());
+                    this.Color = OkhsvColor.FromLinearRgb(color.ToLinearRgb());
                 }
 
                 e.Handled = true;

@@ -144,7 +144,7 @@
 
         public void AddBoolElement(ISettingsValue<bool> settingsValue, string displayName)
         {
-            var element = new BoolUniformElement(settingsValue, displayName, this.theme);
+            var element = new BoolUniformElement(settingsValue, displayName, this.clipboard, this.theme);
             element.ValueChanged += OnUniformElementValueChanged;
 
             this.rowHeaderContainers.Add(element);
@@ -153,7 +153,7 @@
 
         public void AddFloatElement(ISettingsValue<double> settingsValue, string displayName, double minValue, double maxValue, double step)
         {
-            var element = new FloatUniformElement(settingsValue, displayName, minValue, maxValue, step, this.dragSensitivity, this.theme);
+            var element = new FloatUniformElement(settingsValue, displayName, minValue, maxValue, step, this.dragSensitivity, this.clipboard, this.theme);
             element.ValueChanged += OnUniformElementValueChanged;
 
             this.rowHeaderContainers.Add(element);
@@ -162,7 +162,7 @@
 
         public void AddVectorElement(ISettingsValue<Vector<double>> settingsValue, string displayName, Vector<double> minValue, Vector<double> maxValue, Vector<double> step)
         {
-            var element = new VectorUniformElement(settingsValue, displayName, minValue, maxValue, step, this.dragSensitivity, this.theme);
+            var element = new VectorUniformElement(settingsValue, displayName, minValue, maxValue, step, this.dragSensitivity, this.clipboard, this.theme);
             element.ValueChanged += OnUniformElementValueChanged;
 
             this.rowHeaderContainers.Add(element);

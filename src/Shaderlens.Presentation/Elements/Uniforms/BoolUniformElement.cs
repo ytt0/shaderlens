@@ -16,37 +16,43 @@
         }
 
         private readonly UniformElement child;
+        private readonly ISettingsValue<bool> settingsValue;
+        private readonly StyledCheckBox valueCheckBox;
 
-        public BoolUniformElement(ISettingsValue<bool> settingsValue, string displayName, IApplicationTheme theme)
+        public BoolUniformElement(ISettingsValue<bool> settingsValue, string displayName, IClipboard clipboard, IApplicationTheme theme)
         {
-            var valueCheckBox = new StyledCheckBox(theme) { IsChecked = settingsValue.Value, HorizontalAlignment = HorizontalAlignment.Stretch };
+            this.settingsValue = settingsValue;
+
+            this.valueCheckBox = new StyledCheckBox(theme) { IsChecked = settingsValue.Value, HorizontalAlignment = HorizontalAlignment.Stretch };
+            this.valueCheckBox.Click += (sender, e) =>
+            {
+                this.settingsValue.Value = this.valueCheckBox.IsChecked == true;
+                this.child!.IsResetButtonVisible = !this.settingsValue.IsDefaultValue();
+                RaiseEvent(new RoutedEventArgs(ValueChangedEvent));
+                e.Handled = true;
+            };
 
             this.child = new UniformElement(theme)
             {
                 Header = displayName,
                 IsResetButtonVisible = !settingsValue.IsDefaultValue(),
-                ValueContent = valueCheckBox
+                ValueContent = this.valueCheckBox
             };
 
-            this.child.ResetValue += (sender, e) =>
-            {
-                settingsValue.ResetValue();
-                valueCheckBox.IsChecked = settingsValue.Value;
-                this.child.IsResetButtonVisible = false;
-                RaiseEvent(new RoutedEventArgs(ValueChangedEvent));
-            };
-
-            valueCheckBox.Click += (sender, e) =>
-            {
-                settingsValue.Value = valueCheckBox.IsChecked == true;
-                this.child.IsResetButtonVisible = !settingsValue.DefaultValue;
-                RaiseEvent(new RoutedEventArgs(ValueChangedEvent));
-            };
+            UniformElementResetValueBehavior.Register(this.child, settingsValue, InvalidateValue);
+            UniformElementClipboardBehavior.Register(this.child, settingsValue, clipboard, ValueTextSerializer.Bool, InvalidateValue);
         }
 
         protected override FrameworkElement GetChild()
         {
             return this.child;
+        }
+
+        private void InvalidateValue()
+        {
+            this.valueCheckBox.IsChecked = this.settingsValue.Value;
+            this.child.IsResetButtonVisible = !this.settingsValue.IsDefaultValue();
+            RaiseEvent(new RoutedEventArgs(ValueChangedEvent));
         }
     }
 }

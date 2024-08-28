@@ -20,7 +20,7 @@
         private readonly ISettingsValue<Vector<double>> settingsValue;
         private bool isValueChanging;
 
-        public VectorUniformElement(ISettingsValue<Vector<double>> settingsValue, string displayName, Vector<double> minValue, Vector<double> maxValue, Vector<double> step, double dragSensitivity, IApplicationTheme theme)
+        public VectorUniformElement(ISettingsValue<Vector<double>> settingsValue, string displayName, Vector<double> minValue, Vector<double> maxValue, Vector<double> step, double dragSensitivity, IClipboard clipboard, IApplicationTheme theme)
         {
             this.settingsValue = settingsValue;
 
@@ -38,49 +38,39 @@
             this.child = new UniformElement(theme)
             {
                 Header = displayName,
-                IsResetButtonVisible = !settingsValue.IsDefaultValue()
+                IsResetButtonVisible = !settingsValue.IsDefaultValue(),
+                ValueContent = new ColumnPanel().WithChildren(this.valuesTextBox)
             };
 
-            this.child.ResetValue += (sender, e) =>
-            {
-                this.isValueChanging = true;
-                try
-                {
-                    settingsValue.ResetValue();
-
-                    for (var i = 0; i < this.valuesTextBox.Length; i++)
-                    {
-                        this.valuesTextBox[i].Value = this.settingsValue.Value[i];
-                    }
-
-                    this.child.IsResetButtonVisible = false;
-                    RaiseEvent(new RoutedEventArgs(ValueChangedEvent));
-                }
-                finally
-                {
-                    this.isValueChanging = false;
-                }
-            };
+            UniformElementResetValueBehavior.Register(this.child, settingsValue, InvalidateValue);
+            UniformElementClipboardBehavior.Register(this.child, settingsValue, clipboard, FixedSizeVectorTextSerializer.Create(VectorTextSerializer.Create(ValueTextSerializer.Double), this.settingsValue.Value.Count), InvalidateValue);
         }
 
-        protected override void OnInitialized(EventArgs e)
+        protected override FrameworkElement GetChild()
         {
-            base.OnInitialized(e);
-
-            this.child.ValueContent = new ColumnPanel().WithChildren(this.valuesTextBox);
+            return this.child;
         }
 
         private void OnValueChanged(object sender, RoutedEventArgs e)
         {
-            if (this.isValueChanging)
+            if (!this.isValueChanging)
             {
-                return;
+                this.settingsValue.Value = Vector.Create(this.valuesTextBox.Select(textBox => textBox.Value).ToArray());
+                this.child.IsResetButtonVisible = !this.settingsValue.IsDefaultValue();
+                RaiseEvent(new RoutedEventArgs(ValueChangedEvent));
             }
+        }
 
+        private void InvalidateValue()
+        {
             this.isValueChanging = true;
             try
             {
-                this.settingsValue.Value = Vector.Create(this.valuesTextBox.Select(textBox => textBox.Value).ToArray());
+                for (var i = 0; i < this.valuesTextBox.Length; i++)
+                {
+                    this.valuesTextBox[i].Value = this.settingsValue.Value[i];
+                }
+
                 this.child.IsResetButtonVisible = !this.settingsValue.IsDefaultValue();
                 RaiseEvent(new RoutedEventArgs(ValueChangedEvent));
             }
@@ -89,12 +79,5 @@
                 this.isValueChanging = false;
             }
         }
-
-        protected override FrameworkElement GetChild()
-        {
-            return this.child;
-        }
     }
-
-
 }
