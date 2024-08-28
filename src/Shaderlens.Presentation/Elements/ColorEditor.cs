@@ -16,11 +16,11 @@
                 this.color = value;
                 this.ColorChanged?.Invoke(this, EventArgs.Empty);
 
-                if (!this.isValueChanging)
+                if (!this.skipChangeEvent)
                 {
                     try
                     {
-                        this.isValueChanging = true;
+                        this.skipChangeEvent = true;
 
                         this.colorPicker.Color = value;
                         SetTextBoxValues(value);
@@ -29,7 +29,7 @@
                     }
                     finally
                     {
-                        this.isValueChanging = false;
+                        this.skipChangeEvent = false;
                     }
                 }
             }
@@ -45,18 +45,18 @@
                 this.alpha = value;
                 this.AlphaChanged?.Invoke(this, EventArgs.Empty);
 
-                if (!this.isValueChanging)
+                if (!this.skipChangeEvent)
                 {
                     try
                     {
-                        this.isValueChanging = true;
+                        this.skipChangeEvent = true;
                         this.alphaTextBox.Value = value;
                         SetAlphaTextBoxProgressBrush();
                         SetTargetColorElement();
                     }
                     finally
                     {
-                        this.isValueChanging = false;
+                        this.skipChangeEvent = false;
                     }
                 }
             }
@@ -208,7 +208,7 @@
         private readonly ColorView targetColorElement;
         private readonly Clipboard clipboard;
         private readonly ColorTextSerializer colorTextSerializer;
-        private bool isValueChanging;
+        private bool skipChangeEvent;
         private OkhsvColor lastSourceColor;
         private OkhsvColor lastTargetColor;
         private double lastSourceAlpha;
@@ -301,26 +301,26 @@
 
             try
             {
-                this.isValueChanging = true;
+                this.skipChangeEvent = true;
                 SetTextBoxValues(this.Color);
                 SetColorTextBoxProgressBrush(this.Color);
             }
             finally
             {
-                this.isValueChanging = false;
+                this.skipChangeEvent = false;
             }
         }
 
         private void ColorPickerColorChanged(object? sender, EventArgs e)
         {
-            if (this.isValueChanging)
+            if (this.skipChangeEvent)
             {
                 return;
             }
 
             try
             {
-                this.isValueChanging = true;
+                this.skipChangeEvent = true;
 
                 var hsv = this.colorPicker.Color.Clamp();
 
@@ -331,20 +331,20 @@
             }
             finally
             {
-                this.isValueChanging = false;
+                this.skipChangeEvent = false;
             }
         }
 
         private void ColorTextBoxValueChanged(object? sender, EventArgs e)
         {
-            if (this.isValueChanging)
+            if (this.skipChangeEvent)
             {
                 return;
             }
 
             try
             {
-                this.isValueChanging = true;
+                this.skipChangeEvent = true;
 
                 var hsv = GetTextBoxValues();
 
@@ -356,20 +356,20 @@
             }
             finally
             {
-                this.isValueChanging = false;
+                this.skipChangeEvent = false;
             }
         }
 
         private void AlphaTextBoxValueChanged(object? sender, EventArgs e)
         {
-            if (this.isValueChanging)
+            if (this.skipChangeEvent)
             {
                 return;
             }
 
             try
             {
-                this.isValueChanging = true;
+                this.skipChangeEvent = true;
 
                 this.Alpha = this.alphaTextBox.Value;
 
@@ -378,7 +378,7 @@
             }
             finally
             {
-                this.isValueChanging = false;
+                this.skipChangeEvent = false;
             }
         }
 

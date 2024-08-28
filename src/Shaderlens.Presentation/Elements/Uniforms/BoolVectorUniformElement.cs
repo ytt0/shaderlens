@@ -18,7 +18,6 @@
         private readonly UniformElement child;
         private readonly StyledCheckBox[] valuesCheckBox;
         private readonly ISettingsValue<Vector<bool>> settingsValue;
-        private bool isValueChanging;
 
         public BoolVectorUniformElement(ISettingsValue<Vector<bool>> settingsValue, string displayName, IClipboard clipboard, IApplicationTheme theme)
         {
@@ -48,31 +47,20 @@
 
         private void OnClick(object sender, RoutedEventArgs e)
         {
-            if (!this.isValueChanging)
-            {
-                this.settingsValue.Value = Vector.Create(this.valuesCheckBox.Select(checkBox => checkBox.IsChecked == true).ToArray());
-                this.child.IsResetButtonVisible = !this.settingsValue.IsDefaultValue();
-                RaiseEvent(new RoutedEventArgs(ValueChangedEvent));
-            }
+            this.settingsValue.Value = Vector.Create(this.valuesCheckBox.Select(checkBox => checkBox.IsChecked == true).ToArray());
+            this.child.IsResetButtonVisible = !this.settingsValue.IsDefaultValue();
+            RaiseEvent(new RoutedEventArgs(ValueChangedEvent));
         }
 
         private void InvalidateValue()
         {
-            this.isValueChanging = true;
-            try
+            for (var i = 0; i < this.valuesCheckBox.Length; i++)
             {
-                for (var i = 0; i < this.valuesCheckBox.Length; i++)
-                {
-                    this.valuesCheckBox[i].IsChecked = this.settingsValue.Value[i];
-                }
+                this.valuesCheckBox[i].IsChecked = this.settingsValue.Value[i];
+            }
 
-                this.child.IsResetButtonVisible = !this.settingsValue.IsDefaultValue();
-                RaiseEvent(new RoutedEventArgs(ValueChangedEvent));
-            }
-            finally
-            {
-                this.isValueChanging = false;
-            }
+            this.child.IsResetButtonVisible = !this.settingsValue.IsDefaultValue();
+            RaiseEvent(new RoutedEventArgs(ValueChangedEvent));
         }
     }
 }

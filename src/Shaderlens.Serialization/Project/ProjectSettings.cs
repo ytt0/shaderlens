@@ -3,7 +3,7 @@
     public interface IProjectSettings
     {
         ISettingsValue<string?> SaveFramePath { get; }
-        ISettingsValue<string?> EditedColor { get; }
+        ISettingsValue<string?> UniformDockName { get; }
         ISettingsValue<int> UniformScroll { get; }
         ISettingsValue<int> UniformDockHeight { get; }
         ISettingsValue<double> UniformColumnRatio { get; }
@@ -22,7 +22,7 @@
     public class ProjectSettings : IProjectSettings
     {
         public ISettingsValue<string?> SaveFramePath { get; }
-        public ISettingsValue<string?> EditedColor { get; }
+        public ISettingsValue<string?> UniformDockName { get; }
         public ISettingsValue<int> UniformScroll { get; }
         public ISettingsValue<int> UniformDockHeight { get; }
         public ISettingsValue<double> UniformColumnRatio { get; }
@@ -85,7 +85,7 @@
             this.renderSequenceSettingsSerializer = new RenderSequenceSettingsSerializer(RenderSequenceSettings.Default);
 
             this.SaveFramePath = AddValue(this.viewJsonSettingsFile.Content, this.stringSerializer, nameof(this.SaveFramePath), null!, previousProjectSettings?.SaveFramePath);
-            this.EditedColor = AddValue(this.viewJsonSettingsFile.Content, this.stringSerializer, nameof(this.EditedColor), null!, previousProjectSettings?.EditedColor);
+            this.UniformDockName = AddValue(this.viewJsonSettingsFile.Content, this.stringSerializer, nameof(this.UniformDockName), null!, previousProjectSettings?.UniformDockName);
             this.UniformScroll = AddValue(this.viewJsonSettingsFile.Content, this.intSerializer, nameof(this.UniformScroll), 0, previousProjectSettings?.UniformScroll);
             this.UniformDockHeight = AddValue(this.viewJsonSettingsFile.Content, this.intSerializer, nameof(this.UniformDockHeight), 200, previousProjectSettings?.UniformDockHeight);
             this.UniformColumnRatio = AddValue(this.viewJsonSettingsFile.Content, this.doubleSerializer, nameof(this.UniformColumnRatio), 0.4, previousProjectSettings?.UniformColumnRatio);

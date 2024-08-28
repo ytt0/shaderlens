@@ -57,17 +57,19 @@
         private readonly IClipboard clipboard;
         private readonly double dragSensitivity;
         private readonly DockContainer dockContainer;
+        private readonly Grid dockContainerPanel;
         private readonly Panel uniformsPanel;
         private readonly ColumnSplitContainer columnSplit;
-        private readonly ColorEditor colorEditor;
         private readonly DockPanel dockPanel;
         private readonly List<FrameworkElement> headerElements;
         private readonly List<IRowHeaderContainer> rowHeaderContainers;
-        private Panel target;
-        private bool isValueChanging;
-        private ISettingsValue<SrgbColor>? editedSettingsValue;
-        private ColorUniformElement? editedColorUniformElement;
         private readonly StyledScrollViewer scrollViewer;
+
+        private Panel targetPanel;
+
+        private ColorUniformElement? colorUniformElement;
+        private ColorDockUniformElement? colorDockUniformElement;
+        private ISettingsValue<SrgbColor>? colorSettingsValue;
 
         public UniformsViewBuilder(IApplication application, IProjectSettings projectSettings, IApplicationTheme theme, Transform scrollBarTransform, IClipboard clipboard, double dragSensitivity)
         {
@@ -76,17 +78,19 @@
             this.theme = theme;
             this.clipboard = clipboard;
             this.dragSensitivity = dragSensitivity;
+            this.dockContainerPanel = new Grid();
             this.dockContainer = new DockContainer(theme)
             {
                 Visibility = Visibility.Collapsed,
                 Height = this.projectSettings.UniformDockHeight.Value,
+                Child = this.dockContainerPanel,
             }.
             WithValue(DockPanel.DockProperty, Dock.Bottom).
             WithValue(Panel.ZIndexProperty, 1);
 
             this.dockContainer.Closed += (sender, e) =>
             {
-                this.projectSettings.EditedColor.Value = null;
+                this.projectSettings.UniformDockName.Value = null;
             };
 
             this.dockContainer.SizeChanged += (sender, e) =>
@@ -104,11 +108,6 @@
                 this.projectSettings.UniformColumnRatio.Value = this.columnSplit.Ratio;
                 SetColumnSize();
             };
-
-            this.colorEditor = new ColorEditor(this.theme) { DragSensitivity = this.dragSensitivity };
-
-            this.colorEditor.ColorChanged += (sender, e) => OnColorEdited();
-            this.colorEditor.AlphaChanged += (sender, e) => OnColorEdited();
 
             this.scrollViewer = new StyledScrollViewer(theme.ScrollBar)
             {
@@ -128,18 +127,18 @@
 
             this.headerElements = new List<FrameworkElement>();
             this.rowHeaderContainers = new List<IRowHeaderContainer>();
-            this.target = this.uniformsPanel;
+            this.targetPanel = this.uniformsPanel;
         }
 
         public IDisposable AddGroup(ISettingsValue<bool> expandedSettingsValue, string displayName)
         {
             var groupElement = new UniformGroupElement(expandedSettingsValue, displayName, this.theme);
-            this.target.Children.Add(groupElement);
+            this.targetPanel.Children.Add(groupElement);
 
-            var previousTarget = this.target;
-            this.target = groupElement.Content;
+            var previousTargetPanel = this.targetPanel;
+            this.targetPanel = groupElement.Content;
 
-            return new DisposableAction(() => this.target = previousTarget);
+            return new DisposableAction(() => this.targetPanel = previousTargetPanel);
         }
 
         public void AddBoolElement(ISettingsValue<bool> settingsValue, string displayName)
@@ -148,7 +147,7 @@
             element.ValueChanged += OnUniformElementValueChanged;
 
             this.rowHeaderContainers.Add(element);
-            this.target.Children.Add(element);
+            this.targetPanel.Children.Add(element);
         }
 
         public void AddFloatElement(ISettingsValue<double> settingsValue, string displayName, double minValue, double maxValue, double step)
@@ -157,7 +156,7 @@
             element.ValueChanged += OnUniformElementValueChanged;
 
             this.rowHeaderContainers.Add(element);
-            this.target.Children.Add(element);
+            this.targetPanel.Children.Add(element);
         }
 
         public void AddVectorElement(ISettingsValue<Vector<bool>> settingsValue, string displayName)
@@ -166,7 +165,7 @@
             element.ValueChanged += OnUniformElementValueChanged;
 
             this.rowHeaderContainers.Add(element);
-            this.target.Children.Add(element);
+            this.targetPanel.Children.Add(element);
         }
 
         public void AddVectorElement(ISettingsValue<Vector<double>> settingsValue, string displayName, Vector<double> minValue, Vector<double> maxValue, Vector<double> step)
@@ -175,7 +174,7 @@
             element.ValueChanged += OnUniformElementValueChanged;
 
             this.rowHeaderContainers.Add(element);
-            this.target.Children.Add(element);
+            this.targetPanel.Children.Add(element);
         }
 
         public void AddColorElement(ISettingsValue<SrgbColor> settingsValue, bool editAlpha, string name, string displayName)
@@ -183,34 +182,27 @@
             var element = new ColorUniformElement(settingsValue, displayName, this.theme);
             element.ValueChanged += (sender, e) =>
             {
-                if (this.editedSettingsValue == settingsValue && !this.isValueChanging)
+                if (this.colorDockUniformElement != null && this.colorSettingsValue == settingsValue)
                 {
-                    this.isValueChanging = true;
-                    try
-                    {
-                        this.colorEditor.Color = OkhsvColor.FromLinearRgb(settingsValue.Value.ToLinearRgb());
-                        ClearTextBoxKeyboardFocus();
-                        this.application.SetProjectChanged();
-                    }
-                    finally
-                    {
-                        this.isValueChanging = false;
-                    }
+                    this.colorDockUniformElement.InvalidateValue();
                 }
+
+                ClearTextBoxKeyboardFocus();
+                this.application.SetProjectChanged();
             };
 
             element.Click += (sender, e) =>
             {
-                ToggleColorEdit(settingsValue, editAlpha, element);
+                ToggleDockElement(settingsValue, editAlpha, element);
                 e.Handled = true;
             };
 
             this.rowHeaderContainers.Add(element);
-            this.target.Children.Add(element);
+            this.targetPanel.Children.Add(element);
 
-            if (this.projectSettings.EditedColor.Value == name)
+            if (this.projectSettings.UniformDockName.Value == name)
             {
-                ToggleColorEdit(settingsValue, editAlpha, element);
+                ToggleDockElement(settingsValue, editAlpha, element);
             }
         }
 
@@ -225,68 +217,9 @@
             this.application.SetProjectChanged();
         }
 
-        private void OnColorEdited()
-        {
-            if (!this.isValueChanging && this.editedSettingsValue != null && this.editedColorUniformElement != null)
-            {
-                this.isValueChanging = true;
-                try
-                {
-                    var color = this.colorEditor.Color.ToLinearRgb().Round(0.001).ToSrgb();
-                    color.A = this.colorEditor.Alpha;
-
-                    this.editedSettingsValue.Value = color;
-                    this.editedColorUniformElement.InvalidateValue();
-                    this.application.SetProjectChanged();
-                }
-                finally
-                {
-                    this.isValueChanging = false;
-                }
-            }
-        }
-
-        private void ToggleColorEdit(ISettingsValue<SrgbColor> settingsValue, bool editAlpha, ColorUniformElement colorUniformElement)
-        {
-            if (this.editedSettingsValue == settingsValue && this.dockContainer.Visibility == Visibility.Visible)
-            {
-                this.editedSettingsValue = null;
-                this.dockContainer.Visibility = Visibility.Collapsed;
-                this.projectSettings.EditedColor.Value = null;
-                return;
-            }
-
-            this.isValueChanging = true;
-            try
-            {
-                var hsv = OkhsvColor.FromLinearRgb(settingsValue.Value.ToLinearRgb());
-                var alpha = settingsValue.Value.A;
-
-                this.editedSettingsValue = settingsValue;
-                this.editedColorUniformElement = colorUniformElement;
-                this.colorEditor.Color = hsv;
-                this.colorEditor.SourceColor = hsv;
-                this.colorEditor.Alpha = alpha;
-                this.colorEditor.SourceAlpha = alpha;
-                this.colorEditor.IsAlphaVisible = editAlpha;
-                this.colorEditor.ResetLastColors();
-
-                this.dockContainer.Child = this.colorEditor;
-                this.dockContainer.Visibility = Visibility.Visible;
-
-                this.projectSettings.EditedColor.Value = settingsValue.Name;
-
-                colorUniformElement.BringIntoView();
-            }
-            finally
-            {
-                this.isValueChanging = false;
-            }
-        }
-
         private void SetColumnSize()
         {
-            var width = this.target.ActualWidth * this.columnSplit.Ratio;
+            var width = this.targetPanel.ActualWidth * this.columnSplit.Ratio;
             foreach (var header in this.headerElements)
             {
                 header.Width = width;
@@ -304,6 +237,53 @@
             {
                 var scope = FocusManager.GetFocusScope(textBox);
                 FocusManager.SetFocusedElement(scope, textBox.GetAncestor<FrameworkElement>());
+            }
+        }
+
+        public void ToggleDockElement(ISettingsValue<SrgbColor> settingsValue, bool editAlpha, ColorUniformElement element)
+        {
+            if (this.colorSettingsValue == settingsValue && this.dockContainer.Visibility != Visibility.Collapsed)
+            {
+                this.dockContainer.Visibility = Visibility.Collapsed;
+                this.projectSettings.UniformDockName.Value = null;
+                return;
+            }
+
+            this.colorSettingsValue = settingsValue;
+
+            if (this.colorDockUniformElement == null)
+            {
+                this.colorDockUniformElement = CreateColorDockUniformElement();
+                this.dockContainerPanel.Children.Add(this.colorDockUniformElement);
+            }
+
+            this.colorUniformElement = element;
+            this.colorUniformElement.BringIntoView();
+            this.colorDockUniformElement.SetValue(settingsValue, editAlpha);
+            this.projectSettings.UniformDockName.Value = settingsValue.Name;
+
+            SetDockElementsVisibility(this.colorDockUniformElement);
+            this.dockContainer.Visibility = Visibility.Visible;
+        }
+
+        private ColorDockUniformElement CreateColorDockUniformElement()
+        {
+            return new ColorDockUniformElement(this.theme, this.dragSensitivity).WithHandler(ColorDockUniformElement.ValueChangedEvent, (sender, e) =>
+            {
+                if (this.colorUniformElement != null)
+                {
+                    this.colorUniformElement.BringIntoView();
+                    this.colorUniformElement.InvalidateValue();
+                    this.application.SetProjectChanged();
+                }
+            });
+        }
+
+        private void SetDockElementsVisibility(FrameworkElement visibleElement)
+        {
+            foreach (var child in this.dockContainerPanel.Children.OfType<FrameworkElement>())
+            {
+                child.Visibility = child == visibleElement ? Visibility.Visible : Visibility.Collapsed;
             }
         }
     }

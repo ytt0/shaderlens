@@ -18,7 +18,7 @@
         private readonly UniformElement child;
         private readonly NumberTextBox[] valuesTextBox;
         private readonly ISettingsValue<Vector<double>> settingsValue;
-        private bool isValueChanging;
+        private bool skipChangeEvent;
 
         public VectorUniformElement(ISettingsValue<Vector<double>> settingsValue, string displayName, Vector<double> minValue, Vector<double> maxValue, Vector<double> step, double dragSensitivity, IClipboard clipboard, IApplicationTheme theme)
         {
@@ -53,7 +53,7 @@
 
         private void OnValueChanged(object sender, RoutedEventArgs e)
         {
-            if (!this.isValueChanging)
+            if (!this.skipChangeEvent)
             {
                 this.settingsValue.Value = Vector.Create(this.valuesTextBox.Select(textBox => textBox.Value).ToArray());
                 this.child.IsResetButtonVisible = !this.settingsValue.IsDefaultValue();
@@ -63,7 +63,7 @@
 
         private void InvalidateValue()
         {
-            this.isValueChanging = true;
+            this.skipChangeEvent = true;
             try
             {
                 for (var i = 0; i < this.valuesTextBox.Length; i++)
@@ -76,7 +76,7 @@
             }
             finally
             {
-                this.isValueChanging = false;
+                this.skipChangeEvent = false;
             }
         }
     }

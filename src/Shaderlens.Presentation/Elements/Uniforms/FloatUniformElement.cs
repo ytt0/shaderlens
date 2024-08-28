@@ -18,7 +18,7 @@
         private readonly NumberTextBox valueTextBox;
         private readonly UniformElement child;
         private readonly ISettingsValue<double> settingsValue;
-        private bool isValueChanging;
+        private bool skipChangeEvent;
 
         public FloatUniformElement(ISettingsValue<double> settingsValue, string displayName, double minValue, double maxValue, double step, double dragSensitivity, IClipboard clipboard, IApplicationTheme theme)
         {
@@ -37,7 +37,7 @@
 
             this.valueTextBox.ValueChanged += (sender, e) =>
             {
-                if (!this.isValueChanging)
+                if (!this.skipChangeEvent)
                 {
                     this.settingsValue.Value = this.valueTextBox.Value;
                     this.child!.IsResetButtonVisible = !this.settingsValue.IsDefaultValue();
@@ -63,7 +63,7 @@
 
         private void InvalidateValue()
         {
-            this.isValueChanging = true;
+            this.skipChangeEvent = true;
             try
             {
                 this.valueTextBox.Value = this.settingsValue.Value;
@@ -72,7 +72,7 @@
             }
             finally
             {
-                this.isValueChanging = false;
+                this.skipChangeEvent = false;
             }
         }
     }
