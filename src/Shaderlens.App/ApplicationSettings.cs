@@ -37,6 +37,8 @@
         int FrameSaveFileDialogFilterIndex { get; set; }
 
         IEnumerable<ICopyFormatter> CopyFormatters { get; }
+        ViewerPassSelection DefaultViewerPass { get; }
+
         double ScaleFactor { get; }
         double ScaleDragFactor { get; }
         double ScaleSpeedFactor { get; }
@@ -52,8 +54,6 @@
 
         string ProjectTemplatesPath { get; }
         double TextBoxDragSensitivity { get; }
-
-        ViewerPassSelection DefaultViewerPass { get; }
         double CursorVisibilityTimeoutSeconds { get; }
 
         bool ConfirmSaveOnClose { get; }
@@ -111,6 +111,7 @@
         public int FrameSaveFileDialogFilterIndex { get; set; } = 2;
 
         public IEnumerable<ICopyFormatter> CopyFormatters { get; } = DefaultCopyFormatters;
+        public ViewerPassSelection DefaultViewerPass { get; } = ViewerPassSelection.ValuesOverlay;
 
         public double ScaleFactor { get; } = 1.1;
         public double ScaleDragFactor { get; } = 1.0;
@@ -127,13 +128,10 @@
 
         public string ProjectTemplatesPath { get; } = "Resources\\Templates";
         public double TextBoxDragSensitivity { get; } = 1.0;
-
         public double CursorVisibilityTimeoutSeconds { get; } = 2.0;
 
         public bool ConfirmSaveOnClose { get; } = true;
         public bool ShowStartPage { get; } = true;
-
-        public ViewerPassSelection DefaultViewerPass { get; } = ViewerPassSelection.ValuesOverlay;
 
         private readonly IJsonSettingsFile settingsFile;
         private readonly PointJsonSerializer pointSerializer;
@@ -193,6 +191,8 @@
             this.FrameSaveFileDialogFilterIndex = settings.GetOrSetDefault(this.intSerializer, nameof(this.FrameSaveFileDialogFilterIndex), this.FrameSaveFileDialogFilterIndex);
 
             this.CopyFormatters = settings.GetOrSetDefault(this.formattersSerializer, nameof(this.CopyFormatters), DefaultCopyFormatters.ToArray());
+            this.DefaultViewerPass = settings.GetOrSetDefault(this.viewerPassSelectionSerializer, nameof(this.DefaultViewerPass), this.DefaultViewerPass) ?? ViewerPassSelection.ValuesOverlay;
+
             this.ScaleFactor = settings.GetOrSetDefault(this.doubleSerializer, nameof(this.ScaleFactor), this.ScaleFactor);
             this.ScaleDragFactor = settings.GetOrSetDefault(this.doubleSerializer, nameof(this.ScaleDragFactor), this.ScaleDragFactor);
             this.ScaleSpeedFactor = settings.GetOrSetDefault(this.doubleSerializer, nameof(this.ScaleSpeedFactor), this.ScaleSpeedFactor);
@@ -208,13 +208,10 @@
 
             this.ProjectTemplatesPath = settings.GetOrSetDefault(this.stringSerializer, nameof(this.ProjectTemplatesPath), this.ProjectTemplatesPath);
             this.TextBoxDragSensitivity = settings.GetOrSetDefault(this.doubleSerializer, nameof(this.TextBoxDragSensitivity), this.TextBoxDragSensitivity);
-
             this.CursorVisibilityTimeoutSeconds = settings.GetOrSetDefault(this.doubleSerializer, nameof(this.CursorVisibilityTimeoutSeconds), this.CursorVisibilityTimeoutSeconds);
 
             this.ConfirmSaveOnClose = settings.GetOrSetDefault(this.boolSerializer, nameof(this.ConfirmSaveOnClose), this.ConfirmSaveOnClose);
             this.ShowStartPage = settings.GetOrSetDefault(this.boolSerializer, nameof(this.ShowStartPage), this.ShowStartPage);
-
-            this.DefaultViewerPass = settings.GetOrSetDefault(this.viewerPassSelectionSerializer, nameof(this.DefaultViewerPass), this.DefaultViewerPass) ?? ViewerPassSelection.ValuesOverlay;
         }
 
         public void Save()

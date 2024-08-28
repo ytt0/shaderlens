@@ -2,6 +2,7 @@
 {
     public interface IWindowContainer
     {
+        Transform Transform { get; }
         Transform InverseTransform { get; }
 
         void Show();
@@ -22,6 +23,7 @@
 
     public class WindowContainer : IWindowContainer
     {
+        public Transform Transform { get { return this.scaleBehavior.Transform; } }
         public Transform InverseTransform { get { return this.scaleBehavior.InverseTransform; } }
 
         private readonly Window window;

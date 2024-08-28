@@ -70,6 +70,7 @@
                     this.menu = new StyledContextMenu(this.theme)
                     {
                         Resources = this.viewportView.window.Resources,
+                        LayoutTransform = this.viewportView.scaleBehavior.Transform,
                         Visibility = Visibility.Hidden
                     };
 

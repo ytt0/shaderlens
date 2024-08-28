@@ -312,7 +312,7 @@ namespace Shaderlens.Views
                 new StyledButton(this.theme) { Content = "Open...", Margin = Spacing }.WithHandler(ButtonBase.ClickEvent, OnOpenButtonClicked)
             );
 
-            this.contextMenu = new StyledContextMenu(this.theme.Menu);
+            this.contextMenu = new StyledContextMenu(this.theme.Menu) { LayoutTransform = this.windowContainer.Transform };
 
             this.theme.SetResources(this.contextMenu.Resources);
             MenuPreserveSelectionBehavior.Register(this.contextMenu);

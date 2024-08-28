@@ -18,7 +18,6 @@
             target.HasDropShadow = false;
             target.SetReference(Control.BackgroundProperty, this.theme.Background);
             target.SetReference(Control.ForegroundProperty, this.theme.Foreground);
-            target.SetReference(FrameworkElement.LayoutTransformProperty, this.theme.Scale);
 
             this.contentStyle.Apply(target);
         }
