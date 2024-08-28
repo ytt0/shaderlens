@@ -1,30 +1,25 @@
 ﻿namespace Shaderlens.Serialization.Json
 {
-    public class VectorJsonSerializer : IJsonSerializer<Vector<double>>
+    public class VectorJsonSerializer<T> : IJsonSerializer<Vector<T>>
     {
-        private readonly IJsonSerializer<double> serializer;
+        private readonly IJsonSerializer<T> serializer;
 
         public VectorJsonSerializer() :
-            this(new ValueJsonSerializer<double>())
+            this(new ValueJsonSerializer<T>())
         {
         }
 
-        public VectorJsonSerializer(int digits) :
-            this(new DoubleJsonSerializer(digits))
-        {
-        }
-
-        public VectorJsonSerializer(IJsonSerializer<double> serializer)
+        public VectorJsonSerializer(IJsonSerializer<T> serializer)
         {
             this.serializer = serializer;
         }
 
-        public JsonNode? Serialize(Vector<double> value)
+        public JsonNode? Serialize(Vector<T> value)
         {
             return new JsonArray(value.Select(this.serializer.Serialize).ToArray());
         }
 
-        public Vector<double> Deserialize(JsonNode? source)
+        public Vector<T> Deserialize(JsonNode? source)
         {
             if (source == null)
             {
@@ -38,6 +33,14 @@
 
             return Vector.Create(source.AsArray().OfType<JsonNode>().Select(item => this.serializer.Deserialize(item)).ToArray());
         }
+    }
+
+    public static class VectorJsonSerializer
+    {
+        public static readonly VectorJsonSerializer<bool> Bool = new VectorJsonSerializer<bool>();
+        public static readonly VectorJsonSerializer<double> Double = new VectorJsonSerializer<double>();
+        public static readonly VectorJsonSerializer<int> Int = new VectorJsonSerializer<int>();
+        public static readonly VectorJsonSerializer<uint> UInt = new VectorJsonSerializer<uint>();
     }
 
     public class FixedSizeVectorJsonSerializer<T> : IJsonSerializer<Vector<T>>

@@ -1,4 +1,6 @@
 ﻿
+using Shaderlens.Serialization.Glsl;
+
 namespace Shaderlens.Render.Project
 {
     public interface ISourceUniformFactory
@@ -10,20 +12,13 @@ namespace Shaderlens.Render.Project
 
     public partial class SourceUniformFactory : ISourceUniformFactory
     {
-        private readonly ValueJsonSerializer<bool> boolSerializer;
-        private readonly ValueJsonSerializer<int> intSerializer;
-        private readonly ValueJsonSerializer<double> doubleSerializer;
-        private readonly VectorJsonSerializer vectorSerializer;
         private readonly DisplayNameFormatter displayNameFormatter;
         private readonly IDispatcherThread renderThread;
 
         public SourceUniformFactory(IDispatcherThread renderThread)
         {
-            this.boolSerializer = new ValueJsonSerializer<bool>();
-            this.intSerializer = new ValueJsonSerializer<int>();
-            this.doubleSerializer = new ValueJsonSerializer<double>();
-            this.vectorSerializer = new VectorJsonSerializer();
             this.displayNameFormatter = new DisplayNameFormatter();
+
             this.renderThread = renderThread;
         }
 
@@ -41,10 +36,60 @@ namespace Shaderlens.Render.Project
         {
             var displayName = GetDisplayName(name, annotationReader);
 
+            if (annotationReader.TryGetValue("type", out var conversionType))
+            {
+                if (type == "vec3")
+                {
+                    if (conversionType.ToString() == "srgb")
+                    {
+                        var defaultValue = String.IsNullOrEmpty(value) ? Vector.Create(3, 0.0) : ParseValue(VectorGlslValueParser.Vec3, sourceLine, name, "default", value);
+                        var settingsValue = GetVectorSettingsValue(settings, VectorJsonSerializer.Double, name, defaultValue);
+
+                        annotationReader.ValidateEmpty();
+                        return new SrgbColorUniform(this.renderThread, name, displayName, settingsValue);
+                    }
+
+                    if (conversionType.ToString() == "linear-rgb")
+                    {
+                        var defaultValue = String.IsNullOrEmpty(value) ? Vector.Create(3, 0.0) : ParseValue(VectorGlslValueParser.Vec3, sourceLine, name, "default", value);
+                        var settingsValue = GetVectorSettingsValue(settings, VectorJsonSerializer.Double, name, defaultValue);
+
+                        annotationReader.ValidateEmpty();
+                        return new LinearRgbColorUniform(this.renderThread, name, displayName, settingsValue);
+                    }
+
+                    throw new SourceLineException($"Unexpected vec3 uniform conversion type \"{conversionType}\", supported types are \"srgb\", \"linear-rgb\"", annotationReader.SourceLine);
+                }
+
+                if (type == "vec4")
+                {
+                    if (conversionType.ToString() == "srgb")
+                    {
+                        var defaultValue = String.IsNullOrEmpty(value) ? Vector.Create(4, 0.0) : ParseValue(VectorGlslValueParser.Vec4, sourceLine, name, "default", value);
+                        var settingsValue = GetVectorSettingsValue(settings, VectorJsonSerializer.Double, name, defaultValue);
+
+                        annotationReader.ValidateEmpty();
+                        return new SrgbaColorUniform(this.renderThread, name, displayName, settingsValue);
+                    }
+
+                    if (conversionType.ToString() == "linear-rgb")
+                    {
+                        var defaultValue = String.IsNullOrEmpty(value) ? Vector.Create(4, 0.0) : ParseValue(VectorGlslValueParser.Vec4, sourceLine, name, "default", value);
+                        var settingsValue = GetVectorSettingsValue(settings, VectorJsonSerializer.Double, name, defaultValue);
+
+                        annotationReader.ValidateEmpty();
+                        return new LinearRgbaColorUniform(this.renderThread, name, displayName, settingsValue);
+                    }
+
+                    throw new SourceLineException($"Unexpected vec4 uniform conversion type \"{conversionType}\", supported types are \"srgb\", \"linear-rgb\"", annotationReader.SourceLine);
+                }
+            }
+
             if (type == "bool")
             {
-                var defaultValue = !String.IsNullOrEmpty(value) && ParseBool(sourceLine, name, "default", value);
-                var settingsValue = settings.GetUniformValue(this.boolSerializer, name, defaultValue);
+                var parser = GlslValueParser.Bool;
+                var defaultValue = !String.IsNullOrEmpty(value) && ParseValue(parser, sourceLine, name, "default", value);
+                var settingsValue = settings.GetUniformValue(ValueJsonSerializer.Bool, name, defaultValue);
 
                 annotationReader.ValidateEmpty();
                 return new BoolUniform(this.renderThread, name, displayName, settingsValue);
@@ -52,11 +97,8 @@ namespace Shaderlens.Render.Project
 
             if (type == "int")
             {
-                var defaultValue = String.IsNullOrEmpty(value) ? 0 : ParseInt(sourceLine, name, "default", value);
-                var minValue = GetPropertyValue(annotationReader, name, "min", Int32.MinValue);
-                var maxValue = GetPropertyValue(annotationReader, name, "max", Int32.MaxValue);
-                var stepValue = GetPropertyValue(annotationReader, name, "step", 1);
-                var settingsValue = settings.GetUniformValue(this.intSerializer, name, defaultValue);
+                GetRangePropertiesValues(name, value, annotationReader, sourceLine, GlslValueParser.Int, 0, Int32.MinValue, Int32.MaxValue, 1, out var defaultValue, out var minValue, out var maxValue, out var stepValue);
+                var settingsValue = settings.GetUniformValue(ValueJsonSerializer.Int, name, defaultValue);
 
                 annotationReader.ValidateEmpty();
                 return new IntUniform(this.renderThread, name, displayName, minValue, maxValue, stepValue, settingsValue);
@@ -64,11 +106,8 @@ namespace Shaderlens.Render.Project
 
             if (type == "float")
             {
-                var defaultValue = String.IsNullOrEmpty(value) ? 0.0 : ParseFloat(sourceLine, name, "default", value);
-                var minValue = GetPropertyValue(annotationReader, name, "min", Double.MinValue);
-                var maxValue = GetPropertyValue(annotationReader, name, "max", Double.MaxValue);
-                var stepValue = GetPropertyValue(annotationReader, name, "step", 0.01);
-                var settingsValue = settings.GetUniformValue(this.doubleSerializer, name, defaultValue);
+                GetRangePropertiesValues(name, value, annotationReader, sourceLine, GlslValueParser.Float, 0.0, Double.MinValue, Double.MaxValue, 0.01, out var defaultValue, out var minValue, out var maxValue, out var stepValue);
+                var settingsValue = settings.GetUniformValue(ValueJsonSerializer.Double, name, defaultValue);
 
                 annotationReader.ValidateEmpty();
                 return new FloatUniform(this.renderThread, name, displayName, minValue, maxValue, stepValue, settingsValue);
@@ -76,84 +115,110 @@ namespace Shaderlens.Render.Project
 
             if (type == "vec2")
             {
-                var defaultValue = String.IsNullOrEmpty(value) ? Vector.Create(2, 0.0) : ParseVector(sourceLine, name, "default", value, 2);
-                var minValue = GetPropertyValue(annotationReader, name, "min", Vector.Create(2, Double.MinValue));
-                var maxValue = GetPropertyValue(annotationReader, name, "max", Vector.Create(2, Double.MaxValue));
-                var stepValue = GetPropertyValue(annotationReader, name, "step", Vector.Create(2, 0.01));
-                var settingsValue = GetVectorSettingsValue(settings, name, defaultValue);
+                GetVectorRangePropertiesValues("vec2", 2, name, value, annotationReader, sourceLine, GlslValueParser.Float, 0.0, Double.MinValue, Double.MaxValue, 0.01, out var defaultValue, out var minValue, out var maxValue, out var stepValue);
+                var settingsValue = GetVectorSettingsValue(settings, VectorJsonSerializer.Double, name, defaultValue);
 
                 annotationReader.ValidateEmpty();
                 return new Vec2Uniform(this.renderThread, name, displayName, minValue, maxValue, stepValue, settingsValue);
             }
 
+            if (type == "ivec2")
+            {
+                GetVectorRangePropertiesValues("ivec2", 2, name, value, annotationReader, sourceLine, GlslValueParser.Int, 0, Int32.MinValue, Int32.MaxValue, 1, out var defaultValue, out var minValue, out var maxValue, out var stepValue);
+                var settingsValue = GetVectorSettingsValue(settings, VectorJsonSerializer.Int, name, defaultValue);
+
+                annotationReader.ValidateEmpty();
+                return new IVec2Uniform(this.renderThread, name, displayName, minValue, maxValue, stepValue, settingsValue);
+            }
+
+            if (type == "uvec2")
+            {
+                GetVectorRangePropertiesValues("uvec2", 2, name, value, annotationReader, sourceLine, GlslValueParser.UInt, 0u, UInt32.MinValue, UInt32.MaxValue, 1u, out var defaultValue, out var minValue, out var maxValue, out var stepValue);
+                var settingsValue = GetVectorSettingsValue(settings, VectorJsonSerializer.UInt, name, defaultValue);
+
+                annotationReader.ValidateEmpty();
+                return new UVec2Uniform(this.renderThread, name, displayName, minValue, maxValue, stepValue, settingsValue);
+            }
+
+            if (type == "bvec2")
+            {
+                var defaultValue = !String.IsNullOrEmpty(value) ? ParseValue(VectorGlslValueParser.BVec2, sourceLine, name, "default", value) : Vector.Create(2, false);
+                var settingsValue = GetVectorSettingsValue(settings, VectorJsonSerializer.Bool, name, defaultValue);
+
+                annotationReader.ValidateEmpty();
+                return new BVec2Uniform(this.renderThread, name, displayName, settingsValue);
+            }
+
             if (type == "vec3")
             {
-                if (!annotationReader.TryGetValue("type", out var conversionType))
-                {
-                    var defaultValue = String.IsNullOrEmpty(value) ? Vector.Create(3, 0.0) : ParseVector(sourceLine, name, "default", value, 3);
-                    var minValue = GetPropertyValue(annotationReader, name, "min", Vector.Create(3, Double.MinValue));
-                    var maxValue = GetPropertyValue(annotationReader, name, "max", Vector.Create(3, Double.MaxValue));
-                    var stepValue = GetPropertyValue(annotationReader, name, "step", Vector.Create(3, 0.01));
-                    var settingsValue = GetVectorSettingsValue(settings, name, defaultValue);
+                GetVectorRangePropertiesValues("vec3", 3, name, value, annotationReader, sourceLine, GlslValueParser.Float, 0.0, Double.MinValue, Double.MaxValue, 0.01, out var defaultValue, out var minValue, out var maxValue, out var stepValue);
+                var settingsValue = GetVectorSettingsValue(settings, VectorJsonSerializer.Double, name, defaultValue);
 
-                    annotationReader.ValidateEmpty();
-                    return new Vec3Uniform(this.renderThread, name, displayName, minValue, maxValue, stepValue, settingsValue);
-                }
+                annotationReader.ValidateEmpty();
+                return new Vec3Uniform(this.renderThread, name, displayName, minValue, maxValue, stepValue, settingsValue);
+            }
 
-                if (conversionType.ToString() == "srgb")
-                {
-                    var defaultValue = String.IsNullOrEmpty(value) ? Vector.Create(3, 0.0) : ParseVector(sourceLine, name, "default", value, 3);
-                    var settingsValue = GetVectorSettingsValue(settings, name, defaultValue);
+            if (type == "ivec3")
+            {
+                GetVectorRangePropertiesValues("ivec3", 3, name, value, annotationReader, sourceLine, GlslValueParser.Int, 0, Int32.MinValue, Int32.MaxValue, 1, out var defaultValue, out var minValue, out var maxValue, out var stepValue);
+                var settingsValue = GetVectorSettingsValue(settings, VectorJsonSerializer.Int, name, defaultValue);
 
-                    annotationReader.ValidateEmpty();
-                    return new SrgbColorUniform(this.renderThread, name, displayName, settingsValue);
-                }
+                annotationReader.ValidateEmpty();
+                return new IVec3Uniform(this.renderThread, name, displayName, minValue, maxValue, stepValue, settingsValue);
+            }
 
-                if (conversionType.ToString() == "linear-rgb")
-                {
-                    var defaultValue = String.IsNullOrEmpty(value) ? Vector.Create(3, 0.0) : ParseVector(sourceLine, name, "default", value, 3);
-                    var settingsValue = GetVectorSettingsValue(settings, name, defaultValue);
+            if (type == "uvec3")
+            {
+                GetVectorRangePropertiesValues("uvec3", 3, name, value, annotationReader, sourceLine, GlslValueParser.UInt, 0u, UInt32.MinValue, UInt32.MaxValue, 1u, out var defaultValue, out var minValue, out var maxValue, out var stepValue);
+                var settingsValue = GetVectorSettingsValue(settings, VectorJsonSerializer.UInt, name, defaultValue);
 
-                    annotationReader.ValidateEmpty();
-                    return new LinearRgbColorUniform(this.renderThread, name, displayName, settingsValue);
-                }
+                annotationReader.ValidateEmpty();
+                return new UVec3Uniform(this.renderThread, name, displayName, minValue, maxValue, stepValue, settingsValue);
+            }
 
-                throw new SourceLineException($"Unexpected vec3 uniform conversion type \"{conversionType}\", supported types are \"srgb\", \"linear-rgb\"", annotationReader.SourceLine);
+            if (type == "bvec3")
+            {
+                var defaultValue = !String.IsNullOrEmpty(value) ? ParseValue(VectorGlslValueParser.BVec3, sourceLine, name, "default", value) : Vector.Create(3, false);
+                var settingsValue = GetVectorSettingsValue(settings, VectorJsonSerializer.Bool, name, defaultValue);
+
+                annotationReader.ValidateEmpty();
+                return new BVec3Uniform(this.renderThread, name, displayName, settingsValue);
             }
 
             if (type == "vec4")
             {
-                if (!annotationReader.TryGetValue("type", out var conversionType))
-                {
-                    var defaultValue = String.IsNullOrEmpty(value) ? Vector.Create(4, 0.0) : ParseVector(sourceLine, name, "default", value, 4);
-                    var minValue = GetPropertyValue(annotationReader, name, "min", Vector.Create(4, Double.MinValue));
-                    var maxValue = GetPropertyValue(annotationReader, name, "max", Vector.Create(4, Double.MaxValue));
-                    var stepValue = GetPropertyValue(annotationReader, name, "step", Vector.Create(4, 0.01));
-                    var settingsValue = GetVectorSettingsValue(settings, name, defaultValue);
+                GetVectorRangePropertiesValues("vec4", 4, name, value, annotationReader, sourceLine, GlslValueParser.Float, 0.0, Double.MinValue, Double.MaxValue, 0.01, out var defaultValue, out var minValue, out var maxValue, out var stepValue);
+                var settingsValue = GetVectorSettingsValue(settings, VectorJsonSerializer.Double, name, defaultValue);
 
-                    annotationReader.ValidateEmpty();
-                    return new Vec4Uniform(this.renderThread, name, displayName, minValue, maxValue, stepValue, settingsValue);
-                }
+                annotationReader.ValidateEmpty();
+                return new Vec4Uniform(this.renderThread, name, displayName, minValue, maxValue, stepValue, settingsValue);
+            }
 
-                if (conversionType.ToString() == "srgb")
-                {
-                    var defaultValue = String.IsNullOrEmpty(value) ? Vector.Create(4, 0.0) : ParseVector(sourceLine, name, "default", value, 4);
-                    var settingsValue = GetVectorSettingsValue(settings, name, defaultValue);
+            if (type == "ivec4")
+            {
+                GetVectorRangePropertiesValues("ivec4", 4, name, value, annotationReader, sourceLine, GlslValueParser.Int, 0, Int32.MinValue, Int32.MaxValue, 1, out var defaultValue, out var minValue, out var maxValue, out var stepValue);
+                var settingsValue = GetVectorSettingsValue(settings, VectorJsonSerializer.Int, name, defaultValue);
 
-                    annotationReader.ValidateEmpty();
-                    return new SrgbaColorUniform(this.renderThread, name, displayName, settingsValue);
-                }
+                annotationReader.ValidateEmpty();
+                return new IVec4Uniform(this.renderThread, name, displayName, minValue, maxValue, stepValue, settingsValue);
+            }
 
-                if (conversionType.ToString() == "linear-rgb")
-                {
-                    var defaultValue = String.IsNullOrEmpty(value) ? Vector.Create(4, 0.0) : ParseVector(sourceLine, name, "default", value, 4);
-                    var settingsValue = GetVectorSettingsValue(settings, name, defaultValue);
+            if (type == "uvec4")
+            {
+                GetVectorRangePropertiesValues("uvec4", 4, name, value, annotationReader, sourceLine, GlslValueParser.UInt, 0u, UInt32.MinValue, UInt32.MaxValue, 1u, out var defaultValue, out var minValue, out var maxValue, out var stepValue);
+                var settingsValue = GetVectorSettingsValue(settings, VectorJsonSerializer.UInt, name, defaultValue);
 
-                    annotationReader.ValidateEmpty();
-                    return new LinearRgbaColorUniform(this.renderThread, name, displayName, settingsValue);
-                }
+                annotationReader.ValidateEmpty();
+                return new UVec4Uniform(this.renderThread, name, displayName, minValue, maxValue, stepValue, settingsValue);
+            }
 
-                throw new SourceLineException($"Unexpected vec4 uniform conversion type \"{conversionType}\", supported types are \"srgb\", \"linear-rgb\"", annotationReader.SourceLine);
+            if (type == "bvec4")
+            {
+                var defaultValue = !String.IsNullOrEmpty(value) ? ParseValue(VectorGlslValueParser.BVec4, sourceLine, name, "default", value) : Vector.Create(4, false);
+                var settingsValue = GetVectorSettingsValue(settings, VectorJsonSerializer.Bool, name, defaultValue);
+
+                annotationReader.ValidateEmpty();
+                return new BVec4Uniform(this.renderThread, name, displayName, settingsValue);
             }
 
             throw new SourceLineException($"Unexpected uniform type \"{type}\"", annotationReader.SourceLine);
@@ -164,104 +229,50 @@ namespace Shaderlens.Render.Project
             return annotationReader.TryGetValue("display-name", out var displayNameValue) ? displayNameValue!.ToString()! : this.displayNameFormatter.GetDisplayName(name);
         }
 
-        private static int GetPropertyValue(ISourceLineAnnotationReader annotationReader, string uniformName, string propertyName, int defaultValue)
+        private static ISettingsValue<Vector<T>> GetVectorSettingsValue<T>(IProjectSettings settings, IJsonSerializer<Vector<T>> vectorSerializer, string name, Vector<T> defaultValue)
         {
-            return !annotationReader.TryGetValue(propertyName, out var rawValue) ? defaultValue : ParseInt(annotationReader.SourceLine, uniformName, propertyName, rawValue);
+            return settings.GetUniformValue(new FixedSizeVectorJsonSerializer<T>(vectorSerializer, defaultValue), name, defaultValue);
         }
 
-        private static double GetPropertyValue(ISourceLineAnnotationReader annotationReader, string uniformName, string propertyName, double defaultValue)
+        private static void GetVectorRangePropertiesValues<T>(string valueType, int size, string name, string value, ISourceLineAnnotationReader annotationReader, SourceLine sourceLine, IGlslValueParser<T> parser,
+            T defaultDefaultValue, T defaultMinValue, T defaultMaxValue, T defaultStepValue,
+            out Vector<T> defaultValue, out Vector<T> minValue, out Vector<T> maxValue, out Vector<T> stepValue)
         {
-            return !annotationReader.TryGetValue(propertyName, out var rawValue) ? defaultValue : ParseFloat(annotationReader.SourceLine, uniformName, propertyName, rawValue);
+            GetRangePropertiesValues(name, value, annotationReader, sourceLine, new VectorGlslValueParser<T>(parser, valueType, size),
+                Vector.Create(size, defaultDefaultValue), Vector.Create(size, defaultMinValue), Vector.Create(size, defaultMaxValue), Vector.Create(size, defaultStepValue),
+                out defaultValue, out minValue, out maxValue, out stepValue);
         }
 
-        private ISettingsValue<Vector<double>> GetVectorSettingsValue(IProjectSettings settings, string name, Vector<double> defaultValue)
+        private static void GetRangePropertiesValues<T>(string name, string value, ISourceLineAnnotationReader annotationReader, SourceLine sourceLine, IGlslValueParser<T> parser,
+            T defaultDefaultValue, T defaultMinValue, T defaultMaxValue, T defaultStepValue,
+            out T defaultValue, out T minValue, out T maxValue, out T stepValue)
         {
-            return settings.GetUniformValue(new FixedSizeVectorJsonSerializer<double>(this.vectorSerializer, defaultValue), name, defaultValue);
+            defaultValue = String.IsNullOrEmpty(value) ? defaultDefaultValue : ParseValue(parser, sourceLine, name, "default", value);
+            minValue = GetPropertyValue(parser, annotationReader, name, "min", defaultMinValue);
+            maxValue = GetPropertyValue(parser, annotationReader, name, "max", defaultMaxValue);
+            stepValue = GetPropertyValue(parser, annotationReader, name, "step", defaultStepValue);
         }
 
-        private static Vector<double> GetPropertyValue(ISourceLineAnnotationReader annotationReader, string uniformName, string propertyName, Vector<double> defaultValue)
+        private static T GetPropertyValue<T>(IGlslValueParser<T> parser, ISourceLineAnnotationReader annotationReader, string uniformName, string propertyName, T defaultValue)
         {
-            return !annotationReader.TryGetValue(propertyName, out var rawValue) ? defaultValue : ParseVector(annotationReader.SourceLine, uniformName, propertyName, rawValue, defaultValue.Count);
-        }
-
-        private static bool ParseBool(SourceLine sourceLine, string uniformName, string propertyName, string rawValue)
-        {
-            if (Boolean.TryParse(rawValue, out var value))
+            if (!annotationReader.TryGetValue(propertyName, out var rawValue))
             {
-                return value;
+                return defaultValue;
             }
 
-            throw new SourceLineException($"Uniform {uniformName} {propertyName} value \"{rawValue}\" cannot be parsed as bool", sourceLine);
+            var sourceLine = annotationReader.SourceLine;
+
+            return ParseValue(parser, sourceLine, uniformName, propertyName, rawValue);
         }
 
-        private static int ParseInt(SourceLine sourceLine, string uniformName, string propertyName, string rawValue)
+        private static T ParseValue<T>(IGlslValueParser<T> parser, SourceLine sourceLine, string uniformName, string propertyName, string rawValue)
         {
-            if (Int32.TryParse(rawValue, out var value))
+            if (!parser.TryParse(rawValue, out var value))
             {
-                return value;
+                throw new SourceLineException($"Uniform {uniformName} {propertyName} value \"{rawValue}\" cannot be parsed as {parser.ValueType}", sourceLine);
             }
 
-            throw new SourceLineException($"Uniform {uniformName} {propertyName} value \"{rawValue}\" cannot be parsed as int", sourceLine);
+            return value;
         }
-
-        private static double ParseFloat(SourceLine sourceLine, string uniformName, string propertyName, string rawValue)
-        {
-            if (Double.TryParse(rawValue, out var value))
-            {
-                return value;
-            }
-
-            throw new SourceLineException($"Uniform {uniformName} {propertyName} value \"{rawValue}\" cannot be parsed as float", sourceLine);
-        }
-
-        private static Vector<double> ParseVector(SourceLine sourceLine, string uniformName, string propertyName, string rawValue, int count)
-        {
-            if (Double.TryParse(rawValue, out var value))
-            {
-                return Vector.Create(count, value);
-            }
-
-            if (rawValue is string stringValue && TryParseVectorValues(count, stringValue, out var values))
-            {
-                return values.Length == 1 ? Vector.Create(count, values[0]) : Vector.Create(values);
-            }
-
-            throw new SourceLineException($"Uniform {uniformName} {propertyName} value \"{rawValue}\" cannot be parsed as vec{count}", sourceLine);
-        }
-
-        private static bool TryParseVectorValues(int size, string rawValue, [MaybeNullWhen(false)] out double[] values)
-        {
-            var match = VecRegex().Match(rawValue);
-            if (match.Success)
-            {
-                var rawValues = match.Groups["values"].Value.Split(",");
-
-                if (rawValues.Length != 1 && rawValues.Length != size || match.Groups["type"].Value != $"vec{size}")
-                {
-                    values = null;
-                    return false;
-                }
-
-                values = new double[rawValues.Length];
-                for (var i = 0; i < rawValues.Length; i++)
-                {
-                    if (!Double.TryParse(rawValues[i].Trim(), out var value))
-                    {
-                        values = null;
-                        return false;
-                    }
-
-                    values[i] = value;
-                }
-
-                return true;
-            }
-
-            values = null;
-            return false;
-        }
-
-        [GeneratedRegex(@"(?<type>(vec2|vec3|vec4))\s*\((?<values>[-+0-9.,\s]+)\)")]
-        private static partial Regex VecRegex();
     }
 }

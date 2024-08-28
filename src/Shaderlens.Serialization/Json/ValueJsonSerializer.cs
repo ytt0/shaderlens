@@ -24,4 +24,12 @@
             }
         }
     }
+
+    public static class ValueJsonSerializer
+    {
+        public static readonly ValueJsonSerializer<bool> Bool = new ValueJsonSerializer<bool>();
+        public static readonly ValueJsonSerializer<double> Double = new ValueJsonSerializer<double>();
+        public static readonly ValueJsonSerializer<int> Int = new ValueJsonSerializer<int>();
+        public static readonly ValueJsonSerializer<uint> Uint = new ValueJsonSerializer<uint>();
+    }
 }

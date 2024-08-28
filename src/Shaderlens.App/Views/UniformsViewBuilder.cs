@@ -160,6 +160,15 @@
             this.target.Children.Add(element);
         }
 
+        public void AddVectorElement(ISettingsValue<Vector<bool>> settingsValue, string displayName)
+        {
+            var element = new BoolVectorUniformElement(settingsValue, displayName, this.clipboard, this.theme);
+            element.ValueChanged += OnUniformElementValueChanged;
+
+            this.rowHeaderContainers.Add(element);
+            this.target.Children.Add(element);
+        }
+
         public void AddVectorElement(ISettingsValue<Vector<double>> settingsValue, string displayName, Vector<double> minValue, Vector<double> maxValue, Vector<double> step)
         {
             var element = new VectorUniformElement(settingsValue, displayName, minValue, maxValue, step, this.dragSensitivity, this.clipboard, this.theme);

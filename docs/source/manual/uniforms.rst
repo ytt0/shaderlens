@@ -28,16 +28,16 @@ Common properties:
     :index: Uniform :ref:`order<uniforms-ordering>` priority (*integer*).
 
 Additional properties:
-    For :glsl:`vec3`, :glsl:`vec4`
+    For :glsl:`vec3`, :glsl:`vec4`:
 
     :type: Uniform underlying type, can be one of ``srgb``, or ``linear-rgb``. |br|
         When provided, a color picker is used for editing the value, with an alpha channel for :glsl:`vec4` uniforms. The type does not change the uniform value itself, only the way the color picker interprets it.
         Note that if ``linear-rgb`` type is used, the color has to be converted back to ``srgb`` by the shader, before it could be displayed, see an example below.
 
-    For :glsl:`int`, :glsl:`float`, :glsl:`vec2`, or :glsl:`vec3`, :glsl:`vec4` uniforms without a **type** property specified:
+    For :glsl:`int`, :glsl:`float`, :glsl:`vec#`, :glsl:`ivec#`, :glsl:`uvec#`:
 
-    :min / max: Value bounds (can be :glsl:`int`, :glsl:`float` or the same type as the uniform).
-    :step: Value increment size (can be :glsl:`int` or :glsl:`float`).
+    :min / max: Value bounds (should be compatible with the uniform type).
+    :step: Value increment size (should be compatible with the uniform type).
 
 Example
     .. code-block:: glsl
