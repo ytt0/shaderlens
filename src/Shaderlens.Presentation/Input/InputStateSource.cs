@@ -84,19 +84,28 @@
             {
                 SetNextState();
                 this.keysDown[(int)key] = false;
-                e.Handled = TryHandleInputStateChange();
+                if (!e.Handled)
+                {
+                    e.Handled = TryHandleInputStateChange();
+                }
             }
 
             SetNextState();
             this.keysDown[(int)key] = e.IsDown;
-            e.Handled |= TryHandleInputStateChange();
+            if (!e.Handled)
+            {
+                e.Handled = TryHandleInputStateChange();
+            }
         }
 
         public void ProcessInputEvent(MouseButtonEventArgs e)
         {
             SetNextState();
             this.mouseButtonsDown[(int)e.ChangedButton] = e.ButtonState == MouseButtonState.Pressed;
-            e.Handled = TryHandleInputStateChange();
+            if (!e.Handled)
+            {
+                e.Handled = TryHandleInputStateChange();
+            }
         }
 
         public void ProcessInputEvent(MouseWheelEventArgs e)
