@@ -199,6 +199,8 @@
             this.window.SnapsToDevicePixels = true;
             this.window.WindowState = settings.ViewportWindowState.Maximized ? WindowState.Maximized : WindowState.Normal;
 
+            MouseHoverKeyEventBehavior.Register(this.window);
+
             this.window.SourceInitialized += OnSourceInitialized;
             this.window.Activated += OnActivated;
             this.window.Closing += OnClosing;

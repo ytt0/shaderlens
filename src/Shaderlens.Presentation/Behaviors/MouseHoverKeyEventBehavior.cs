@@ -1,58 +1,58 @@
 ﻿namespace Shaderlens.Presentation.Behaviors
 {
-    public class MouseHoverKeyEventArgs : KeyEventArgs
-    {
-        public MouseHoverKeyEventArgs(KeyEventArgs e) :
-            base(e.KeyboardDevice, e.InputSource, e.Timestamp, e.Key)
-        {
-            this.RoutedEvent = e.RoutedEvent;
-            this.Source = e.Source;
-        }
-    }
-
     public class MouseHoverKeyEventBehavior : IDisposable
     {
-        private readonly FrameworkElement target;
+        private readonly FrameworkElement source;
+        private bool isHandled;
 
-        private MouseHoverKeyEventBehavior(FrameworkElement target)
+        private MouseHoverKeyEventBehavior(FrameworkElement source)
         {
-            target.PreviewKeyDown += OnPreviewKeyDown;
-            target.KeyDown += OnKeyDown;
-            this.target = target;
+            this.source = source;
+
+            this.source.PreviewKeyDown += OnPreviewKeyDown;
+            this.source.PreviewKeyUp += OnPreviewKeyUp;
         }
 
         public void Dispose()
         {
-            this.target.PreviewKeyDown -= OnPreviewKeyDown;
-            this.target.KeyDown -= OnKeyDown;
+            this.source.PreviewKeyDown -= OnPreviewKeyDown;
+            this.source.PreviewKeyUp -= OnPreviewKeyUp;
         }
 
         private void OnPreviewKeyDown(object sender, KeyEventArgs e)
         {
-            if (e is not MouseHoverKeyEventArgs)
-            {
-                var e2 = new MouseHoverKeyEventArgs(e);
-
-                var target = GetMouseTarget();
-                if (target != null)
-                {
-                    target.RaiseEvent(e2);
-                    e.Handled = e2.Handled;
-                }
-            }
+            OnPreviewKeyEvent(e, UIElement.KeyDownEvent);
         }
 
-        private void OnKeyDown(object sender, KeyEventArgs e)
+        private void OnPreviewKeyUp(object sender, KeyEventArgs e)
         {
-            if (e is not MouseHoverKeyEventArgs)
-            {
-                var e2 = new MouseHoverKeyEventArgs(e);
+            OnPreviewKeyEvent(e, UIElement.KeyUpEvent);
+        }
 
-                var target = GetMouseTarget();
-                if (target != null)
+        private void OnPreviewKeyEvent(KeyEventArgs e, RoutedEvent routedEvent)
+        {
+            if (!this.isHandled)
+            {
+                this.isHandled = true;
+
+                try
                 {
-                    target.RaiseEvent(e2);
-                    e.Handled = e2.Handled;
+                    var target = GetMouseTarget();
+                    if (target != null)
+                    {
+                        var previewRoutedEvent = e.RoutedEvent;
+                        target.RaiseEvent(e);
+
+                        e.RoutedEvent = routedEvent;
+                        target.RaiseEvent(e);
+
+                        e.RoutedEvent = previewRoutedEvent;
+                        e.Handled |= target.GetAncestor<Window>() == e.InputSource.RootVisual;
+                    }
+                }
+                finally
+                {
+                    this.isHandled = false;
                 }
             }
         }
