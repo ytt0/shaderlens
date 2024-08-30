@@ -1,5 +1,6 @@
 ﻿namespace Shaderlens.Views
 {
+    using System.Windows;
     using static WinApi;
 
     public interface IViewportView
@@ -321,8 +322,8 @@
             this.inputBindings.AddRenderSpanStart(this.inputs.ViewerScaleDown, this.application, e => SetViewerScale(e, false));
             this.inputBindings.AddRenderSpanStart(this.inputs.ViewerScaleReset, this.application, ResetViewerScale);
 
-            this.inputBindings.AddRenderSpanStart(this.inputs.CopyFrame, this.application, () => this.application.CopyFrame(this.application.GetCopySource(), false));
-            this.inputBindings.AddRenderSpanStart(this.inputs.CopyFrameWithAlpha, this.application, () => this.application.CopyFrame(this.application.GetCopySource(), true));
+            this.inputBindings.AddRenderSpanStart(this.inputs.CopyFrame, this.application, CopyFrame);
+            this.inputBindings.AddRenderSpanStart(this.inputs.CopyFrameWithAlpha, this.application, CopyFrameWithAlpha);
             this.inputBindings.AddRenderSpanStart(this.inputs.CopyRepeat, this.application, CopyRepeat);
 
             this.inputBindings.AddRenderSpanStart(this.inputs.ExportFrame, this.application, this.application.ExportFrame);
@@ -1103,22 +1104,40 @@
                 e.Handled = true;
             }
         }
+        private void CopyFrame()
+        {
+            if (this.window.IsMouseOver)
+            {
+                this.application.CopyFrame(this.application.GetCopySource(), false);
+            }
+        }
+
+        private void CopyFrameWithAlpha()
+        {
+            if (this.window.IsMouseOver)
+            {
+                this.application.CopyFrame(this.application.GetCopySource(), true);
+            }
+        }
 
         private void CopyRepeat()
         {
-            if (this.application.CopySelection != null)
+            if (this.window.IsMouseOver)
             {
-                this.application.CopyRepeat(this.application.GetCopySource());
-            }
-            else
-            {
-                CopySelect();
+                if (this.application.CopySelection != null)
+                {
+                    this.application.CopyRepeat(this.application.GetCopySource());
+                }
+                else
+                {
+                    CopySelect();
+                }
             }
         }
 
         private void CopySelect()
         {
-            if (this.application.IsFullyLoaded)
+            if (this.window.IsMouseOver && this.application.IsFullyLoaded)
             {
                 ResetCopySource();
                 this.copyMenu.Open();

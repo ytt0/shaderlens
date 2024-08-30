@@ -56,10 +56,6 @@
         ICommand BufferNext { get; }
         ICommand BufferPrevious { get; }
 
-        ICommand CopyRepeat { get; }
-        ICommand CopyFrame { get; }
-        ICommand CopyFrameWithAlpha { get; }
-
         ICommand ExportFrame { get; }
         ICommand ExportFrameRepeat { get; }
         ICommand ExportRenderSequence { get; }
@@ -204,10 +200,6 @@
         public ICommand BufferNext { get; }
         public ICommand BufferPrevious { get; }
 
-        public ICommand CopyRepeat { get; }
-        public ICommand CopyFrame { get; }
-        public ICommand CopyFrameWithAlpha { get; }
-
         public ICommand ExportFrame { get; }
         public ICommand ExportFrameRepeat { get; }
         public ICommand ExportRenderSequence { get; }
@@ -289,10 +281,6 @@
             this.BufferNext = Add(commands, new Command(inputs.BufferNext, () => application.ViewerBufferIndex++, null, IsFullyLoaded));
             this.BufferPrevious = Add(commands, new Command(inputs.BufferPrevious, () => application.ViewerBufferIndex--, null, IsFullyLoaded));
 
-            this.CopyRepeat = new Command(inputs.CopyRepeat, () => application.CopyRepeat(application.GetCopySource()), null, IsFullyLoaded);
-            this.CopyFrame = new Command(inputs.CopyFrame, () => application.CopyFrame(application.GetCopySource(), false), null, IsFullyLoaded);
-            this.CopyFrameWithAlpha = new Command(inputs.CopyFrameWithAlpha, () => application.CopyFrame(application.GetCopySource(), true), null, IsFullyLoaded);
-
             this.ExportFrame = Add(commands, new Command(inputs.ExportFrame, application.ExportFrame, null, IsFullyLoaded));
             this.ExportFrameRepeat = Add(commands, new Command(inputs.ExportFrameRepeat, application.ExportFrameRepeat, null, () => application.IsFullyLoaded && application.SaveFramePath != null));
             this.ExportRenderSequence = Add(commands, new Command(inputs.ExportRenderSequence, application.ExportSequence, null, IsFullyLoaded));
@@ -314,7 +302,7 @@
             this.DarkTheme = Add(commands, new Command(inputs.DarkTheme, () => application.DarkTheme = !application.DarkTheme, () => application.DarkTheme, null));
             this.OpenSettingsFile = Add(commands, new Command(inputs.OpenSettingsFile, () => application.OpenExternalPath(application.SettingsPath), null, null));
             this.OpenInputsFile = Add(commands, new Command(inputs.OpenInputsFile, () => application.OpenExternalPath(application.InputsPath), null, null));
-            this.OpenThemeFile = Add(commands, new Command(inputs.OpenThemeFile, () => this.application.OpenExternalPath(this.application.ThemePath!), null, () => this.application.ThemePath != null));
+            this.OpenThemeFile = Add(commands, new Command(inputs.OpenThemeFile, () => application.OpenExternalPath(application.ThemePath!), null, () => application.ThemePath != null));
         }
 
         public void AddInputBindings(IInputBindings bindings)
