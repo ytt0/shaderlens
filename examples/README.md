@@ -20,6 +20,7 @@ Adding custom viewers to the `Viewers > ...` submenu.
 - Normals Overlay - Displays a normal direction inside each pixel.  
 - Opacity Background - Overlays the selected buffer using its alpha channel, over a checkerboard background, and adds a background brightness uniform.
 - Color Adjustment - Displays the selected buffer with color adjustment, controlled by uniforms.
+- Values Range - Displays the selected buffer interpolated linearly between min and max values, controlled by uniforms.
 
 To see a selected viewer effect, scale in or reduce the resolution, and change the viewer uniforms values.
 

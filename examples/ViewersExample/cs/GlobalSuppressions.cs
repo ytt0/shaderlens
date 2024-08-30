@@ -9,4 +9,5 @@ using System.Diagnostics.CodeAnalysis;
 [assembly: SuppressMessage("CodeQuality", "IDE0051:Remove unused private members", Scope = "member", Target = "~M:ViewersExample.NormalsViewer.mainImage(Shaderlens.vec4@,Shaderlens.vec2@)")]
 [assembly: SuppressMessage("CodeQuality", "IDE0051:Remove unused private members", Scope = "member", Target = "~M:ViewersExample.OpacityViewer.mainImage(Shaderlens.vec4@,Shaderlens.vec2@)")]
 [assembly: SuppressMessage("CodeQuality", "IDE0051:Remove unused private members", Scope = "member", Target = "~M:ViewersExample.ColorAdjustmentViewer.mainImage(Shaderlens.vec4@,Shaderlens.vec2@)")]
+[assembly: SuppressMessage("CodeQuality", "IDE0051:Remove unused private members", Scope = "member", Target = "~M:ViewersExample.ValuesRangeViewer.mainImage(Shaderlens.vec4@,Shaderlens.vec2@)")]
 

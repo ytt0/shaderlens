@@ -15,6 +15,10 @@
     "ColorAdjustment": {
       "DisplayName": "Color Adjustment",
       "Source": "ColorAdjustmentViewer.glsl"
+    },
+    "ValuesRange": {
+      "DisplayName": "Values Range",
+      "Source": "ValuesRangeViewer.glsl"
     }
   }
 }
