@@ -46,7 +46,8 @@ namespace Shaderlens
         void ClearKeysDownState();
         void SetViewportSize(int width, int height);
         void SetMouseState(bool isDown);
-        void Restart();
+        void StepPipeline();
+        void RestartPipeline();
         void PausePipeline();
         void ResumePipeline();
         void RenderFrame();
@@ -323,6 +324,7 @@ namespace Shaderlens
         private readonly OpenFolderDialog projectOpenFolderDialog;
         private readonly SaveFileDialog frameSaveFileDialog;
         private readonly IApplicationSettings settings;
+        private readonly long stepIncrement;
 
         private Window? startPageWindow;
         private StartPageView? startPageView;
@@ -357,6 +359,7 @@ namespace Shaderlens
         private IEnumerable<IProjectTemplate>? projectTempates;
         private bool isProjectChanged;
         private bool isProjectChangeConfirmed;
+        private long lastStepTime;
 
         public Application(System.Windows.Application application, IApplicationSettings settings, IApplicationInputs inputs, IApplicationTheme darkTheme, IApplicationTheme lightTheme)
         {
@@ -451,6 +454,8 @@ namespace Shaderlens
             this.inactivityTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(10) };
             this.inactivityTimer.Tick += (sender, e) => OnInactivityTimerTick();
 
+            this.stepIncrement = TimeSpan.FromSeconds(this.settings.StepIncrementSeconds).Ticks;
+
             this.renderDownscale = 1;
             this.frameRate = 1;
             this.speed = 1;
@@ -505,9 +510,9 @@ namespace Shaderlens
         public void SetKeyState(int index, bool isDown)
         {
             this.keyboardTextureResource?.SetKeyState(index, isDown);
-            if (!this.IsPaused || this.RenderInputEventsWhenPaused)
+            if (this.IsPaused && this.RenderInputEventsWhenPaused)
             {
-                this.renderThread.RenderFrame();
+                StepPipeline();
             }
         }
 
@@ -536,13 +541,22 @@ namespace Shaderlens
         public void SetMouseState(bool isDown)
         {
             this.pipeline?.SetMouseState(isDown);
-            if (!this.IsPaused || this.RenderInputEventsWhenPaused)
+            if (this.IsPaused && this.RenderInputEventsWhenPaused)
             {
-                this.renderThread.RenderFrame();
+                StepPipeline();
             }
         }
 
-        public void Restart()
+        public void StepPipeline()
+        {
+            var now = Stopwatch.GetTimestamp();
+            this.frameIndexSource.IncrementTime(Math.Min(now - this.lastStepTime, this.stepIncrement));
+            this.lastStepTime = now;
+
+            this.renderThread.RenderFrame();
+        }
+
+        public void RestartPipeline()
         {
             this.frameIndexSource.Restart();
 
@@ -779,7 +793,6 @@ namespace Shaderlens
         {
             this.viewportView.SetProjectChangeState(true);
             this.uniformsView.SetProjectChangeState(true);
-            this.renderThread.RenderFrame();
             this.isProjectChanged = true;
             this.isProjectChangeConfirmed = false;
         }
@@ -1029,7 +1042,7 @@ namespace Shaderlens
 
             if (!isAutoReload || this.RestartOnAutoReload)
             {
-                Restart();
+                RestartPipeline();
             }
 
             if (this.resumeOnLoadCompletes)

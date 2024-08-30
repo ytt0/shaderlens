@@ -234,8 +234,8 @@
 
             this.Play = Add(commands, new Command(inputs.Play, application.ResumePipeline, null, () => application.IsFullyLoaded && application.IsPaused));
             this.Pause = Add(commands, new Command(inputs.Pause, application.PausePipeline, null, () => application.IsFullyLoaded && !application.IsPaused));
-            this.Step = Add(commands, new Command(inputs.Step, application.RenderFrame, null, () => application.IsFullyLoaded && !application.IsPaused));
-            this.Restart = Add(commands, new Command(inputs.Restart, application.Restart, null, IsFullyLoaded));
+            this.Step = Add(commands, new Command(inputs.Step, application.StepPipeline, null, () => application.IsFullyLoaded && !application.IsPaused));
+            this.Restart = Add(commands, new Command(inputs.Restart, application.RestartPipeline, null, IsFullyLoaded));
             this.Uniforms = Add(commands, new Command(inputs.Uniforms, application.ToggleUniformsView, null, IsPartiallyLoaded, false));
             this.StartPage = Add(commands, new Command(inputs.StartPage, application.ShowStartPage, null, null));
             this.ProjectNew = Add(commands, new Command(inputs.ProjectNew, application.CreateProject, null, null));

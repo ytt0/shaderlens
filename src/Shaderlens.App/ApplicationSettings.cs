@@ -29,6 +29,7 @@
         bool EnableCache { get; set; }
         bool DarkTheme { get; set; }
         int InactivityPauseSeconds { get; }
+        double StepIncrementSeconds { get; }
 
         IEnumerable<string> PinnedProjects { get; set; }
         IEnumerable<string> RecentProjects { get; set; }
@@ -103,6 +104,7 @@
         public bool EnableCache { get; set; } = false;
         public bool DarkTheme { get; set; } = true;
         public int InactivityPauseSeconds { get; } = 60;
+        public double StepIncrementSeconds { get; } = 0.016;
 
         public IEnumerable<string> PinnedProjects { get; set; } = Array.Empty<string>();
         public IEnumerable<string> RecentProjects { get; set; } = Array.Empty<string>();
@@ -183,6 +185,7 @@
             this.EnableCache = settings.GetOrSetDefault(this.boolSerializer, nameof(this.EnableCache), this.EnableCache);
             this.DarkTheme = settings.GetOrSetDefault(this.boolSerializer, nameof(this.DarkTheme), this.DarkTheme);
             this.InactivityPauseSeconds = settings.GetOrSetDefault(this.intSerializer, nameof(this.InactivityPauseSeconds), this.InactivityPauseSeconds);
+            this.StepIncrementSeconds = settings.GetOrSetDefault(this.doubleSerializer, nameof(this.StepIncrementSeconds), this.StepIncrementSeconds);
 
             this.PinnedProjects = settings.GetOrSetDefault(this.stringSerializer, nameof(this.PinnedProjects), this.PinnedProjects);
             this.RecentProjects = settings.GetOrSetDefault(this.stringSerializer, nameof(this.RecentProjects), this.RecentProjects);

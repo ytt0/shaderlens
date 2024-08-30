@@ -14,6 +14,7 @@
         void Restart();
         void PauseTime();
         void ResumeTime();
+        void IncrementTime(long delta);
         void SetSpeed(double speed);
     }
 
@@ -60,6 +61,15 @@
                 this.isPaused = false;
                 this.intervalOffset = this.frame.Time;
                 this.intervalStartTime = 0;
+            }
+        }
+
+        public void IncrementTime(long delta)
+        {
+            lock (this.locker)
+            {
+                this.frame.Delta = delta;
+                this.frame.Time += delta;
             }
         }
 

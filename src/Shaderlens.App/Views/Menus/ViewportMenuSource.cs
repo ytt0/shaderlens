@@ -39,8 +39,8 @@
         {
             builder.AddItem("Play", this.inputs.Play, this.resources.CreatePlayIcon(), null, this.application.ResumePipeline, state => state.IsVisible = this.application.IsFullyLoaded && this.application.IsPaused);
             builder.AddItem("Pause", this.inputs.Pause, this.resources.CreatePauseIcon(), null, this.application.PausePipeline, state => state.IsVisible = this.application.IsFullyLoaded && !this.application.IsPaused);
-            builder.AddItem("Step", this.inputs.Step, this.resources.CreateStepIcon(), null, this.application.RenderFrame, state => state.IsVisible = this.application.IsPaused);
-            builder.AddItem("Restart", this.inputs.Restart, this.resources.CreateRestartIcon(), null, this.application.Restart, state => state.IsVisible = this.application.IsFullyLoaded);
+            builder.AddItem("Step", this.inputs.Step, this.resources.CreateStepIcon(), null, this.application.StepPipeline, state => state.IsVisible = this.application.IsPaused);
+            builder.AddItem("Restart", this.inputs.Restart, this.resources.CreateRestartIcon(), null, this.application.RestartPipeline, state => state.IsVisible = this.application.IsFullyLoaded);
             builder.AddSeparator();
             builder.AddItem("Uniforms", this.inputs.Uniforms, this.resources.CreateUniformsIcon(), null, this.application.ToggleUniformsView, state => state.IsVisible = this.application.IsFullyLoaded);
             builder.AddSeparator();

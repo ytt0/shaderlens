@@ -189,6 +189,7 @@
 
                 ClearTextBoxKeyboardFocus();
                 this.application.SetProjectChanged();
+                this.application.RenderFrame();
             };
 
             element.Click += (sender, e) =>
@@ -215,6 +216,7 @@
         {
             ClearTextBoxKeyboardFocus();
             this.application.SetProjectChanged();
+            this.application.RenderFrame();
         }
 
         private void SetColumnSize()
@@ -275,6 +277,7 @@
                     this.colorUniformElement.BringIntoView();
                     this.colorUniformElement.InvalidateValue();
                     this.application.SetProjectChanged();
+                    this.application.RenderFrame();
                 }
             });
         }
