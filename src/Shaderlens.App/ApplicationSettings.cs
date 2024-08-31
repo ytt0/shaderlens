@@ -85,7 +85,7 @@
         public WindowContainerState ViewportWindowState { get; set; } = GetAbsoluteState(GetCenteredWindowContainerState(new Size(800, 500)));
         public WindowContainerState UniformsWindowState { get; set; } = GetCenteredWindowContainerState(new Size(400, 550), new Point(300, 0));
         public WindowContainerState CreateProjectWindowState { get; set; } = GetCenteredWindowContainerState(new Size(800, 500), new Point(40, 40));
-        public WindowContainerState RenderSequenceWindowState { get; set; } = GetCenteredWindowContainerState(new Size(800, 550), new Point(40, 40));
+        public WindowContainerState RenderSequenceWindowState { get; set; } = GetCenteredWindowContainerState(new Size(1000, 600), new Point(40, 40));
 
         public bool UniformsOpened { get; set; } = false;
         public string OpenProjectPath { get; set; } = String.Empty;

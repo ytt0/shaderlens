@@ -102,6 +102,13 @@
             set { SetValue(SelectionBrushProperty, value); }
         }
 
+        public static readonly DependencyProperty PaddingProperty = Control.PaddingProperty.AddOwner(typeof(NumberTextBox), new FrameworkPropertyMetadata((sender, e) => ((NumberTextBox)sender).textBox.Padding = (Thickness)e.NewValue));
+        public Thickness Padding
+        {
+            get { return (Thickness)GetValue(PaddingProperty); }
+            set { SetValue(PaddingProperty, value); }
+        }
+
         private string? valueFormat;
         private double stepSize;
         public double StepSize
@@ -186,6 +193,8 @@
             this.MaxValue = 1.0;
 
             this.DragSensitivity = 1.0;
+
+            this.Padding = new Thickness(0, 5, 0, 5);
 
             SetValue(KeyboardNavigation.TabNavigationProperty, KeyboardNavigationMode.None);
 

@@ -273,7 +273,7 @@ namespace Shaderlens.Views
                 ),
                 new DockPanel { LastChildFill = true, Margin = RowSpacing }.WithChildren
                 (
-                    new TextBlock { Text = "Resolution", Width = ColumnWidth, Margin = Spacing }.WithDock(Dock.Left),
+                    new TextBlock { Text = "Resolution", Width = ColumnWidth, VerticalAlignment = VerticalAlignment.Center, Margin = Spacing }.WithDock(Dock.Left),
                     new ColumnPanel().WithChildren
                     (
                         new PropertyPanel(CreateHeader("Width"), this.widthTextBox),
@@ -283,7 +283,7 @@ namespace Shaderlens.Views
                 ),
                 new DockPanel { LastChildFill = true }.WithChildren
                 (
-                    new TextBlock { Text = "Range", Width = ColumnWidth, Margin = Spacing }.WithDock(Dock.Left),
+                    new TextBlock { Text = "Range", Width = ColumnWidth, VerticalAlignment = VerticalAlignment.Top, Margin = Spacing }.WithDock(Dock.Left),
                     this.prerenderCheckBox.WithDock(Dock.Bottom),
 
                     new StackPanel().WithChildren
@@ -296,7 +296,7 @@ namespace Shaderlens.Views
                 new StackPanel().WithChildren
                 (
                     new Border { Height = 1, Margin = new Thickness(-Spacing.Left, Spacing.Top, -Spacing.Right, Spacing.Bottom) }.WithReference(Border.BackgroundProperty, theme.Separator),
-                    new TextBlock { Text = "Target Paths", Margin = Spacing },
+                    new TextBlock { Text = "Target Paths", VerticalAlignment = VerticalAlignment.Center, Margin = Spacing },
                     this.pathsDocumentView
                 )
             );
@@ -629,7 +629,7 @@ namespace Shaderlens.Views
 
         private static TextBlock CreateHeader(string header)
         {
-            return new TextBlock { Text = header, Margin = Spacing };
+            return new TextBlock { Text = header, VerticalAlignment = VerticalAlignment.Center, Margin = Spacing };
         }
 
         private NumberTextBox CreateNumberTextBox(double value, double minValue, double maxValue, double stepSize)
