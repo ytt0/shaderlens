@@ -80,13 +80,15 @@
         {
             var key = e.Key == Key.System ? e.SystemKey : e.Key;
 
+            var repeatKeyUpHandled = false;
+
             if (e.IsDown && e.IsRepeat)
             {
                 SetNextState();
                 this.keysDown[(int)key] = false;
                 if (!e.Handled)
                 {
-                    e.Handled = TryHandleInputStateChange();
+                    repeatKeyUpHandled = TryHandleInputStateChange();
                 }
             }
 
@@ -94,7 +96,7 @@
             this.keysDown[(int)key] = e.IsDown;
             if (!e.Handled)
             {
-                e.Handled = TryHandleInputStateChange();
+                e.Handled = TryHandleInputStateChange() || repeatKeyUpHandled;
             }
         }
 

@@ -685,11 +685,8 @@
         {
             var key = e.Key == Key.System ? e.SystemKey : e.Key;
 
-            if (!e.IsRepeat)
-            {
-                this.lastProcessedKeyDown = key;
-                this.inputStateSource.ProcessInputEvent(e);
-            }
+            this.lastProcessedKeyDown = key;
+            this.inputStateSource.ProcessInputEvent(e);
 
             if (e.IsRepeat && this.skipKeyDownRepeat == key)
             {
