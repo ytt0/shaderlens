@@ -170,7 +170,7 @@
         private int viewportHeight;
         private IntPtr handle;
         private PresentationSource? presentationSource;
-        private bool skipKeyDownRepeat;
+        private Key skipKeyDownRepeat;
         private int viewValidationCount;
         private DateTime cursorVisibilityTime;
         private string? projectName;
@@ -179,6 +179,7 @@
         private int bufferHeight;
         private Point normalWindowPosition;
         private Size normalWindowSize;
+        private Key lastProcessedKeyDown;
 
         public ViewportView(Window window, IApplication application, IApplicationSettings settings, IApplicationInputs inputs, IApplicationCommands commands, IApplicationTheme theme, IDispatcherThread viewThread)
         {
@@ -658,16 +659,19 @@
 
         private void OnPreviewMouseDown(object sender, MouseButtonEventArgs e)
         {
+            this.lastProcessedKeyDown = default;
             this.inputStateSource.ProcessInputEvent(e);
         }
 
         private void OnPreviewMouseUp(object sender, MouseButtonEventArgs e)
         {
+            this.lastProcessedKeyDown = default;
             this.inputStateSource.ProcessInputEvent(e);
         }
 
         private void OnPreviewMouseWheel(object sender, MouseWheelEventArgs e)
         {
+            this.lastProcessedKeyDown = default;
             this.inputStateSource.ProcessInputEvent(e);
         }
 
@@ -679,18 +683,19 @@
 
         private void OnPreviewKeyDown(object sender, KeyEventArgs e)
         {
+            var key = e.Key == Key.System ? e.SystemKey : e.Key;
+
             if (!e.IsRepeat)
             {
+                this.lastProcessedKeyDown = key;
                 this.inputStateSource.ProcessInputEvent(e);
             }
 
-            if (e.IsRepeat && this.skipKeyDownRepeat)
+            if (e.IsRepeat && this.skipKeyDownRepeat == key)
             {
                 e.Handled = true;
                 return;
             }
-
-            var key = e.Key == Key.System ? e.SystemKey : e.Key;
 
             if (!e.Handled && KeyMap.TryGetIndex(key, out var index))
             {
@@ -702,6 +707,7 @@
 
         private void OnPreviewKeyUp(object sender, KeyEventArgs e)
         {
+            this.lastProcessedKeyDown = default;
             this.inputStateSource.ProcessInputEvent(e);
 
             var key = e.Key == Key.System ? e.SystemKey : e.Key;
@@ -930,13 +936,13 @@
             });
 
             var inputScope = this.inputBindings.PushScope();
-            this.skipKeyDownRepeat = true;
 
+            this.skipKeyDownRepeat = this.lastProcessedKeyDown;
             this.inputBindings.AddSpanEnd(this.inputs.ViewerPan, () =>
             {
                 mouseScope.Dispose();
                 inputScope.Dispose();
-                this.skipKeyDownRepeat = false;
+                this.skipKeyDownRepeat = default;
             });
 
             e.Handled = true;
@@ -981,13 +987,13 @@
             });
 
             var inputScope = this.inputBindings.PushScope();
-            this.skipKeyDownRepeat = true;
 
+            this.skipKeyDownRepeat = this.lastProcessedKeyDown;
             this.inputBindings.AddSpanEnd(this.inputs.ViewerScale, () =>
             {
                 mouseScope.Dispose();
                 inputScope.Dispose();
-                this.skipKeyDownRepeat = false;
+                this.skipKeyDownRepeat = default;
             });
 
             e.Handled = true;
@@ -1015,14 +1021,13 @@
                 }
             });
 
-            this.skipKeyDownRepeat = true;
-
+            this.skipKeyDownRepeat = this.lastProcessedKeyDown;
             this.inputBindings.AddSpanEnd(this.inputs.ShaderMouseState, () =>
             {
                 this.application.SetMouseState(false);
                 inputScope.Dispose();
                 mouseScope.Dispose();
-                this.skipKeyDownRepeat = false;
+                this.skipKeyDownRepeat = default;
             });
 
             e.Handled = true;
