@@ -14,13 +14,13 @@ class ValuesRangeViewer
     {
         vec2 position = (fragCoord.xy - iViewerOffset) / iViewerScale;
 
-        if (position.x < 0 || position.x > iChannelResolution[0].x || position.y < 0 || position.y > iChannelResolution[0].y)
+        if (position.x < 0 || position.x > iViewerChannelResolution.x || position.y < 0 || position.y > iViewerChannelResolution.y)
         {
             fragColor = vec4(0.0, 0.0, 0.0, 1.0);
             return;
         }
 
-        vec4 source = texelFetch(iChannel0, ivec2(floor(position)), 0);
+        vec4 source = texelFetch(iViewerChannel, ivec2(floor(position)), 0);
         vec3 target = vec3(0.0);
 
         int includedCount = 0;

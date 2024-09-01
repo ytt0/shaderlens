@@ -43,8 +43,16 @@ The following uniforms are available for all the passes, and are compatible with
 - :glsl:`vec3[] iChannelResolution`
     Channel resolution.
 
-Viewer Transformation Uniforms
+Viewer Uniforms
     The following uniforms are mostly needed for the :doc:`/manual/viewer-pass`, but are also available for all the passes.
+
+.. _built-in-uniforms-viewer-channel:
+
+- :glsl:`sampler2D iViewerChannel`
+    Selected pass framebuffer sampler.
+
+- :glsl:`vec3 iViewerChannelResolution`
+    Selected pass framebuffer resolution.
 
 .. _built-in-uniforms-viewer-scale:
 

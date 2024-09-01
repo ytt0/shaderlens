@@ -80,6 +80,7 @@ uniform sampler2D iChannel4;
 uniform sampler2D iChannel5;
 uniform sampler2D iChannel6;
 uniform sampler2D iChannel7;
+uniform sampler2D iViewerChannel;
 
 uniform vec3 iResolution;
 uniform float iTime;
@@ -94,6 +95,7 @@ uniform float iChannelTime[8];
 uniform float iChannelDuration[8];
 uniform vec3 iChannelResolution[8];
 
+uniform vec3 iViewerChannelResolution;
 uniform float iViewerScale;
 uniform vec2 iViewerOffset;
 ");

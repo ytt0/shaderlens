@@ -29,12 +29,14 @@
         public static sampler3D iChannel5 = default;
         public static sampler3D iChannel6 = default;
         public static sampler3D iChannel7 = default;
+        public static sampler3D iViewerChannel = default;
         // image/buffer/sound	Year, month, day, time in seconds in .xyzw
         public static vec4 iDate = default;
         // image/buffer/sound	The sound sample rate (typically 44100)
         //public static Float iSampleRate = default;
 
         // viewer state
+        public static vec3 iViewerChannelResolution = default;
         public static Float iViewerScale = default;
         public static vec2 iViewerOffset = default;
     }

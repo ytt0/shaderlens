@@ -69,7 +69,7 @@ Viewer Pass Definition
 - Can be an *object* with the following properties:
 
     :Source: :ref:`Source definition<definition-source>` **(required)**.
-    :Channel#: :ref:`Binding definition<definition-binding>` (where # is a number between 0 and 7), by default, ``Channel0`` is set to ``Viewer``, which is the current selected pass framebuffer (can be selected from the viewport menu: :menuselection:`Buffers --> ...`).
+    :Channel#: :ref:`Binding definition<definition-binding>` (where # is a number between 0 and 7).
     :DisplayName: Pass display name (*string*).
     :IncludeCommon: Include common sources (*boolean*), the default value is :json:`false`.
 

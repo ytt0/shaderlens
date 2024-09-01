@@ -7,6 +7,7 @@
         void SetPassFramebufferBinding(int channelIndex, string key, BindingParametersSource bindingParameters);
         void SetPassDefaultFramebufferBinding(string key);
         void SetViewerFramebufferBinding(int channelIndex);
+        void SetViewerDefaultFramebufferBinding();
         void SetTextureBinding(int channelIndex, IFileResource<byte[]> resource, BindingParametersSource bindingParameters);
         void SetTextureSequenceBinding(int channelIndex, IEnumerable<IFileResource<byte[]>> resources, int frameRate, BindingParametersSource bindingParameters);
         void SetKeyboardBinding(int channelIndex);

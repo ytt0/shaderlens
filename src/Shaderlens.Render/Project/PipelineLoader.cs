@@ -48,12 +48,12 @@
             foreach (var viewer in source.Viewers)
             {
                 var viewerProgramSource = CreateProgramSource(viewer.Program, source.Common);
-                var viewerProgram = CreateProgram(viewer.Program, ViewerDefaultChannelBindingSource.Instance, viewerProgramSource, framebuffers, uniforms, shaderCache, resources, logger);
+                var viewerProgram = CreateProgram(viewer.Program, ChannelBindingSource.Empty, viewerProgramSource, framebuffers, uniforms, shaderCache, resources, logger);
                 viewerPrograms.Add(viewer.Key, viewerProgram);
             }
 
-            var clearViewerPass = CreateProgram("Clear Viewer", this.programSourceFactory.Create(this.viewerSourceLines.Clear), framebuffers, ViewerDefaultChannelBindingSource.Instance, Uniform.Empty, shaderCache, resources, logger);
-            var valuesOverlayViewerPass = CreateProgram("Values Overlay Viewer", this.programSourceFactory.Create(this.viewerSourceLines.ValuesOverlay), framebuffers, ViewerDefaultChannelBindingSource.Instance, Uniform.Empty, shaderCache, resources, logger);
+            var clearViewerPass = CreateProgram("Clear Viewer", this.programSourceFactory.Create(this.viewerSourceLines.Clear), framebuffers, ChannelBindingSource.Empty, Uniform.Empty, shaderCache, resources, logger);
+            var valuesOverlayViewerPass = CreateProgram("Values Overlay Viewer", this.programSourceFactory.Create(this.viewerSourceLines.ValuesOverlay), framebuffers, ChannelBindingSource.Empty, Uniform.Empty, shaderCache, resources, logger);
             var viewerPassCollection = new ViewerPassCollection(clearViewerPass, valuesOverlayViewerPass, viewerPrograms);
 
             var viewerCopyFramebuffer = CreateFramebuffer(resources, "ViewerCopy");
@@ -104,6 +104,7 @@
 
             var program = this.shaderCompiler.Compile(displayName, programSource, resources, shaderCache, logger);
             var channelBindingBuilder = new ChannelBindingBuilder(this.threadAccess, program.Id, framebuffers, resources, this.textureReaderFactory, this.keyboardTextureResource);
+            channelBindingBuilder.SetViewerDefaultFramebufferBinding();
 
             binding.AddBinding(channelBindingBuilder);
 

@@ -48,20 +48,20 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord)
 {
     vec2 position = (fragCoord.xy - iViewerOffset) / iViewerScale;
 
-    if (position.x < 0 || position.x > iChannelResolution[0].x || position.y < 0 || position.y > iChannelResolution[0].y)
+    if (position.x < 0 || position.x > iViewerChannelResolution.x || position.y < 0 || position.y > iViewerChannelResolution.y)
     {
         fragColor = vec4(0.0, 0.0, 0.0, 1.0);
         return;
     }
 
-    vec4 value = texelFetch(iChannel0, ivec2(floor(position)), 0);
+    vec4 value = texelFetch(iViewerChannel, ivec2(floor(position)), 0);
 
     float gridMask = 0.0;
     float normalMask = 0.0;
 
     if (iViewerScale > GridVisibleScale)
     {
-        vec2 diff = floor((fragCoord.xy - iViewerOffset + vec2(1.0)) / iViewerScale) - floor(position);
+        vec2 diff = floor(position + vec2(1.0 / iViewerScale)) - floor(position);
 
         gridMask = min(1.0, diff.x + diff.y);
         gridMask *= smoothstep(GridVisibleScale, 10.0 * GridVisibleScale, iViewerScale) * 0.5;

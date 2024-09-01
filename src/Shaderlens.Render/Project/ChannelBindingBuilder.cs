@@ -19,6 +19,10 @@
             private readonly int channelTimeLocation;
             private readonly int channelDurationLocation;
             private readonly int channelResolutionLocation;
+            private readonly int viewerChannelResolutionLocation;
+
+            private ITextureResource? viewerTexture;
+            private IUniformBinding? viewerBinding;
 
             public ChannelBinding(uint programId)
             {
@@ -33,6 +37,7 @@
                 this.channelTimeLocation = glGetUniformLocation(programId, "iChannelTime");
                 this.channelDurationLocation = glGetUniformLocation(programId, "iChannelDuration");
                 this.channelResolutionLocation = glGetUniformLocation(programId, "iChannelResolution");
+                this.viewerChannelResolutionLocation = glGetUniformLocation(programId, "iViewerChannelResolution");
             }
 
             public void BindValue(IRenderContext context, IFramebufferResource framebuffer)
@@ -72,6 +77,7 @@
                             this.channelResolution[j + 1] = this.framebuffers[i].Height;
                         }
 
+                        this.channelResolution[j + 2] = 1;
                         j += 3;
                     }
 
@@ -81,6 +87,13 @@
                 for (var i = 0; i < MaxChannels; i++)
                 {
                     this.bindings[i]?.BindValue(context, framebuffer);
+                }
+
+                this.viewerBinding?.BindValue(context, framebuffer);
+
+                if (this.viewerChannelResolutionLocation != -1 && this.viewerTexture != null)
+                {
+                    glUniform3f(this.viewerChannelResolutionLocation, this.viewerTexture.Width, this.viewerTexture.Height, 1);
                 }
             }
 
@@ -94,6 +107,16 @@
                 this.bindings[index] = binding;
             }
 
+            public void AddViewerBinding(IUniformBinding binding)
+            {
+                if (this.viewerBinding != null)
+                {
+                    throw new Exception($"Viewer channel binding has been set more than once");
+                }
+
+                this.viewerBinding = binding;
+            }
+
             public void AddTexture(int index, ITextureResource texture)
             {
                 if (this.textures[index] != null)
@@ -102,6 +125,16 @@
                 }
 
                 this.textures[index] = texture;
+            }
+
+            public void AddViewerTexture(ITextureResource texture)
+            {
+                if (this.viewerTexture != null)
+                {
+                    throw new Exception($"Viewer channel binding has been set more than once");
+                }
+
+                this.viewerTexture = texture;
             }
 
             public void AddAnimatedTexture(int index, IAnimatedTextureResource animatedTexture)
@@ -190,6 +223,19 @@
             if (ViewerBufferUniformBinding.TryCreate(this.threadAccess, texture, BindingParameters.Empty, this.programId, GetChannelUniformName(channelIndex), this.textureUnit, out var binding))
             {
                 this.channelBinding.AddBinding(channelIndex, binding);
+                this.textureUnit++;
+            }
+        }
+
+        public void SetViewerDefaultFramebufferBinding()
+        {
+            var texture = new ViewerBufferTexture(this.framebuffers.ToArray());
+
+            this.channelBinding.AddViewerTexture(texture);
+
+            if (ViewerBufferUniformBinding.TryCreate(this.threadAccess, texture, BindingParameters.Empty, this.programId, "iViewerChannel", this.textureUnit, out var binding))
+            {
+                this.channelBinding.AddViewerBinding(binding);
                 this.textureUnit++;
             }
         }

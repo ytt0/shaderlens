@@ -40,22 +40,6 @@
         }
     }
 
-    public class ViewerDefaultChannelBindingSource : IChannelBindingSource
-    {
-        public static readonly IChannelBindingSource Instance = new ViewerDefaultChannelBindingSource();
-
-        public bool IsEmpty { get { return false; } }
-
-        private ViewerDefaultChannelBindingSource()
-        {
-        }
-
-        public void AddBinding(IChannelBindingBuilder builder)
-        {
-            builder.SetViewerFramebufferBinding(0);
-        }
-    }
-
     public class ImageDefaultFramebufferBinding : IChannelBindingSource
     {
         public static readonly IChannelBindingSource Instance = new ImageDefaultFramebufferBinding();
