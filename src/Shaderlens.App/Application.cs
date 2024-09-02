@@ -642,6 +642,11 @@ namespace Shaderlens
                 return;
             }
 
+            if (this.startPageWindow?.IsVisible == true)
+            {
+                this.startPageWindow.Hide();
+            }
+
             projectPath = Path.GetFullPath(projectPath);
 
             this.project = null;

@@ -200,12 +200,16 @@
             this.window.Title = ApplicationName;
             this.window.SnapsToDevicePixels = true;
             this.window.WindowState = settings.ViewportWindowState.Maximized ? WindowState.Maximized : WindowState.Normal;
+            this.window.AllowDrop = true;
 
             MouseHoverKeyEventBehavior.Register(this.window);
 
             this.window.SourceInitialized += OnSourceInitialized;
             this.window.Activated += OnActivated;
             this.window.Closing += OnClosing;
+            this.window.PreviewDragEnter += (sender, e) => e.Handled = true;
+            this.window.PreviewDragOver += (sender, e) => e.Handled = true;
+            this.window.PreviewDrop += OnPreviewDrop;
             this.window.IsVisibleChanged += OnIsVisibleChanged;
             this.window.LocationChanged += OnLocationChanged;
             this.window.SizeChanged += OnSizeChanged;
@@ -495,6 +499,16 @@
 
             this.settings.ViewportWindowState.Scale = this.scaleBehavior.Scale;
             this.settings.ViewportWindowState.Maximized = this.window.WindowState == WindowState.Maximized;
+        }
+
+        private void OnPreviewDrop(object sender, DragEventArgs e)
+        {
+            var files = e.Data.GetData(DataFormats.FileDrop) as string[];
+            if (files?.Length == 1)
+            {
+                this.application.OpenProject(files[0]);
+                e.Handled = true;
+            }
         }
 
         private void OnEnterSizeMove()
