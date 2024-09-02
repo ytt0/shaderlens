@@ -52,8 +52,6 @@
             this.inputBindings = new InputBindings();
             this.inputStateSource = new InputStateSource(this.window, this.inputBindings);
             this.commands.AddInputBindings(this.inputBindings);
-
-            MouseHoverKeyEventBehavior.Register(this.window);
         }
 
         public void SetTheme(IApplicationTheme theme)
