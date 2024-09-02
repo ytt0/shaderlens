@@ -187,7 +187,6 @@
                     this.colorDockUniformElement.InvalidateValue();
                 }
 
-                ClearTextBoxKeyboardFocus();
                 this.application.SetProjectChanged();
                 this.application.RenderFrame();
             };
@@ -214,7 +213,6 @@
 
         private void OnUniformElementValueChanged(object sender, RoutedEventArgs e)
         {
-            ClearTextBoxKeyboardFocus();
             this.application.SetProjectChanged();
             this.application.RenderFrame();
         }
@@ -230,15 +228,6 @@
             foreach (var header in this.rowHeaderContainers)
             {
                 header.HeaderWidth = width;
-            }
-        }
-
-        private static void ClearTextBoxKeyboardFocus()
-        {
-            if (Keyboard.FocusedElement is TextBox textBox)
-            {
-                var scope = FocusManager.GetFocusScope(textBox);
-                FocusManager.SetFocusedElement(scope, textBox.GetAncestor<FrameworkElement>());
             }
         }
 
