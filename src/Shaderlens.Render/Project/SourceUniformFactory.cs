@@ -231,7 +231,14 @@ namespace Shaderlens.Render.Project
 
         private static ISettingsValue<Vector<T>> GetVectorSettingsValue<T>(IProjectSettings settings, IJsonSerializer<Vector<T>> vectorSerializer, string name, Vector<T> defaultValue)
         {
-            return settings.GetUniformValue(new FixedSizeVectorJsonSerializer<T>(vectorSerializer, defaultValue), name, defaultValue);
+            var settingsValue = settings.GetUniformValue(new FixedSizeVectorJsonSerializer<T>(vectorSerializer, defaultValue), name, defaultValue);
+
+            if (settingsValue.Value.Count != defaultValue.Count)
+            {
+                settingsValue.Value = new Vector<T>(settingsValue.Value.Take(defaultValue.Count).Concat(defaultValue.Skip(settingsValue.Value.Count)).ToArray());
+            }
+
+            return settingsValue;
         }
 
         private static void GetVectorRangePropertiesValues<T>(string valueType, int size, string name, string value, ISourceLineAnnotationReader annotationReader, SourceLine sourceLine, IGlslValueParser<T> parser,
