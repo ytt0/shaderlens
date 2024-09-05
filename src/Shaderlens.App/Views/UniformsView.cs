@@ -23,11 +23,11 @@
         private readonly IApplicationCommands commands;
         private readonly IApplicationTheme theme;
         private readonly WindowContainer windowContainer;
+        private readonly InputStateBindings inputStateBindings;
+        private readonly InputStateSourceBehavior inputStateSource;
+        private readonly Decorator windowContent;
         private string? projectName;
         private bool isProjectChanged;
-        private readonly InputStateBindings inputStateBindings;
-        private readonly InputStateSource inputStateSource;
-        private readonly Decorator windowContent;
 
         public UniformsView(Window window, IApplication application, IApplicationSettings settings, IApplicationCommands commands, IApplicationTheme theme)
         {
@@ -40,8 +40,6 @@
 
             this.window.Closed += OnClosed;
             this.window.Activated += OnActivated;
-            this.window.KeyDown += OnKeyDown;
-            this.window.KeyUp += OnKeyUp;
 
             this.windowContent = new Border();
             this.windowContent.SetReference(TextElement.ForegroundProperty, theme.WindowForeground);
@@ -50,7 +48,7 @@
             this.windowContainer.SetContent(this.windowContent);
 
             this.inputStateBindings = new InputStateBindings();
-            this.inputStateSource = new InputStateSource(this.window, this.inputStateBindings);
+            this.inputStateSource = InputStateSourceBehavior.Register(this.window, this.inputStateBindings);
             this.commands.AddBindings(this.inputStateBindings);
         }
 
@@ -121,19 +119,6 @@
         private void OnActivated(object? sender, EventArgs e)
         {
             this.inputStateSource.Refresh();
-        }
-
-        private void OnKeyDown(object sender, KeyEventArgs e)
-        {
-            if (!e.IsRepeat)
-            {
-                this.inputStateSource.ProcessInputEvent(e);
-            }
-        }
-
-        private void OnKeyUp(object sender, KeyEventArgs e)
-        {
-            this.inputStateSource.ProcessInputEvent(e);
         }
 
         private void SetTitle()

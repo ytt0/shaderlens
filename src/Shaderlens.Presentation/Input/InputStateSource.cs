@@ -18,7 +18,7 @@
         private const int KeysCount = 173;
         private const int MouseButtonsCount = 5;
 
-        private readonly Window window;
+        private readonly FrameworkElement source;
         private readonly IInputStateListener listener;
 
         private readonly bool[] keysDown;
@@ -26,9 +26,9 @@
         private readonly bool[] mouseButtonsDown;
         private readonly bool[] previousMouseButtonsDown;
 
-        public InputStateSource(Window window, IInputStateListener listener)
+        public InputStateSource(FrameworkElement source, IInputStateListener listener)
         {
-            this.window = window;
+            this.source = source;
             this.listener = listener;
 
             this.keysDown = new bool[KeysCount];
@@ -58,7 +58,7 @@
                 isChanged |= this.previousKeysDown[i] != isDown;
             }
 
-            var isMouseOver = this.window.IsMouseOver;
+            var isMouseOver = this.source.IsMouseOver;
             this.mouseButtonsDown[0] = (this.mouseButtonsDown[0] || isMouseOver) && Mouse.PrimaryDevice.LeftButton == MouseButtonState.Pressed;
             this.mouseButtonsDown[1] = (this.mouseButtonsDown[1] || isMouseOver) && Mouse.PrimaryDevice.MiddleButton == MouseButtonState.Pressed;
             this.mouseButtonsDown[2] = (this.mouseButtonsDown[2] || isMouseOver) && Mouse.PrimaryDevice.RightButton == MouseButtonState.Pressed;
@@ -68,6 +68,48 @@
             for (var i = 0; i < MouseButtonsCount; i++)
             {
                 isChanged |= this.previousMouseButtonsDown[i] != this.mouseButtonsDown[i];
+            }
+
+            if (isChanged)
+            {
+                TryHandleInputStateChange();
+            }
+        }
+
+        public void ClearKeysState()
+        {
+            var isChanged = false;
+
+            SetNextState();
+
+            for (var i = 0; i < KeysCount; i++)
+            {
+                if (this.keysDown[i])
+                {
+                    this.keysDown[i] = false;
+                    isChanged = true;
+                }
+            }
+
+            if (isChanged)
+            {
+                TryHandleInputStateChange();
+            }
+        }
+
+        public void ClearMouseButtonsState()
+        {
+            var isChanged = false;
+
+            SetNextState();
+
+            for (var i = 0; i < MouseButtonsCount; i++)
+            {
+                if (this.mouseButtonsDown[i])
+                {
+                    this.mouseButtonsDown[i] = false;
+                    isChanged = true;
+                }
             }
 
             if (isChanged)

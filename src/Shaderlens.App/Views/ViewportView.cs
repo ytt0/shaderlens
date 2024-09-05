@@ -117,7 +117,7 @@
         private readonly IApplicationInputs inputs;
         private readonly IApplicationCommands commands;
         private readonly InputStateBindings inputStateBindings;
-        private readonly InputStateSource inputStateSource;
+        private readonly InputStateSourceBehavior inputStateSource;
         private readonly InputPositionBindings inputPositionBindings;
         private readonly StatisticsFormatter tooltipFormatter;
         private readonly StatisticsFormatter titleFormatter;
@@ -170,7 +170,6 @@
         private int viewportHeight;
         private IntPtr handle;
         private PresentationSource? presentationSource;
-        private Key skipKeyDownRepeat;
         private int viewValidationCount;
         private DateTime cursorVisibilityTime;
         private string? projectName;
@@ -179,7 +178,6 @@
         private int bufferHeight;
         private Point normalWindowPosition;
         private Size normalWindowSize;
-        private Key lastProcessedKeyDown;
 
         public ViewportView(Window window, IApplication application, IApplicationSettings settings, IApplicationInputs inputs, IApplicationCommands commands, IApplicationTheme theme, IDispatcherThread viewThread)
         {
@@ -202,6 +200,13 @@
             this.window.WindowState = settings.ViewportWindowState.Maximized ? WindowState.Maximized : WindowState.Normal;
             this.window.AllowDrop = true;
 
+            this.inputStateBindings = new InputStateBindings();
+            this.inputStateSource = InputStateSourceBehavior.Register(this.window, this.inputStateBindings);
+
+            this.inputPositionBindings = new InputPositionBindings();
+            this.mousePositionSource = MousePositionSourceWrapBehavior.Register(this.window, this.inputPositionBindings);
+            this.viewerMousePositionSource = new TransformedMousePositionSource(this.mousePositionSource);
+
             MouseHoverKeyEventBehavior.Register(this.window);
 
             this.window.SourceInitialized += OnSourceInitialized;
@@ -214,23 +219,14 @@
             this.window.LocationChanged += OnLocationChanged;
             this.window.SizeChanged += OnSizeChanged;
             this.window.StateChanged += OnStateChanged;
-            this.window.PreviewMouseDown += OnPreviewMouseDown;
-            this.window.PreviewMouseUp += OnPreviewMouseUp;
-            this.window.PreviewMouseMove += OnPreviewMouseMove;
-            this.window.PreviewMouseWheel += OnPreviewMouseWheel;
-            this.window.PreviewKeyDown += OnPreviewKeyDown;
-            this.window.PreviewKeyUp += OnPreviewKeyUp;
+            this.window.MouseMove += OnMouseMove;
+            this.window.KeyDown += OnKeyDown;
+            this.window.KeyUp += OnKeyUp;
 
             this.windowTitleBackground = theme.WindowTitleBackground.Value;
 
             this.scaleBehavior = ScaleBehavior.Register(this.window);
             this.scaleBehavior.Scale = settings.ViewportWindowState.Scale;
-
-            this.inputPositionBindings = new InputPositionBindings();
-            this.mousePositionSource = MousePositionSourceWrapBehavior.Register(this.window, this.inputPositionBindings);
-            this.viewerMousePositionSource = new TransformedMousePositionSource(this.mousePositionSource);
-            this.inputStateBindings = new InputStateBindings();
-            this.inputStateSource = new InputStateSource(this.window, this.inputStateBindings);
 
             this.frameRateTarget = new ViewportFrameRateTarget(this, this.viewThread);
 
@@ -671,55 +667,25 @@
             }
         }
 
-        private void OnPreviewMouseDown(object sender, MouseButtonEventArgs e)
-        {
-            this.lastProcessedKeyDown = default;
-            this.inputStateSource.ProcessInputEvent(e);
-        }
-
-        private void OnPreviewMouseUp(object sender, MouseButtonEventArgs e)
-        {
-            this.lastProcessedKeyDown = default;
-            this.inputStateSource.ProcessInputEvent(e);
-        }
-
-        private void OnPreviewMouseWheel(object sender, MouseWheelEventArgs e)
-        {
-            this.lastProcessedKeyDown = default;
-            this.inputStateSource.ProcessInputEvent(e);
-        }
-
-        private void OnPreviewMouseMove(object sender, MouseEventArgs e)
+        private void OnMouseMove(object sender, MouseEventArgs e)
         {
             ShowCursor();
         }
 
-        private void OnPreviewKeyDown(object sender, KeyEventArgs e)
+        private void OnKeyDown(object sender, KeyEventArgs e)
         {
             var key = e.Key == Key.System ? e.SystemKey : e.Key;
 
-            if (e.IsRepeat && this.skipKeyDownRepeat == key)
-            {
-                e.Handled = true;
-                return;
-            }
-
-            this.lastProcessedKeyDown = key;
-            this.inputStateSource.ProcessInputEvent(e);
-
-            if (!e.Handled && KeyMap.TryGetIndex(key, out var index))
+            if (KeyMap.TryGetIndex(key, out var index))
             {
                 this.application.SetKeyState(index, true);
             }
 
-            e.Handled |= e.Key == Key.Tab || e.Key == Key.System && (e.SystemKey == Key.LeftAlt || e.SystemKey == Key.RightAlt);
+            e.Handled |= key == Key.Tab || key == Key.LeftAlt || key == Key.RightAlt;
         }
 
-        private void OnPreviewKeyUp(object sender, KeyEventArgs e)
+        private void OnKeyUp(object sender, KeyEventArgs e)
         {
-            this.lastProcessedKeyDown = default;
-            this.inputStateSource.ProcessInputEvent(e);
-
             var key = e.Key == Key.System ? e.SystemKey : e.Key;
 
             if (KeyMap.TryGetIndex(key, out var index))
@@ -923,6 +889,7 @@
             var startPanSpeed = this.inputStateSource.IsMatch(this.inputs.ViewerPanSpeed);
             var startPanSnap = startPanSpeed || this.inputStateSource.IsMatch(this.inputs.ViewerPanSnap);
 
+            this.inputStateSource.SkipLastKeyRepeat();
             var mouseCaptureScope = this.mousePositionSource.Capture(true);
             var inputStateScope = this.inputStateBindings.PushScope();
             var inputPositionScope = this.inputPositionBindings.PushScope(position =>
@@ -947,10 +914,8 @@
                 }
             });
 
-            this.skipKeyDownRepeat = this.lastProcessedKeyDown;
             this.inputStateBindings.AddSpanEnd(this.inputs.ViewerPan, () =>
             {
-                this.skipKeyDownRepeat = default;
                 inputPositionScope.Dispose();
                 inputStateScope.Dispose();
                 mouseCaptureScope.Dispose();
@@ -974,6 +939,7 @@
             var relativePosition1 = GetDevicePosition(Mouse.PrimaryDevice.GetPosition(this.window));
             var viewerPosition = TransformViewerPosition(relativePosition1);
 
+            this.inputStateSource.SkipLastKeyRepeat();
             var mouseCaptureScope = this.mousePositionSource.Capture(true);
             var inputStateScope = this.inputStateBindings.PushScope();
             var inputPositionScope = this.inputPositionBindings.PushScope(position =>
@@ -999,10 +965,8 @@
                 }
             });
 
-            this.skipKeyDownRepeat = this.lastProcessedKeyDown;
             this.inputStateBindings.AddSpanEnd(this.inputs.ViewerScale, () =>
             {
-                this.skipKeyDownRepeat = default;
                 inputPositionScope.Dispose();
                 inputStateScope.Dispose();
                 mouseCaptureScope.Dispose();
@@ -1021,6 +985,7 @@
             this.viewerMousePositionSource.GetPosition(out var lastPositionX, out var lastPositionY);
             this.application.SetMouseState(true);
 
+            this.inputStateSource.SkipLastKeyRepeat();
             var mouseCaptureScope = this.mousePositionSource.Capture(this.application.WrapShaderInputCursor);
             var inputStateScope = this.inputStateBindings.PushScope();
             var inputPositionScope = this.inputPositionBindings.PushScope(position =>
@@ -1034,10 +999,8 @@
                 }
             });
 
-            this.skipKeyDownRepeat = this.lastProcessedKeyDown;
             this.inputStateBindings.AddSpanEnd(this.inputs.ShaderMouseState, () =>
             {
-                this.skipKeyDownRepeat = default;
                 this.application.SetMouseState(false);
                 inputPositionScope.Dispose();
                 inputStateScope.Dispose();
