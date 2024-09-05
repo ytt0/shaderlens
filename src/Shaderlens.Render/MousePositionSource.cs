@@ -3,8 +3,6 @@
     public interface IMousePositionSource
     {
         void GetPosition(out double x, out double y);
-        void StartCapture(bool enableCursorWrap);
-        void EndCapture();
     }
 
     public static class MousePositionSource
@@ -15,14 +13,6 @@
             {
                 x = 0;
                 y = 0;
-            }
-
-            public void StartCapture(bool enableCursorWrap)
-            {
-            }
-
-            public void EndCapture()
-            {
             }
         }
 
