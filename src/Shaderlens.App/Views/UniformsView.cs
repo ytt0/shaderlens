@@ -25,7 +25,7 @@
         private readonly WindowContainer windowContainer;
         private string? projectName;
         private bool isProjectChanged;
-        private readonly InputBindings inputBindings;
+        private readonly InputStateBindings inputStateBindings;
         private readonly InputStateSource inputStateSource;
         private readonly Decorator windowContent;
 
@@ -49,9 +49,9 @@
 
             this.windowContainer.SetContent(this.windowContent);
 
-            this.inputBindings = new InputBindings();
-            this.inputStateSource = new InputStateSource(this.window, this.inputBindings);
-            this.commands.AddInputBindings(this.inputBindings);
+            this.inputStateBindings = new InputStateBindings();
+            this.inputStateSource = new InputStateSource(this.window, this.inputStateBindings);
+            this.commands.AddBindings(this.inputStateBindings);
         }
 
         public void SetTheme(IApplicationTheme theme)

@@ -2,7 +2,7 @@
 {
     public interface ICommand
     {
-        void AddInputBindings(IInputBindings bindings);
+        void AddBindings(IInputStateBindings bindings);
         void AddMenuItem(IMenuBuilder builder, object header, object? icon = null, object? tooltip = null, Action<IMenuItemState>? setState = null);
     }
 
@@ -79,7 +79,7 @@
         ICommand OpenInputsFile { get; }
         ICommand OpenThemeFile { get; }
 
-        void AddInputBindings(IInputBindings bindings);
+        void AddBindings(IInputStateBindings bindings);
     }
 
     public class ApplicationCommands : IApplicationCommands
@@ -109,7 +109,7 @@
                 }
             }
 
-            public void AddInputBindings(IInputBindings bindings)
+            public void AddBindings(IInputStateBindings bindings)
             {
                 bindings.AddSpan(this.inputSpan, StartAction, EndAction);
             }
@@ -305,11 +305,11 @@
             this.OpenThemeFile = Add(commands, new Command(inputs.OpenThemeFile, () => application.OpenExternalPath(application.ThemePath!), null, () => application.ThemePath != null));
         }
 
-        public void AddInputBindings(IInputBindings bindings)
+        public void AddBindings(IInputStateBindings bindings)
         {
             foreach (var command in this.commands)
             {
-                command.AddInputBindings(bindings);
+                command.AddBindings(bindings);
             }
         }
 

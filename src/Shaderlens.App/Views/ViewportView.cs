@@ -93,7 +93,7 @@
             private void OnOpened(object sender, RoutedEventArgs e)
             {
                 this.viewportView.application.ClearKeysDownState();
-                this.inputScope = this.viewportView.inputBindings.PushScope();
+                this.inputScope = this.viewportView.inputStateBindings.PushScope();
                 this.menu!.Dispatcher.InvokeAsync(() => { this.menu.Visibility = Visibility.Visible; this.menu.Focus(); }, DispatcherPriority.Background);
             }
 
@@ -116,9 +116,9 @@
         private readonly IApplicationSettings settings;
         private readonly IApplicationInputs inputs;
         private readonly IApplicationCommands commands;
-        private readonly InputBindings inputBindings;
+        private readonly InputStateBindings inputStateBindings;
         private readonly InputStateSource inputStateSource;
-        private readonly InputPositionBinding inputPositionBinding;
+        private readonly InputPositionBindings inputPositionBindings;
         private readonly StatisticsFormatter tooltipFormatter;
         private readonly StatisticsFormatter titleFormatter;
         private readonly char[] titleBuffer;
@@ -226,11 +226,11 @@
             this.scaleBehavior = ScaleBehavior.Register(this.window);
             this.scaleBehavior.Scale = settings.ViewportWindowState.Scale;
 
-            this.inputPositionBinding = new InputPositionBinding();
-            this.mousePositionSource = MousePositionSourceWrapBehavior.Register(this.window, this.inputPositionBinding);
+            this.inputPositionBindings = new InputPositionBindings();
+            this.mousePositionSource = MousePositionSourceWrapBehavior.Register(this.window, this.inputPositionBindings);
             this.viewerMousePositionSource = new TransformedMousePositionSource(this.mousePositionSource);
-            this.inputBindings = new InputBindings();
-            this.inputStateSource = new InputStateSource(this.window, this.inputBindings);
+            this.inputStateBindings = new InputStateBindings();
+            this.inputStateSource = new InputStateSource(this.window, this.inputStateBindings);
 
             this.frameRateTarget = new ViewportFrameRateTarget(this, this.viewThread);
 
@@ -293,7 +293,7 @@
             this.menuCopyState = new CopyMenuState(this.application);
             this.viewerTransform = new ViewerTransform();
 
-            this.commands.AddInputBindings(this.inputBindings);
+            this.commands.AddBindings(this.inputStateBindings);
 
             var menuResources = new MenuResourcesFactory(theme.Menu);
             this.contextMenu = new MenuContainer(this, new ViewportMenuSource(this.application, this.inputs, this.commands, menuResources, this.menuCopyState, null, this.theme.Menu), this.theme.Menu);
@@ -308,34 +308,34 @@
             this.viewerMenu = new MenuContainer(this, new HeaderedMenuSource(new ViewerMenuSource(this.application, this.commands, null), "Viewer", menuResources.CreateViewerIcon()), this.theme.Menu);
             this.optionsMenu = new MenuContainer(this, new HeaderedMenuSource(new OptionsMenuSource(this.application, this.commands, menuResources), "Options", menuResources.CreateOptionsIcon()), this.theme.Menu);
 
-            this.inputBindings.AddSpanEnd(this.inputs.MenuMain, () => { ResetCopySource(); this.contextMenu.Open(); }, true);
-            this.inputBindings.AddSpanEnd(this.inputs.MenuRecentProjects, () => this.recentProjectsMenu.Open());
-            this.inputBindings.AddSpanEnd(this.inputs.MenuProjectFiles, () => { if (application.IsPartiallyLoaded) { this.projectFilesMenu.Open(); } });
-            this.inputBindings.AddSpanEnd(this.inputs.MenuBuffers, () => { if (application.IsFullyLoaded) { this.buffersMenu.Open(); } });
-            this.inputBindings.AddSpanEnd(this.inputs.MenuExport, () => { if (application.IsFullyLoaded) { this.exportMenu.Open(); } });
-            this.inputBindings.AddSpanEnd(this.inputs.MenuCopy, CopySelect);
-            this.inputBindings.AddSpanEnd(this.inputs.MenuResolution, () => { if (application.IsFullyLoaded) { this.resolutionMenu.Open(); } });
-            this.inputBindings.AddSpanEnd(this.inputs.MenuFrameRate, () => { if (application.IsFullyLoaded) { this.frameRateMenu.Open(); } });
-            this.inputBindings.AddSpanEnd(this.inputs.MenuSpeed, () => { if (application.IsFullyLoaded) { this.speedMenu.Open(); } });
-            this.inputBindings.AddSpanEnd(this.inputs.MenuViewer, () => { if (application.IsFullyLoaded) { this.viewerMenu.Open(); } });
-            this.inputBindings.AddSpanEnd(this.inputs.MenuOptions, () => this.optionsMenu.Open());
+            this.inputStateBindings.AddSpanEnd(this.inputs.MenuMain, () => { ResetCopySource(); this.contextMenu.Open(); }, true);
+            this.inputStateBindings.AddSpanEnd(this.inputs.MenuRecentProjects, () => this.recentProjectsMenu.Open());
+            this.inputStateBindings.AddSpanEnd(this.inputs.MenuProjectFiles, () => { if (application.IsPartiallyLoaded) { this.projectFilesMenu.Open(); } });
+            this.inputStateBindings.AddSpanEnd(this.inputs.MenuBuffers, () => { if (application.IsFullyLoaded) { this.buffersMenu.Open(); } });
+            this.inputStateBindings.AddSpanEnd(this.inputs.MenuExport, () => { if (application.IsFullyLoaded) { this.exportMenu.Open(); } });
+            this.inputStateBindings.AddSpanEnd(this.inputs.MenuCopy, CopySelect);
+            this.inputStateBindings.AddSpanEnd(this.inputs.MenuResolution, () => { if (application.IsFullyLoaded) { this.resolutionMenu.Open(); } });
+            this.inputStateBindings.AddSpanEnd(this.inputs.MenuFrameRate, () => { if (application.IsFullyLoaded) { this.frameRateMenu.Open(); } });
+            this.inputStateBindings.AddSpanEnd(this.inputs.MenuSpeed, () => { if (application.IsFullyLoaded) { this.speedMenu.Open(); } });
+            this.inputStateBindings.AddSpanEnd(this.inputs.MenuViewer, () => { if (application.IsFullyLoaded) { this.viewerMenu.Open(); } });
+            this.inputStateBindings.AddSpanEnd(this.inputs.MenuOptions, () => this.optionsMenu.Open());
 
-            this.inputBindings.AddRenderSpanStart(this.inputs.ShaderMouseState, this.application, ShaderMouseStateStart);
-            this.inputBindings.AddRenderSpanStart(this.inputs.ViewerPan, this.application, ViewerPanStart);
-            this.inputBindings.AddRenderSpanStart(this.inputs.ViewerScale, this.application, ViewerScaleStart);
-            this.inputBindings.AddRenderSpanStart(this.inputs.ViewerScaleUp, this.application, e => SetViewerScale(e, true));
-            this.inputBindings.AddRenderSpanStart(this.inputs.ViewerScaleDown, this.application, e => SetViewerScale(e, false));
-            this.inputBindings.AddRenderSpanStart(this.inputs.ViewerScaleReset, this.application, ResetViewerScale);
+            this.inputStateBindings.AddRenderSpanStart(this.inputs.ShaderMouseState, this.application, ShaderMouseStateStart);
+            this.inputStateBindings.AddRenderSpanStart(this.inputs.ViewerPan, this.application, ViewerPanStart);
+            this.inputStateBindings.AddRenderSpanStart(this.inputs.ViewerScale, this.application, ViewerScaleStart);
+            this.inputStateBindings.AddRenderSpanStart(this.inputs.ViewerScaleUp, this.application, e => SetViewerScale(e, true));
+            this.inputStateBindings.AddRenderSpanStart(this.inputs.ViewerScaleDown, this.application, e => SetViewerScale(e, false));
+            this.inputStateBindings.AddRenderSpanStart(this.inputs.ViewerScaleReset, this.application, ResetViewerScale);
 
-            this.inputBindings.AddRenderSpanStart(this.inputs.CopyFrame, this.application, CopyFrame);
-            this.inputBindings.AddRenderSpanStart(this.inputs.CopyFrameWithAlpha, this.application, CopyFrameWithAlpha);
-            this.inputBindings.AddRenderSpanStart(this.inputs.CopyRepeat, this.application, CopyRepeat);
+            this.inputStateBindings.AddRenderSpanStart(this.inputs.CopyFrame, this.application, CopyFrame);
+            this.inputStateBindings.AddRenderSpanStart(this.inputs.CopyFrameWithAlpha, this.application, CopyFrameWithAlpha);
+            this.inputStateBindings.AddRenderSpanStart(this.inputs.CopyRepeat, this.application, CopyRepeat);
 
-            this.inputBindings.AddRenderSpanStart(this.inputs.ExportFrame, this.application, this.application.ExportFrame);
-            this.inputBindings.AddRenderSpanStart(this.inputs.ExportFrameRepeat, this.application, this.application.ExportFrameRepeat);
+            this.inputStateBindings.AddRenderSpanStart(this.inputs.ExportFrame, this.application, this.application.ExportFrame);
+            this.inputStateBindings.AddRenderSpanStart(this.inputs.ExportFrameRepeat, this.application, this.application.ExportFrameRepeat);
 
-            this.inputBindings.AddSpanStart(this.inputs.FullScreenToggle, ToggleFullScreen);
-            this.inputBindings.AddSpanStart(this.inputs.FullScreenLeave, ExitFullScreen);
+            this.inputStateBindings.AddSpanStart(this.inputs.FullScreenToggle, ToggleFullScreen);
+            this.inputStateBindings.AddSpanStart(this.inputs.FullScreenLeave, ExitFullScreen);
 
             this.window.Focus();
         }
@@ -514,7 +514,7 @@
         private void OnEnterSizeMove()
         {
             this.isResizing = true;
-            this.resizeInputScope = this.inputBindings.PushScope();
+            this.resizeInputScope = this.inputStateBindings.PushScope();
 
             this.resumePipelineOnResizeEnd = !this.application.IsPaused;
 
@@ -924,8 +924,8 @@
             var startPanSnap = startPanSpeed || this.inputStateSource.IsMatch(this.inputs.ViewerPanSnap);
 
             var mouseCaptureScope = this.mousePositionSource.Capture(true);
-            var inputScope = this.inputBindings.PushScope();
-            var inputPositionScope = this.inputPositionBinding.PushScope(position =>
+            var inputStateScope = this.inputStateBindings.PushScope();
+            var inputPositionScope = this.inputPositionBindings.PushScope(position =>
             {
                 var snapFactor = startPanSnap ? this.viewerTransform.Scale : 1.0;
                 var speedFactor = startPanSpeed ? this.settings.PanSpeedFactor : 1.0;
@@ -948,11 +948,11 @@
             });
 
             this.skipKeyDownRepeat = this.lastProcessedKeyDown;
-            this.inputBindings.AddSpanEnd(this.inputs.ViewerPan, () =>
+            this.inputStateBindings.AddSpanEnd(this.inputs.ViewerPan, () =>
             {
                 this.skipKeyDownRepeat = default;
                 inputPositionScope.Dispose();
-                inputScope.Dispose();
+                inputStateScope.Dispose();
                 mouseCaptureScope.Dispose();
             });
 
@@ -975,8 +975,8 @@
             var viewerPosition = TransformViewerPosition(relativePosition1);
 
             var mouseCaptureScope = this.mousePositionSource.Capture(true);
-            var inputScope = this.inputBindings.PushScope();
-            var inputPositionScope = this.inputPositionBinding.PushScope(position =>
+            var inputStateScope = this.inputStateBindings.PushScope();
+            var inputPositionScope = this.inputPositionBindings.PushScope(position =>
             {
                 var modifierFactor = startScaleSpeed ? this.settings.ScaleSpeedFactor : 1.0;
 
@@ -1000,11 +1000,11 @@
             });
 
             this.skipKeyDownRepeat = this.lastProcessedKeyDown;
-            this.inputBindings.AddSpanEnd(this.inputs.ViewerScale, () =>
+            this.inputStateBindings.AddSpanEnd(this.inputs.ViewerScale, () =>
             {
                 this.skipKeyDownRepeat = default;
                 inputPositionScope.Dispose();
-                inputScope.Dispose();
+                inputStateScope.Dispose();
                 mouseCaptureScope.Dispose();
             });
 
@@ -1022,8 +1022,8 @@
             this.application.SetMouseState(true);
 
             var mouseCaptureScope = this.mousePositionSource.Capture(this.application.WrapShaderInputCursor);
-            var inputScope = this.inputBindings.PushScope();
-            var inputPositionScope = this.inputPositionBinding.PushScope(position =>
+            var inputStateScope = this.inputStateBindings.PushScope();
+            var inputPositionScope = this.inputPositionBindings.PushScope(position =>
             {
                 this.viewerMousePositionSource.GetPosition(out var positionX, out var positionY);
                 if (lastPositionX != positionX || lastPositionY != positionY)
@@ -1035,12 +1035,12 @@
             });
 
             this.skipKeyDownRepeat = this.lastProcessedKeyDown;
-            this.inputBindings.AddSpanEnd(this.inputs.ShaderMouseState, () =>
+            this.inputStateBindings.AddSpanEnd(this.inputs.ShaderMouseState, () =>
             {
                 this.skipKeyDownRepeat = default;
                 this.application.SetMouseState(false);
                 inputPositionScope.Dispose();
-                inputScope.Dispose();
+                inputStateScope.Dispose();
                 mouseCaptureScope.Dispose();
             });
 

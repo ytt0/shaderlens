@@ -2,13 +2,13 @@
 {
     public delegate void InputSpanEventHandler(InputSpanEventArgs e);
 
-    public interface IInputBindings
+    public interface IInputStateBindings
     {
         IDisposable PushScope();
-        void Add(IInputSpan inputSpan, InputSpanEventHandler startHandler, InputSpanEventHandler endHandler, bool continuous);
+        void Add(IInputSpan inputSpan, InputSpanEventHandler startHandler, InputSpanEventHandler endHandler, bool requireSpanStart);
     }
 
-    public interface IInputListener
+    public interface IInputStateListener
     {
         void InputStateChanged(InputSpanEventArgs e);
     }
@@ -26,60 +26,60 @@
         }
     }
 
-    public static class InputBindingsExtensions
+    public static class InputStateBindingsExtensions
     {
         private static readonly InputSpanEventHandler EmptyAction = e => e.Handled = true;
 
-        public static void AddSpanStart(this IInputBindings inputBindings, IInputSpan? inputSpan, InputSpanEventHandler startAction)
+        public static void AddSpanStart(this IInputStateBindings inputStateBindings, IInputSpan? inputSpan, InputSpanEventHandler startAction)
         {
-            inputBindings.AddSpan(inputSpan, startAction, EmptyAction, true);
+            inputStateBindings.AddSpan(inputSpan, startAction, EmptyAction, true);
         }
 
-        public static void AddSpanStart(this IInputBindings inputBindings, IInputSpan? inputSpan, Action startAction)
+        public static void AddSpanStart(this IInputStateBindings inputStateBindings, IInputSpan? inputSpan, Action startAction)
         {
-            inputBindings.AddSpan(inputSpan, e => { startAction(); e.Handled = true; }, EmptyAction, true);
+            inputStateBindings.AddSpan(inputSpan, e => { startAction(); e.Handled = true; }, EmptyAction, true);
         }
 
-        public static void AddSpanEnd(this IInputBindings inputBindings, IInputSpan? inputSpan, InputSpanEventHandler endAction, bool continuous = false)
+        public static void AddSpanEnd(this IInputStateBindings inputStateBindings, IInputSpan? inputSpan, InputSpanEventHandler endAction, bool requireSpanStart = false)
         {
-            inputBindings.AddSpan(inputSpan, EmptyAction, endAction, continuous);
+            inputStateBindings.AddSpan(inputSpan, EmptyAction, endAction, requireSpanStart);
         }
 
-        public static void AddSpanEnd(this IInputBindings inputBindings, IInputSpan? inputSpan, Action endAction, bool continuous = false)
+        public static void AddSpanEnd(this IInputStateBindings inputStateBindings, IInputSpan? inputSpan, Action endAction, bool requireSpanStart = false)
         {
-            inputBindings.AddSpan(inputSpan, EmptyAction, e => { endAction(); e.Handled = true; }, continuous);
+            inputStateBindings.AddSpan(inputSpan, EmptyAction, e => { endAction(); e.Handled = true; }, requireSpanStart);
         }
 
-        public static void AddSpan(this IInputBindings inputBindings, IInputSpan? inputSpan, Action startAction, Action endAction, bool continuous = false)
+        public static void AddSpan(this IInputStateBindings inputStateBindings, IInputSpan? inputSpan, Action startAction, Action endAction, bool requireSpanStart = false)
         {
-            inputBindings.AddSpan(inputSpan, e => { startAction(); e.Handled = true; }, e => { endAction(); e.Handled = true; }, continuous);
+            inputStateBindings.AddSpan(inputSpan, e => { startAction(); e.Handled = true; }, e => { endAction(); e.Handled = true; }, requireSpanStart);
         }
 
-        public static void AddSpan(this IInputBindings inputBindings, IInputSpan? inputSpan, InputSpanEventHandler startAction, InputSpanEventHandler endAction, bool continuous = false)
+        public static void AddSpan(this IInputStateBindings inputStateBindings, IInputSpan? inputSpan, InputSpanEventHandler startAction, InputSpanEventHandler endAction, bool requireSpanStart = false)
         {
             if (inputSpan != null)
             {
-                inputBindings.Add(inputSpan, startAction, endAction, continuous);
+                inputStateBindings.Add(inputSpan, startAction, endAction, requireSpanStart);
             }
         }
     }
 
-    public class InputBindings : IInputBindings, IInputListener
+    public class InputStateBindings : IInputStateBindings, IInputStateListener
     {
-        private record Binding(IInputSpan InputSpan, InputSpanEventHandler StartHandler, InputSpanEventHandler EndHandler, bool Continuous);
+        private record Binding(IInputSpan InputSpan, InputSpanEventHandler StartHandler, InputSpanEventHandler EndHandler, bool RequireSpanStart);
         private record BindingMatch(IInputSpan InputSpan, int Length, InputSpanEventHandler Handler);
 
         private class Scope : IDisposable
         {
-            private readonly InputBindings inputBindings;
+            private readonly InputStateBindings inputStateBindings;
             private readonly List<Binding> bindings;
 
             private IInputSpan? startInputSpan;
             private bool isDisposed;
 
-            public Scope(InputBindings inputBindings)
+            public Scope(InputStateBindings inputStateBindings)
             {
-                this.inputBindings = inputBindings;
+                this.inputStateBindings = inputStateBindings;
                 this.bindings = new List<Binding>();
             }
 
@@ -91,7 +91,7 @@
                 }
 
                 this.isDisposed = true;
-                this.inputBindings.PopScope(this);
+                this.inputStateBindings.PopScope(this);
             }
 
             public void AddBinding(Binding binding)
@@ -117,7 +117,7 @@
                         startMatches.Add(new BindingMatch(binding.InputSpan, startLength, binding.StartHandler));
                     }
 
-                    if (!binding.Continuous || binding.InputSpan == this.startInputSpan)
+                    if (!binding.RequireSpanStart || binding.InputSpan == this.startInputSpan)
                     {
                         var endLength = MatchEnd(binding.InputSpan, e.PreviousState, e.State);
                         if (endLength > 0)
@@ -169,7 +169,7 @@
         private readonly Stack<Scope> scopesStack;
         private Scope scope;
 
-        public InputBindings()
+        public InputStateBindings()
         {
             this.scopesStack = new Stack<Scope>();
             this.scope = new Scope(this);
@@ -180,9 +180,9 @@
             this.scope.TryInvoke(e);
         }
 
-        public void Add(IInputSpan inputSpan, InputSpanEventHandler startHandler, InputSpanEventHandler endHandler, bool continuous)
+        public void Add(IInputSpan inputSpan, InputSpanEventHandler startHandler, InputSpanEventHandler endHandler, bool requireSpanStart)
         {
-            this.scope.AddBinding(new Binding(inputSpan, startHandler, endHandler, continuous));
+            this.scope.AddBinding(new Binding(inputSpan, startHandler, endHandler, requireSpanStart));
         }
 
         public IDisposable PushScope()

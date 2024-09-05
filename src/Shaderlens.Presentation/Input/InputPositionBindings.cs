@@ -1,8 +1,6 @@
-﻿using Shaderlens.Presentation.Extensions;
-
-namespace Shaderlens.Presentation.Input
+﻿namespace Shaderlens.Presentation.Input
 {
-    public interface IInputPositionBinding
+    public interface IInputPositionBindings
     {
         IDisposable PushScope(Action<Point> positionChangedHandler);
     }
@@ -12,14 +10,14 @@ namespace Shaderlens.Presentation.Input
         void InputPositionChanged(Point position);
     }
 
-    public class InputPositionBinding : IInputPositionBinding, IInputPositionListener
+    public class InputPositionBindings : IInputPositionBindings, IInputPositionListener
     {
         private class Scope : IDisposable
         {
-            private readonly InputPositionBinding binding;
+            private readonly InputPositionBindings binding;
             private readonly Action<Point> handler;
 
-            public Scope(InputPositionBinding binding, Action<Point> handler)
+            public Scope(InputPositionBindings binding, Action<Point> handler)
             {
                 this.binding = binding;
                 this.handler = handler;
@@ -40,7 +38,7 @@ namespace Shaderlens.Presentation.Input
         private Scope? scope;
         private Point lastPosition;
 
-        public InputPositionBinding()
+        public InputPositionBindings()
         {
             this.scopesStack = new Stack<Scope?>();
         }

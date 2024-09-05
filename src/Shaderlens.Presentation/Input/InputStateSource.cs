@@ -19,17 +19,17 @@
         private const int MouseButtonsCount = 5;
 
         private readonly Window window;
-        private readonly IInputListener inputListener;
+        private readonly IInputStateListener listener;
 
         private readonly bool[] keysDown;
         private readonly bool[] previousKeysDown;
         private readonly bool[] mouseButtonsDown;
         private readonly bool[] previousMouseButtonsDown;
 
-        public InputStateSource(Window window, IInputListener inputListener)
+        public InputStateSource(Window window, IInputStateListener listener)
         {
             this.window = window;
-            this.inputListener = inputListener;
+            this.listener = listener;
 
             this.keysDown = new bool[KeysCount];
             this.previousKeysDown = new bool[KeysCount];
@@ -120,8 +120,8 @@
             var scrollStartEvent = new InputSpanEventArgs(noScrollState, scrollState);
             var scrollEndEvent = new InputSpanEventArgs(scrollState, noScrollState);
 
-            this.inputListener.InputStateChanged(scrollStartEvent);
-            this.inputListener.InputStateChanged(scrollEndEvent);
+            this.listener.InputStateChanged(scrollStartEvent);
+            this.listener.InputStateChanged(scrollEndEvent);
 
             e.Handled = scrollStartEvent.Handled || scrollEndEvent.Handled;
         }
@@ -132,7 +132,7 @@
             var state = new InputState(this.keysDown, this.mouseButtonsDown, null);
 
             var stateChangedEvent = new InputSpanEventArgs(previousState, state);
-            this.inputListener.InputStateChanged(stateChangedEvent);
+            this.listener.InputStateChanged(stateChangedEvent);
             return stateChangedEvent.Handled;
         }
 
