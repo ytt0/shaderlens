@@ -1102,7 +1102,7 @@
             }
         }
 
-        private void CopyRepeat()
+        private void CopyRepeat(InputSpanEventArgs e)
         {
             if (this.window.IsMouseOver)
             {
@@ -1114,6 +1114,8 @@
                 {
                     CopySelect();
                 }
+
+                e.Handled = true;
             }
         }
 
