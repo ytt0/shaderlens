@@ -50,7 +50,7 @@
                     try
                     {
                         this.skipChangeEvent = true;
-                        this.alphaTextBox.Value = value;
+                        this.alphaTextBox.RawValue = value;
                         SetAlphaTextBoxProgressBrush();
                         SetTargetColorElement();
                     }
@@ -219,10 +219,10 @@
         {
             this.colorPicker = new ColorPicker();
 
-            this.colorTextBox1 = new NumberTextBox(theme) { StepSize = 0.001, MinValue = 0.0, MaxValue = 1.0 };
-            this.colorTextBox2 = new NumberTextBox(theme) { StepSize = 0.001, MinValue = 0.0, MaxValue = 1.0 };
-            this.colorTextBox3 = new NumberTextBox(theme) { StepSize = 0.001, MinValue = 0.0, MaxValue = 1.0 };
-            this.alphaTextBox = new NumberTextBox(theme) { StepSize = 0.001, MinValue = 0.0, MaxValue = 1.0, Visibility = Visibility.Collapsed };
+            this.colorTextBox1 = new NumberTextBox(theme) { Step = 0.001, MinValue = 0.0, MaxValue = 1.0 };
+            this.colorTextBox2 = new NumberTextBox(theme) { Step = 0.001, MinValue = 0.0, MaxValue = 1.0 };
+            this.colorTextBox3 = new NumberTextBox(theme) { Step = 0.001, MinValue = 0.0, MaxValue = 1.0 };
+            this.alphaTextBox = new NumberTextBox(theme) { Step = 0.001, MinValue = 0.0, MaxValue = 1.0, Visibility = Visibility.Collapsed };
             this.dragSensitivity = this.colorTextBox1.DragSensitivity;
 
             this.textBoxMode = TextBoxMode.Okhsv;
@@ -406,27 +406,27 @@
         {
             if (this.textBoxMode == TextBoxMode.Okhsv)
             {
-                this.colorTextBox1.Value = hsv.H;
-                this.colorTextBox2.Value = hsv.S;
-                this.colorTextBox3.Value = hsv.V;
+                this.colorTextBox1.EditValue(hsv.H, 3);
+                this.colorTextBox2.EditValue(hsv.S, 3);
+                this.colorTextBox3.EditValue(hsv.V, 3);
                 return;
             }
 
             if (this.textBoxMode == TextBoxMode.LinearRgb)
             {
                 var rgb = hsv.ToLinearRgb().Clamp();
-                this.colorTextBox1.Value = rgb.R;
-                this.colorTextBox2.Value = rgb.G;
-                this.colorTextBox3.Value = rgb.B;
+                this.colorTextBox1.EditValue(rgb.R, 3);
+                this.colorTextBox2.EditValue(rgb.G, 3);
+                this.colorTextBox3.EditValue(rgb.B, 3);
                 return;
             }
 
             if (this.textBoxMode == TextBoxMode.Srgb)
             {
                 var rgb = hsv.ToLinearRgb().ToSrgb().Clamp();
-                this.colorTextBox1.Value = rgb.R;
-                this.colorTextBox2.Value = rgb.G;
-                this.colorTextBox3.Value = rgb.B;
+                this.colorTextBox1.EditValue(rgb.R, 3);
+                this.colorTextBox2.EditValue(rgb.G, 3);
+                this.colorTextBox3.EditValue(rgb.B, 3);
                 return;
             }
 

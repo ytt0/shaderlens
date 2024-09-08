@@ -13,7 +13,9 @@
         IThemeResource<Color> WindowTitleBackground { get; }
         IThemeResource<Brush> WindowMessageBackground { get; }
         IThemeResource<Brush> TextEditForeground { get; }
+        IThemeResource<Brush> TextInvalidForeground { get; }
         IThemeResource<Brush> TextDragForeground { get; }
+        IThemeResource<Brush> TextProgress { get; }
         IThemeResource<Brush> TextProgressTrack { get; }
         IThemeResource<Brush> ControlHoveredBackground { get; }
         IThemeResource<Brush> ControlPressedBackground { get; }
@@ -50,6 +52,8 @@
         public IThemeResource<Brush> WindowMessageBackground { get; }
         public IThemeResource<Brush> TextEditForeground { get; }
         public IThemeResource<Brush> TextDragForeground { get; }
+        public IThemeResource<Brush> TextInvalidForeground { get; }
+        public IThemeResource<Brush> TextProgress { get; }
         public IThemeResource<Brush> TextProgressTrack { get; }
         public IThemeResource<Brush> ControlHoveredBackground { get; }
         public IThemeResource<Brush> ControlPressedBackground { get; }
@@ -95,6 +99,8 @@
             this.WindowMessageBackground = this.resources.AddResource(nameof(this.WindowMessageBackground), brushSerializer, new SolidColorBrush(Color.FromRgb(240, 240, 240)));
             this.TextEditForeground = this.resources.AddResource(nameof(this.TextEditForeground), brushSerializer, Brushes.Black);
             this.TextDragForeground = this.resources.AddResource(nameof(this.TextDragForeground), brushSerializer, new SolidColorBrush(Color.FromRgb(0, 200, 255)));
+            this.TextInvalidForeground = this.resources.AddResource(nameof(this.TextInvalidForeground), brushSerializer, new SolidColorBrush(Color.FromRgb(180, 0, 0)));
+            this.TextProgress = this.resources.AddResource(nameof(this.TextProgress), brushSerializer, new SolidColorBrush(Color.FromRgb(150, 150, 150)));
             this.TextProgressTrack = this.resources.AddResource(nameof(this.TextProgressTrack), brushSerializer, new SolidColorBrush(Color.FromRgb(235, 235, 235)));
             this.ControlHoveredBackground = this.resources.AddResource(nameof(this.ControlHoveredBackground), brushSerializer, new SolidColorBrush(Color.FromRgb(240, 240, 240)));
             this.ControlPressedBackground = this.resources.AddResource(nameof(this.ControlPressedBackground), brushSerializer, new SolidColorBrush(Color.FromRgb(235, 235, 235)));
@@ -145,6 +151,8 @@
         public IThemeResource<Brush> WindowMessageBackground { get; }
         public IThemeResource<Brush> TextEditForeground { get; }
         public IThemeResource<Brush> TextDragForeground { get; }
+        public IThemeResource<Brush> TextInvalidForeground { get; }
+        public IThemeResource<Brush> TextProgress { get; }
         public IThemeResource<Brush> TextProgressTrack { get; }
         public IThemeResource<Brush> ControlHoveredBackground { get; }
         public IThemeResource<Brush> ControlPressedBackground { get; }
@@ -190,6 +198,8 @@
             this.WindowMessageBackground = this.resources.AddResource(nameof(this.WindowMessageBackground), brushSerializer, new SolidColorBrush(Color.FromRgb(32, 32, 32)));
             this.TextEditForeground = this.resources.AddResource(nameof(this.TextEditForeground), brushSerializer, Brushes.White);
             this.TextDragForeground = this.resources.AddResource(nameof(this.TextDragForeground), brushSerializer, new SolidColorBrush(Color.FromRgb(0, 200, 255)));
+            this.TextInvalidForeground = this.resources.AddResource(nameof(this.TextInvalidForeground), brushSerializer, new SolidColorBrush(Color.FromRgb(255, 150, 150)));
+            this.TextProgress = this.resources.AddResource(nameof(this.TextProgress), brushSerializer, new SolidColorBrush(Color.FromRgb(180, 180, 180)));
             this.TextProgressTrack = this.resources.AddResource(nameof(this.TextProgressTrack), brushSerializer, new SolidColorBrush(Color.FromRgb(80, 80, 80)));
             this.ControlHoveredBackground = this.resources.AddResource(nameof(this.ControlHoveredBackground), brushSerializer, new SolidColorBrush(Color.FromRgb(45, 45, 45)));
             this.ControlPressedBackground = this.resources.AddResource(nameof(this.ControlPressedBackground), brushSerializer, new SolidColorBrush(Color.FromRgb(55, 55, 55)));

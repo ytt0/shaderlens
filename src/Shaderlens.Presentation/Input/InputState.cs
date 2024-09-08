@@ -9,6 +9,11 @@
 
     public static class InputStateExtensions
     {
+        public static bool IsMatch(this IInputState state, IInputSpan inputSpan)
+        {
+            return inputSpan.Match(state) > 0;
+        }
+
         public static bool IsKeyDown(this IInputState state, ModifierKey modifierKey)
         {
             switch (modifierKey)
@@ -48,6 +53,39 @@
         public bool IsMouseScroll(MouseScroll direction)
         {
             return this.mouseScroll == direction;
+        }
+    }
+
+    public class PrimaryDeviceInputState : IInputState
+    {
+        public static readonly IInputState Instance = new PrimaryDeviceInputState();
+
+        private PrimaryDeviceInputState()
+        {
+        }
+
+        public bool IsKeyDown(Key key)
+        {
+            return Keyboard.PrimaryDevice.IsKeyDown(key);
+        }
+
+        public bool IsMouseButtonDown(MouseButton button)
+        {
+            switch (button)
+            {
+                case MouseButton.Left: return Mouse.PrimaryDevice.LeftButton == MouseButtonState.Pressed;
+                case MouseButton.Middle: return Mouse.PrimaryDevice.MiddleButton == MouseButtonState.Pressed;
+                case MouseButton.Right: return Mouse.PrimaryDevice.RightButton == MouseButtonState.Pressed;
+                case MouseButton.XButton1: return Mouse.PrimaryDevice.XButton1 == MouseButtonState.Pressed;
+                case MouseButton.XButton2: return Mouse.PrimaryDevice.XButton2 == MouseButtonState.Pressed;
+            }
+
+            return false;
+        }
+
+        public bool IsMouseScroll(MouseScroll direction)
+        {
+            return false;
         }
     }
 }

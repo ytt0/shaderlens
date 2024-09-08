@@ -26,12 +26,12 @@
 
             this.valuesTextBox = settingsValue.Value.Select((value, index) => new NumberTextBox(theme)
             {
-                Value = value,
+                RawValue = value,
                 MinValue = minValue[index],
                 MaxValue = maxValue[index],
-                StepSize = step[index],
+                Step = step[index],
                 DragSensitivity = dragSensitivity,
-                RequireScrollModifierKey = true,
+                ScrollModifier = new ModifierKeyInputSpan(ModifierKey.Alt),
                 HorizontalAlignment = HorizontalAlignment.Stretch
             }.WithHandler(NumberTextBox.ValueChangedEvent, OnValueChanged)).ToArray();
 
@@ -68,7 +68,7 @@
             {
                 for (var i = 0; i < this.valuesTextBox.Length; i++)
                 {
-                    this.valuesTextBox[i].Value = this.settingsValue.Value[i];
+                    this.valuesTextBox[i].RawValue = this.settingsValue.Value[i];
                 }
 
                 this.child.IsResetButtonVisible = !this.settingsValue.IsDefaultValue();

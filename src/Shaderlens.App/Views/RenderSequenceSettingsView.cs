@@ -124,7 +124,7 @@ namespace Shaderlens.Views
 
             this.frameCountTextBox = CreateNumberTextBox(100, 0, 1000, 1).WithHandler(NumberTextBox.ValueChangedEvent, (sender, e) => TryChangeValues(() =>
             {
-                this.endFrameTextBox!.Value = this.startFrameTextBox!.Value + this.frameCountTextBox!.Value;
+                this.endFrameTextBox!.RawValue = this.startFrameTextBox!.Value + this.frameCountTextBox!.Value;
                 this.endFrameTextBox!.MinValue = this.startFrameTextBox.Value;
                 SetSecondsValues();
                 SetPathRangeRuns();
@@ -133,7 +133,7 @@ namespace Shaderlens.Views
 
             this.startFrameTextBox = CreateNumberTextBox(0, 0, 1000, 1).WithHandler(NumberTextBox.ValueChangedEvent, (sender, e) => TryChangeValues(() =>
             {
-                this.endFrameTextBox!.Value = this.startFrameTextBox!.Value + this.frameCountTextBox.Value;
+                this.endFrameTextBox!.RawValue = this.startFrameTextBox!.Value + this.frameCountTextBox.Value;
                 this.endFrameTextBox!.MinValue = this.startFrameTextBox.Value;
                 SetSecondsValues();
                 SetPathRangeRuns();
@@ -142,8 +142,8 @@ namespace Shaderlens.Views
 
             this.endFrameTextBox = CreateNumberTextBox(0, 0, 1000, 1).WithHandler(NumberTextBox.ValueChangedEvent, (sender, e) => TryChangeValues(() =>
             {
-                this.frameCountTextBox.Value = this.endFrameTextBox!.Value - this.startFrameTextBox.Value;
-                this.frameCountTextBox!.Value = this.frameCountTextBox.Value;
+                this.frameCountTextBox.RawValue = this.endFrameTextBox!.Value - this.startFrameTextBox.Value;
+                this.frameCountTextBox!.RawValue = this.frameCountTextBox.Value;
                 SetSecondsValues();
                 SetPathRangeRuns();
                 ValidateValues();
@@ -151,7 +151,7 @@ namespace Shaderlens.Views
 
             this.startSecondTextBox = CreateNumberTextBox(0, 0, 1000, 0.1).WithHandler(NumberTextBox.ValueChangedEvent, (sender, e) => TryChangeValues(() =>
             {
-                this.endSecondTextBox!.Value = this.startSecondTextBox!.Value + this.durationTextBox!.Value;
+                this.endSecondTextBox!.RawValue = this.startSecondTextBox!.Value + this.durationTextBox!.Value;
                 this.endSecondTextBox!.MinValue = this.startSecondTextBox!.Value;
                 SetFramesValues();
                 SetPathRangeRuns();
@@ -160,7 +160,7 @@ namespace Shaderlens.Views
 
             this.durationTextBox = CreateNumberTextBox(0, 0, 1000, 0.1).WithHandler(NumberTextBox.ValueChangedEvent, (sender, e) => TryChangeValues(() =>
             {
-                this.endSecondTextBox!.Value = this.startSecondTextBox.Value + this.durationTextBox!.Value;
+                this.endSecondTextBox!.RawValue = this.startSecondTextBox.Value + this.durationTextBox!.Value;
                 this.endSecondTextBox.MinValue = this.startSecondTextBox!.Value;
                 SetFramesValues();
                 SetPathRangeRuns();
@@ -170,7 +170,7 @@ namespace Shaderlens.Views
             this.endSecondTextBox = CreateNumberTextBox(1, 0, 1000, 0.1).WithHandler(NumberTextBox.ValueChangedEvent, (sender, e) => TryChangeValues(() =>
             {
                 var frameRate = Math.Max(this.frameRateTextBox!.Value, 1);
-                this.durationTextBox.Value = this.endSecondTextBox!.Value - this.startSecondTextBox.Value;
+                this.durationTextBox.RawValue = this.endSecondTextBox!.Value - this.startSecondTextBox.Value;
                 SetFramesValues();
                 SetPathRangeRuns();
                 ValidateValues();
@@ -337,11 +337,11 @@ namespace Shaderlens.Views
             this.projectPath = projectPath;
 
             this.locationTextBox.Text = settings.TargetPath ?? Path.Combine(Path.GetDirectoryName(projectPath)!, Path.GetFileNameWithoutExtension(projectPath) + "-0000.png");
-            this.frameRateTextBox.Value = settings.FrameRate;
-            this.frameCountTextBox.Value = settings.FrameCount;
-            this.startFrameTextBox.Value = settings.StartFrame;
-            this.widthTextBox.Value = settings.RenderSize.Width;
-            this.heightTextBox.Value = settings.RenderSize.Height;
+            this.frameRateTextBox.RawValue = settings.FrameRate;
+            this.frameCountTextBox.RawValue = settings.FrameCount;
+            this.startFrameTextBox.RawValue = settings.StartFrame;
+            this.widthTextBox.RawValue = settings.RenderSize.Width;
+            this.heightTextBox.RawValue = settings.RenderSize.Height;
             this.prerenderCheckBox.IsChecked = settings.Prerender;
             this.overridePathCheckBox.IsChecked = this.overridePathCheckBox.IsChecked == true && !projectChanged;
             this.relativeIndexCheckBox.IsChecked = settings.RelativeIndex;
@@ -421,18 +421,18 @@ namespace Shaderlens.Views
             var startSecond = this.startFrameTextBox.Value / frameRate;
             var duration = this.frameCountTextBox.Value / frameRate;
 
-            this.startSecondTextBox.Value = startSecond;
-            this.durationTextBox.Value = duration;
-            this.endSecondTextBox.Value = startSecond + duration;
+            this.startSecondTextBox.RawValue = startSecond;
+            this.durationTextBox.RawValue = duration;
+            this.endSecondTextBox.RawValue = startSecond + duration;
             this.endSecondTextBox.MinValue = startSecond;
         }
 
         private void SetFramesValues()
         {
             var frameRate = Math.Max(this.frameRateTextBox!.Value, 1);
-            this.startFrameTextBox.Value = this.startSecondTextBox.Value * frameRate;
-            this.frameCountTextBox.Value = this.durationTextBox.Value * frameRate;
-            this.endFrameTextBox.Value = this.startFrameTextBox.Value + this.frameCountTextBox.Value;
+            this.startFrameTextBox.RawValue = this.startSecondTextBox.Value * frameRate;
+            this.frameCountTextBox.RawValue = this.durationTextBox.Value * frameRate;
+            this.endFrameTextBox.RawValue = this.startFrameTextBox.Value + this.frameCountTextBox.Value;
             this.endFrameTextBox.MinValue = this.startFrameTextBox.Value;
         }
 
@@ -638,8 +638,8 @@ namespace Shaderlens.Views
             {
                 MinValue = minValue,
                 MaxValue = maxValue,
-                StepSize = stepSize,
-                Value = value,
+                Step = stepSize,
+                RawValue = value,
                 Margin = Spacing
             };
         }

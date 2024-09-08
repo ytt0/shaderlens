@@ -26,12 +26,12 @@
 
             this.valueTextBox = new NumberTextBox(theme)
             {
-                Value = settingsValue.Value,
+                RawValue = settingsValue.Value,
                 MinValue = minValue,
                 MaxValue = maxValue,
-                StepSize = step,
+                Step = step,
                 DragSensitivity = dragSensitivity,
-                RequireScrollModifierKey = true,
+                ScrollModifier = new ModifierKeyInputSpan(ModifierKey.Alt),
                 HorizontalAlignment = HorizontalAlignment.Stretch
             };
 
@@ -66,7 +66,7 @@
             this.skipChangeEvent = true;
             try
             {
-                this.valueTextBox.Value = this.settingsValue.Value;
+                this.valueTextBox.RawValue = this.settingsValue.Value;
                 this.child.IsResetButtonVisible = !this.settingsValue.IsDefaultValue();
                 RaiseEvent(new RoutedEventArgs(ValueChangedEvent));
             }
