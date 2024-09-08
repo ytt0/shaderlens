@@ -296,6 +296,7 @@
 
                     IRenderPipeline? pipeline = null;
                     Action[]? actions = null;
+                    var isFullFrame = false;
                     var isViewerFrame = false;
                     var isPaused = false;
 
@@ -320,6 +321,7 @@
                             this.continueEvent.Reset();
                         }
 
+                        isFullFrame = this.isFullFrame && this.isPaused;
                         isViewerFrame = this.isViewerFrame && !this.isFullFrame && this.isPaused;
                         isPaused = this.isPaused;
 
@@ -333,11 +335,9 @@
                         {
                             action();
                         }
-
-                        continue;
                     }
 
-                    if (pipeline != null)
+                    if (pipeline != null && (!isPaused || isFullFrame || isViewerFrame))
                     {
                         if (isViewerFrame)
                         {
