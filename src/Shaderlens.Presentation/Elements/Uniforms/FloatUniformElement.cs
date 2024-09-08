@@ -20,7 +20,7 @@
         private readonly ISettingsValue<double> settingsValue;
         private bool skipChangeEvent;
 
-        public FloatUniformElement(ISettingsValue<double> settingsValue, string displayName, double minValue, double maxValue, double step, double dragSensitivity, IClipboard clipboard, IApplicationTheme theme)
+        public FloatUniformElement(ISettingsValue<double> settingsValue, string displayName, double minValue, double maxValue, double step, int roundDecimals, double dragSensitivity, IClipboard clipboard, IApplicationTheme theme)
         {
             this.settingsValue = settingsValue;
 
@@ -30,6 +30,7 @@
                 MinValue = minValue,
                 MaxValue = maxValue,
                 Step = step,
+                RoundDecimals = roundDecimals,
                 DragSensitivity = dragSensitivity,
                 ScrollModifier = new ModifierKeyInputSpan(ModifierKey.Alt),
                 HorizontalAlignment = HorizontalAlignment.Stretch

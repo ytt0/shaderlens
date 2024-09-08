@@ -20,7 +20,7 @@
         private readonly ISettingsValue<Vector<double>> settingsValue;
         private bool skipChangeEvent;
 
-        public VectorUniformElement(ISettingsValue<Vector<double>> settingsValue, string displayName, Vector<double> minValue, Vector<double> maxValue, Vector<double> step, double dragSensitivity, IClipboard clipboard, IApplicationTheme theme)
+        public VectorUniformElement(ISettingsValue<Vector<double>> settingsValue, string displayName, Vector<double> minValue, Vector<double> maxValue, Vector<double> step, int roundDecimals, double dragSensitivity, IClipboard clipboard, IApplicationTheme theme)
         {
             this.settingsValue = settingsValue;
 
@@ -30,6 +30,7 @@
                 MinValue = minValue[index],
                 MaxValue = maxValue[index],
                 Step = step[index],
+                RoundDecimals = roundDecimals,
                 DragSensitivity = dragSensitivity,
                 ScrollModifier = new ModifierKeyInputSpan(ModifierKey.Alt),
                 HorizontalAlignment = HorizontalAlignment.Stretch

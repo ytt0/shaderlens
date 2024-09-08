@@ -152,9 +152,9 @@
             this.targetPanel.Children.Add(element);
         }
 
-        public void AddFloatElement(ISettingsValue<double> settingsValue, string displayName, double minValue, double maxValue, double step)
+        public void AddFloatElement(ISettingsValue<double> settingsValue, string displayName, double minValue, double maxValue, double step, int roundDecimals)
         {
-            var element = new FloatUniformElement(settingsValue, displayName, minValue, maxValue, step, this.dragSensitivity, this.clipboard, this.theme);
+            var element = new FloatUniformElement(settingsValue, displayName, minValue, maxValue, step, roundDecimals, this.dragSensitivity, this.clipboard, this.theme);
             element.ValueChanged += OnUniformElementValueChanged;
 
             this.rowHeaderContainers.Add(element);
@@ -170,9 +170,9 @@
             this.targetPanel.Children.Add(element);
         }
 
-        public void AddVectorElement(ISettingsValue<Vector<double>> settingsValue, string displayName, Vector<double> minValue, Vector<double> maxValue, Vector<double> step)
+        public void AddVectorElement(ISettingsValue<Vector<double>> settingsValue, string displayName, Vector<double> minValue, Vector<double> maxValue, Vector<double> step, int roundDecimals)
         {
-            var element = new VectorUniformElement(settingsValue, displayName, minValue, maxValue, step, this.dragSensitivity, this.clipboard, this.theme);
+            var element = new VectorUniformElement(settingsValue, displayName, minValue, maxValue, step, roundDecimals, this.dragSensitivity, this.clipboard, this.theme);
             element.ValueChanged += OnUniformElementValueChanged;
 
             this.rowHeaderContainers.Add(element);

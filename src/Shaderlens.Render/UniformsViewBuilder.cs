@@ -4,9 +4,9 @@
     {
         IDisposable AddGroup(ISettingsValue<bool> expandedSettingsValue, string displayName);
         void AddBoolElement(ISettingsValue<bool> settingsValue, string displayName);
-        void AddFloatElement(ISettingsValue<double> settingsValue, string displayName, double minValue, double maxValue, double step);
+        void AddFloatElement(ISettingsValue<double> settingsValue, string displayName, double minValue, double maxValue, double step, int roundDecimals);
         void AddVectorElement(ISettingsValue<Vector<bool>> settingsValue, string displayName);
-        void AddVectorElement(ISettingsValue<Vector<double>> settingsValue, string displayName, Vector<double> minValue, Vector<double> maxValue, Vector<double> step);
+        void AddVectorElement(ISettingsValue<Vector<double>> settingsValue, string displayName, Vector<double> minValue, Vector<double> maxValue, Vector<double> step, int roundDecimals);
         void AddColorElement(ISettingsValue<SrgbColor> settingsValue, bool editAlpha, string name, string displayName);
         void SetSettingsState();
     }
@@ -126,22 +126,32 @@
 
         public static void AddIntElement(this IUniformsViewBuilder builder, ISettingsValue<int> settingsValue, string displayName, int minValue, int maxValue, int step)
         {
-            builder.AddFloatElement(new IntAdapter(settingsValue), displayName, minValue, maxValue, step);
+            builder.AddFloatElement(new IntAdapter(settingsValue), displayName, minValue, maxValue, step, 0);
         }
 
         public static void AddUIntElement(this IUniformsViewBuilder builder, ISettingsValue<uint> settingsValue, string displayName, uint minValue, uint maxValue, uint step)
         {
-            builder.AddFloatElement(new UIntAdapter(settingsValue), displayName, minValue, maxValue, step);
+            builder.AddFloatElement(new UIntAdapter(settingsValue), displayName, minValue, maxValue, step, 0);
+        }
+
+        public static void AddFloatElement(this IUniformsViewBuilder builder, ISettingsValue<double> settingsValue, string displayName, double minValue, double maxValue, double step)
+        {
+            builder.AddFloatElement(settingsValue, displayName, minValue, maxValue, step, 6);
+        }
+
+        public static void AddVectorElement(this IUniformsViewBuilder builder, ISettingsValue<Vector<double>> settingsValue, string displayName, Vector<double> minValue, Vector<double> maxValue, Vector<double> step)
+        {
+            builder.AddVectorElement(settingsValue, displayName, minValue, maxValue, step, 6);
         }
 
         public static void AddVectorElement(this IUniformsViewBuilder builder, ISettingsValue<Vector<int>> settingsValue, string displayName, Vector<int> minValue, Vector<int> maxValue, Vector<int> step)
         {
-            builder.AddVectorElement(new IntVectorAdapter(settingsValue), displayName, ToFloatVector(minValue), ToFloatVector(maxValue), ToFloatVector(step));
+            builder.AddVectorElement(new IntVectorAdapter(settingsValue), displayName, ToFloatVector(minValue), ToFloatVector(maxValue), ToFloatVector(step), 0);
         }
 
         public static void AddVectorElement(this IUniformsViewBuilder builder, ISettingsValue<Vector<uint>> settingsValue, string displayName, Vector<uint> minValue, Vector<uint> maxValue, Vector<uint> step)
         {
-            builder.AddVectorElement(new UIntVectorAdapter(settingsValue), displayName, ToFloatVector(minValue), ToFloatVector(maxValue), ToFloatVector(step));
+            builder.AddVectorElement(new UIntVectorAdapter(settingsValue), displayName, ToFloatVector(minValue), ToFloatVector(maxValue), ToFloatVector(step), 0);
         }
 
         public static void AddColorElement(this IUniformsViewBuilder builder, ISettingsValue<LinearRgbColor> settingsValue, bool editAlpha, string name, string displayName)
