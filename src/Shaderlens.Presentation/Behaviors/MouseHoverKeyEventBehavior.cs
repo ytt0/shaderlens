@@ -2,59 +2,50 @@
 {
     public class MouseHoverKeyEventBehavior : IDisposable
     {
+        private static readonly Lazy<MethodInfo?> InvokeHandlersMethodInfo = new Lazy<MethodInfo?>(() => typeof(EventRoute).GetMethod("InvokeHandlers", BindingFlags.NonPublic | BindingFlags.Instance));
+
         private readonly FrameworkElement source;
-        private bool isHandled;
 
         private MouseHoverKeyEventBehavior(FrameworkElement source)
         {
             this.source = source;
 
-            this.source.PreviewKeyDown += OnPreviewKeyDown;
-            this.source.PreviewKeyUp += OnPreviewKeyUp;
+            this.source.PreviewKeyDown += OnKeyEvent;
+            this.source.PreviewKeyUp += OnKeyEvent;
+            this.source.KeyDown += OnKeyEvent;
+            this.source.KeyUp += OnKeyEvent;
         }
 
         public void Dispose()
         {
-            this.source.PreviewKeyDown -= OnPreviewKeyDown;
-            this.source.PreviewKeyUp -= OnPreviewKeyUp;
+            this.source.PreviewKeyDown -= OnKeyEvent;
+            this.source.PreviewKeyUp -= OnKeyEvent;
+            this.source.KeyDown -= OnKeyEvent;
+            this.source.KeyUp -= OnKeyEvent;
         }
 
-        private void OnPreviewKeyDown(object sender, KeyEventArgs e)
+        private void OnKeyEvent(object sender, KeyEventArgs e)
         {
-            OnPreviewKeyEvent(e, UIElement.KeyDownEvent);
-        }
-
-        private void OnPreviewKeyUp(object sender, KeyEventArgs e)
-        {
-            OnPreviewKeyEvent(e, UIElement.KeyUpEvent);
-        }
-
-        private void OnPreviewKeyEvent(KeyEventArgs e, RoutedEvent routedEvent)
-        {
-            if (!this.isHandled)
+            var target = GetMouseTarget();
+            if (target == null)
             {
-                this.isHandled = true;
-
-                try
-                {
-                    var target = GetMouseTarget();
-                    if (target != null)
-                    {
-                        var previewRoutedEvent = e.RoutedEvent;
-                        target.RaiseEvent(e);
-
-                        e.RoutedEvent = routedEvent;
-                        target.RaiseEvent(e);
-
-                        e.RoutedEvent = previewRoutedEvent;
-                        e.Handled |= target.GetAncestor<Window>() == e.InputSource.RootVisual;
-                    }
-                }
-                finally
-                {
-                    this.isHandled = false;
-                }
+                return;
             }
+
+            var mouseTargetPath = GetPathFromRoot(target);
+            var originalSourcePath = GetPathFromRoot(e.OriginalSource as FrameworkElement);
+            var divergencePath = mouseTargetPath.Skip(GetDivergenceIndex(mouseTargetPath, originalSourcePath)).Reverse().ToArray();
+
+            var eventRoute = new EventRoute(e.RoutedEvent);
+            foreach (var element in divergencePath)
+            {
+                element.AddToEventRoute(eventRoute, e);
+            }
+
+            var targetArgs = new KeyEventArgs(e.KeyboardDevice, e.InputSource, e.Timestamp, e.Key) { RoutedEvent = e.RoutedEvent, Source = target };
+            InvokeHandlers(eventRoute, target, targetArgs);
+
+            e.Handled = targetArgs.Handled;
         }
 
         private static FrameworkElement? GetMouseTarget()
@@ -74,6 +65,42 @@
             }
 
             return target;
+        }
+
+        private static List<FrameworkElement> GetPathFromRoot(FrameworkElement? target)
+        {
+            var path = new List<FrameworkElement>();
+
+            while (target != null && path.Count < 1000)
+            {
+                path.Add(target);
+                target = target.Parent as FrameworkElement;
+            }
+
+            path.Reverse();
+
+            return path;
+        }
+
+        private static int GetDivergenceIndex(IReadOnlyList<FrameworkElement> pathFromRoot1, IReadOnlyList<FrameworkElement> pathFromRoot2)
+        {
+            var i = 0;
+            while (i < pathFromRoot1.Count && i < pathFromRoot2.Count)
+            {
+                if (pathFromRoot1[i] != pathFromRoot2[i])
+                {
+                    return i;
+                }
+
+                i++;
+            }
+
+            return i;
+        }
+
+        private static void InvokeHandlers(EventRoute eventRoute, object source, RoutedEventArgs args)
+        {
+            InvokeHandlersMethodInfo.Value?.Invoke(eventRoute, new[] { source, args });
         }
 
         public static IDisposable Register(FrameworkElement target)
