@@ -127,7 +127,7 @@
         {
             if (this.IsEmpty)
             {
-                throw new Exception("Token stream is empty");
+                throw new ParseException(0, "Token stream is empty");
             }
 
             var token = this.tokens.Current;

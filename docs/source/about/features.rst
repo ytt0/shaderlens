@@ -49,6 +49,8 @@ Uniforms can also be arranged in groups, using the :ref:`uniform group line anno
 
 Color uniforms are edited using an `Okhsv <https://bottosson.github.io/posts/oklab/>`_ color space, to automatically adjust the perceived brightness for different hues.
 
+Uniforms values text box can parse expressions with basic arithmetic operations and some GLSL functions (for example :glsl:`sin(pi/3)^2`).
+
 Uniforms values can be copied and pasted with mouse hover while pressing :kbd:`Ctrl` + :kbd:`C` and |br| :kbd:`Ctrl` + :kbd:`V`, and reset to default value with :kbd:`Backspace`.
 
 The mouse drag sensitivity while changing values can be adjusted in the :ref:`settings<settings-drag-sensitivity>`.

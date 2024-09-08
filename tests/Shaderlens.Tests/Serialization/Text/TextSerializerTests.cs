@@ -134,7 +134,7 @@
         public void ColorSerialize_Completes_SerializeCorrectly(double valueR, double valueG, double valueB, double valueA, string expectedResult)
         {
             // setup
-            var serializer = new ColorTextSerializer();
+            var serializer = ColorTextSerializer.Instance;
             var value = new SrgbColor(valueR, valueG, valueB, valueA);
 
             // test
@@ -157,7 +157,7 @@
         public void ColorDeserialize_WithValidText_DeserializeCorretly(string value, double resultR, double resultG, double resultB, double resultA)
         {
             // setup
-            var serializer = new ColorTextSerializer();
+            var serializer = ColorTextSerializer.Instance;
             var expectedResult = new SrgbColor(resultR, resultG, resultB, resultA);
 
             // test
