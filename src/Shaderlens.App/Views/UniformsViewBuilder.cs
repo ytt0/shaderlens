@@ -101,6 +101,8 @@
             this.uniformsPanel = new RowsPanel { Background = Brushes.Transparent };
             this.uniformsPanel.SizeChanged += (sender, e) => SetColumnSize();
 
+            MultiNumberTextBoxEditBehavior.Register(this.uniformsPanel);
+
             this.columnSplit = new ColumnSplitContainer { Child = this.uniformsPanel, Ratio = this.projectSettings.UniformColumnRatio.Value };
             this.columnSplit.SetReference(ColumnSplitContainer.HoverBrushProperty, theme.ControlHoveredBackground);
             this.columnSplit.RatioChanged += (sender, e) =>

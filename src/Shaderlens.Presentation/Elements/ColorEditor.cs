@@ -242,6 +242,7 @@
             };
 
             this.valuesPanel = CreateStackPanel(Orientation.Vertical, modeButton, this.colorTextBox1, this.colorTextBox2, this.colorTextBox3, this.alphaTextBox, new FrameworkElement { Height = 1 });
+            MultiNumberTextBoxEditBehavior.Register(this.valuesPanel);
 
             this.alphaBackgroundElement = new AlphaBackgroundView();
 
