@@ -13,9 +13,9 @@
         private bool skipChangeEvent;
         private ISettingsValue<SrgbColor>? settingsValue;
 
-        public ColorDockUniformElement(IApplicationTheme theme, double dragSensitivity)
+        public ColorDockUniformElement(IClipboard clipboard, IApplicationTheme theme, double dragSensitivity)
         {
-            this.colorEditor = new ColorEditor(theme) { DragSensitivity = dragSensitivity };
+            this.colorEditor = new ColorEditor(clipboard, theme) { DragSensitivity = dragSensitivity };
 
             this.colorEditor.ColorChanged += (sender, e) => OnValueChanged();
             this.colorEditor.AlphaChanged += (sender, e) => OnValueChanged();

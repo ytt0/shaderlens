@@ -2,6 +2,12 @@
 {
     public partial class ColorTextSerializer : ITextSerializer<SrgbColor>
     {
+        public static readonly ITextSerializer<SrgbColor> Instance = new ColorTextSerializer();
+
+        private ColorTextSerializer()
+        {
+        }
+
         public string Serialize(SrgbColor value)
         {
             return $"[{value.R:f3}, {value.G:f3}, {value.B:f3}, {value.A:f3}]";

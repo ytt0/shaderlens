@@ -195,6 +195,8 @@
             }
         }
 
+        private readonly IClipboard clipboard;
+        private readonly ITextSerializer<SrgbColor> colorTextSerializer;
         private readonly ColorPicker colorPicker;
         private readonly FrameworkElement valuesPanel;
         private readonly FrameworkElement[] visualChildren;
@@ -206,8 +208,6 @@
         private readonly AlphaBackgroundView alphaBackgroundElement;
         private readonly ColorView sourceColorElement;
         private readonly ColorView targetColorElement;
-        private readonly Clipboard clipboard;
-        private readonly ColorTextSerializer colorTextSerializer;
         private bool skipChangeEvent;
         private OkhsvColor lastSourceColor;
         private OkhsvColor lastTargetColor;
@@ -215,8 +215,10 @@
         private double lastTargetAlpha;
         private TextBoxMode textBoxMode;
 
-        public ColorEditor(IApplicationTheme theme)
+        public ColorEditor(IClipboard clipboard, IApplicationTheme theme)
         {
+            this.clipboard = clipboard;
+            this.colorTextSerializer = ColorTextSerializer.Instance;
             this.colorPicker = new ColorPicker();
 
             this.colorTextBox1 = new NumberTextBox(theme) { Step = 0.001, MinValue = 0.0, MaxValue = 1.0 };
@@ -265,9 +267,6 @@
             this.colorTextBox2.ValueChanged += ColorTextBoxValueChanged;
             this.colorTextBox3.ValueChanged += ColorTextBoxValueChanged;
             this.alphaTextBox.ValueChanged += AlphaTextBoxValueChanged;
-
-            this.clipboard = new Clipboard();
-            this.colorTextSerializer = new ColorTextSerializer();
 
             this.Focusable = true;
             this.FocusVisualStyle = null;

@@ -26,7 +26,7 @@
         private readonly ColorView colorViewElement;
         private readonly ISettingsValue<SrgbColor> settingsValue;
 
-        public ColorUniformElement(ISettingsValue<SrgbColor> settingsValue, string displayName, IApplicationTheme theme)
+        public ColorUniformElement(ISettingsValue<SrgbColor> settingsValue, string displayName, IClipboard clipboard, IApplicationTheme theme)
         {
             this.settingsValue = settingsValue;
 
@@ -62,6 +62,9 @@
             };
 
             SetColorView();
+
+            UniformElementResetValueBehavior.Register(this.child, settingsValue, InvalidateValue);
+            UniformElementClipboardBehavior.Register(this.child, settingsValue, clipboard, ColorTextSerializer.Instance, InvalidateValue);
         }
 
         protected override FrameworkElement GetChild()

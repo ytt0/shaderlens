@@ -166,23 +166,23 @@
 
         private void RaiseResetValueEvent()
         {
-            var resetValueEvent = new RoutedEventArgs { RoutedEvent = ResetValueEvent };
-            OnResetValue(resetValueEvent);
-            RaiseEvent(resetValueEvent);
+            var args = new RoutedEventArgs { RoutedEvent = ResetValueEvent };
+            OnResetValue(args);
+            RaiseEvent(args);
         }
 
         private void RaiseCopyValueEvent()
         {
-            var resetValueEvent = new RoutedEventArgs { RoutedEvent = CopyValueEvent };
-            OnCopyValue(resetValueEvent);
-            RaiseEvent(resetValueEvent);
+            var args = new RoutedEventArgs { RoutedEvent = CopyValueEvent };
+            OnCopyValue(args);
+            RaiseEvent(args);
         }
 
         private void RaisePasteValueEvent()
         {
-            var resetValueEvent = new RoutedEventArgs { RoutedEvent = PasteValueEvent };
-            OnPasteValue(resetValueEvent);
-            RaiseEvent(resetValueEvent);
+            var args = new RoutedEventArgs { RoutedEvent = PasteValueEvent };
+            OnPasteValue(args);
+            RaiseEvent(args);
         }
 
         private static void ClearTextBoxKeyboardFocus()

@@ -179,7 +179,7 @@
 
         public void AddColorElement(ISettingsValue<SrgbColor> settingsValue, bool editAlpha, string name, string displayName)
         {
-            var element = new ColorUniformElement(settingsValue, displayName, this.theme);
+            var element = new ColorUniformElement(settingsValue, displayName, this.clipboard, this.theme);
             element.ValueChanged += (sender, e) =>
             {
                 if (this.colorDockUniformElement != null && this.colorSettingsValue == settingsValue)
@@ -259,7 +259,7 @@
 
         private ColorDockUniformElement CreateColorDockUniformElement()
         {
-            return new ColorDockUniformElement(this.theme, this.dragSensitivity).WithHandler(ColorDockUniformElement.ValueChangedEvent, (sender, e) =>
+            return new ColorDockUniformElement(this.clipboard, this.theme, this.dragSensitivity).WithHandler(ColorDockUniformElement.ValueChangedEvent, (sender, e) =>
             {
                 if (this.colorUniformElement != null)
                 {
