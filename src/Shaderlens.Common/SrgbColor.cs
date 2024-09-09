@@ -18,7 +18,7 @@
         }
 
         public SrgbColor(IEnumerable<double> values) :
-            this(values.ElementAt(0), values.ElementAt(1), values.ElementAt(2), values.Count() == 4 ? 1.0 : values.ElementAt(3))
+            this(values.ElementAt(0), values.ElementAt(1), values.ElementAt(2), values.Count() < 4 ? 1.0 : values.ElementAt(3))
         {
         }
 
