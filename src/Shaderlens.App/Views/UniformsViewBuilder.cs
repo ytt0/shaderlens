@@ -151,7 +151,7 @@
 
         public void AddColorElement(ISettingsValue<SrgbColor> settingsValue, bool editAlpha, string name, string displayName)
         {
-            var element = new ColorUniformElement(settingsValue, displayName, this.clipboard, this.theme);
+            var element = new ColorUniformElement(settingsValue, displayName, this.clipboard, this.theme) { Height = 28 };
             element.ValueChanged += (sender, e) =>
             {
                 if (this.colorDockUniformElement != null && this.colorSettingsValue == settingsValue)
