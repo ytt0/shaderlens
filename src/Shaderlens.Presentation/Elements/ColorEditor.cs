@@ -228,7 +228,7 @@
             this.dragSensitivity = this.colorTextBox1.DragSensitivity;
 
             this.textBoxMode = TextBoxMode.Okhsv;
-            this.modeTextBlock = new TextBlock { Text = "Okhsv", TextAlignment = TextAlignment.Center };
+            this.modeTextBlock = new TextBlock { Text = "Okhsv", FontWeight = FontWeights.Bold, TextAlignment = TextAlignment.Center, Padding = new Thickness(0, 5, 0, 5) };
 
             var modeButton = new ImplicitButton(theme)
             {
@@ -276,7 +276,6 @@
             theme.TextDragForeground.SetReference(this, NumberTextBox.DragForegroundProperty);
             theme.ControlPressedBackground.SetReference(this, ImplicitButton.PressedBackgroundProperty);
             theme.ControlHoveredBackground.SetReference(this, ImplicitButton.HoverBackgroundProperty);
-            theme.IconForeground.SetReference(this, DockContainer.IconForegroundProperty);
             theme.CodeFontFamily.SetReference(this, TextFontFamilyProperty);
         }
 

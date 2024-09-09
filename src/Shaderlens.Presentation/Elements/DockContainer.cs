@@ -2,6 +2,9 @@
 {
     public class DockContainer : Decorator
     {
+        private const double BorderCaptureThickness = 10;
+        private const double BorderThickness = 1;
+
         private class CloseButton : ImplicitButton
         {
             public static readonly DependencyProperty IconForegroundProperty = Icon.ForegroundProperty.AddOwner(typeof(CloseButton), new FrameworkPropertyMetadata((sender, e) => ((CloseButton)sender).pen.Brush = (Brush)e.NewValue));
@@ -35,15 +38,11 @@
 
         private class ResizeBorder : FrameworkElement
         {
-            private const double CaptureThickness = 10;
-            private const double BorderThickness = 1;
-            private const double MouseOverBorderThickness = 5;
-
-            public static readonly DependencyProperty HoverBackgroundProperty = ImplicitButton.HoverBackgroundProperty.AddOwner(typeof(ResizeBorder));
-            public Brush HoverBackground
+            public static readonly DependencyProperty HoverBorderBrushProperty = DependencyProperty.Register("HoverBorderBrush", typeof(Brush), typeof(ResizeBorder), new PropertyMetadata());
+            public Brush HoverBorderBrush
             {
-                get { return (Brush)GetValue(HoverBackgroundProperty); }
-                set { SetValue(HoverBackgroundProperty, value); }
+                get { return (Brush)GetValue(HoverBorderBrushProperty); }
+                set { SetValue(HoverBorderBrushProperty, value); }
             }
 
             public static readonly DependencyProperty BorderBrushProperty = Border.BorderBrushProperty.AddOwner(typeof(ResizeBorder));
@@ -57,9 +56,11 @@
             private Point resizeStartPosition;
             private double resizeStartSize;
 
-            public ResizeBorder(FrameworkElement target)
+            public ResizeBorder(FrameworkElement target, IApplicationTheme theme)
             {
                 this.target = target;
+                theme.ControlBorder.SetReference(this, BorderBrushProperty);
+                theme.ControlHoveredBorder.SetReference(this, HoverBorderBrushProperty);
             }
 
             protected override void OnQueryCursor(QueryCursorEventArgs e)
@@ -70,14 +71,8 @@
 
             protected override void OnRender(DrawingContext drawingContext)
             {
-                drawingContext.DrawRectangle(Brushes.Transparent, null, new Rect(0, -CaptureThickness / 2, this.RenderSize.Width, CaptureThickness));
-
-                if (this.IsMouseOver)
-                {
-                    drawingContext.DrawRectangle(this.HoverBackground, null, new Rect(0, -MouseOverBorderThickness / 2, this.RenderSize.Width, MouseOverBorderThickness));
-                }
-
-                drawingContext.DrawRectangle(this.BorderBrush, null, new Rect(0, -BorderThickness / 2, this.RenderSize.Width, BorderThickness));
+                drawingContext.DrawRectangle(Brushes.Transparent, null, new Rect(0, -BorderCaptureThickness / 2, this.RenderSize.Width, BorderCaptureThickness));
+                drawingContext.DrawRectangle(this.IsMouseOver ? this.HoverBorderBrush : this.BorderBrush, null, new Rect(0, -BorderThickness / 2, this.RenderSize.Width, BorderThickness));
             }
 
             protected override void OnMouseEnter(MouseEventArgs e)
@@ -160,27 +155,6 @@
         public event EventHandler? Closed;
         public event EventHandler? Resized;
 
-        public static readonly DependencyProperty BorderHoverBackgroundProperty = ImplicitButton.HoverBackgroundProperty.AddOwner(typeof(DockContainer), new FrameworkPropertyMetadata((sender, e) => ((DockContainer)sender).resizeBorder.HoverBackground = (Brush)e.NewValue));
-        public Brush BorderHoverBackground
-        {
-            get { return (Brush)GetValue(BorderHoverBackgroundProperty); }
-            set { SetValue(BorderHoverBackgroundProperty, value); }
-        }
-
-        public static readonly DependencyProperty BorderBrushProperty = Border.BorderBrushProperty.AddOwner(typeof(DockContainer), new FrameworkPropertyMetadata((sender, e) => ((DockContainer)sender).resizeBorder.BorderBrush = (Brush)e.NewValue));
-        public Brush BorderBrush
-        {
-            get { return (Brush)GetValue(BorderBrushProperty); }
-            set { SetValue(BorderBrushProperty, value); }
-        }
-
-        public static readonly DependencyProperty IconForegroundProperty = Icon.ForegroundProperty.AddOwner(typeof(DockContainer), new FrameworkPropertyMetadata(Brushes.Black, FrameworkPropertyMetadataOptions.Inherits));
-        public Brush IconForeground
-        {
-            get { return (Brush)GetValue(IconForegroundProperty); }
-            set { SetValue(IconForegroundProperty, value); }
-        }
-
         protected override int VisualChildrenCount { get { return (this.Child != null ? 1 : 0) + 2; } }
 
         private readonly CloseButton closeButton;
@@ -190,9 +164,9 @@
         public DockContainer(IApplicationTheme theme)
         {
             this.Height = 200;
-            this.MinHeight = 100;
+            this.MinHeight = 200;
 
-            this.closeButton = new CloseButton(theme) { Width = 20, Height = 20 };
+            this.closeButton = new CloseButton(theme) { Width = 28, Height = 28 };
             this.closeButton.Click += (sender, e) =>
             {
                 this.Visibility = Visibility.Collapsed;
@@ -200,7 +174,7 @@
                 e.Handled = true;
             };
 
-            this.resizeBorder = new ResizeBorder(this);
+            this.resizeBorder = new ResizeBorder(this, theme);
             this.resizeBorder.SizeChanged += (sender, e) => this.Resized?.Invoke(this, EventArgs.Empty);
 
             AddVisualChild(this.resizeBorder);
@@ -229,7 +203,7 @@
         {
             base.ArrangeOverride(arrangeSize);
 
-            this.closeButton.Arrange(new Rect(arrangeSize.Width - this.closeButton.Width, 0, this.closeButton.Width, this.closeButton.Height));
+            this.closeButton.Arrange(new Rect(arrangeSize.Width - this.closeButton.DesiredSize.Width, BorderThickness / 2.0, this.closeButton.DesiredSize.Width, this.closeButton.DesiredSize.Height));
             this.resizeBorder.Arrange(new Rect(arrangeSize));
 
             return arrangeSize;
