@@ -12,7 +12,7 @@
         {
             this.header = new GroupHeader(theme)
             {
-                IsExpanded = expandedSettingsValue.Value,
+                IsChecked = expandedSettingsValue.Value,
                 Content = new TextBlock { Text = displayName, FontWeight = FontWeights.Bold },
             };
 
@@ -20,7 +20,7 @@
             {
                 expandedSettingsValue.Value = !expandedSettingsValue.Value;
 
-                this.header.IsExpanded = expandedSettingsValue.Value;
+                this.header.IsChecked = expandedSettingsValue.Value;
                 this.Content!.Visibility = expandedSettingsValue.Value ? Visibility.Visible : Visibility.Collapsed;
             };
 
