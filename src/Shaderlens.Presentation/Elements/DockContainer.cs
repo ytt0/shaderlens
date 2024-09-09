@@ -4,21 +4,22 @@
     {
         private class CloseButton : ImplicitButton
         {
-            private const double DrawingSize = 8;
-
-            public static readonly DependencyProperty ForegroundProperty = Icon.ForegroundProperty.AddOwner(typeof(CloseButton), new FrameworkPropertyMetadata((sender, e) => ((CloseButton)sender).pen.Brush = (Brush)e.NewValue));
-            public Brush Foreground
+            public static readonly DependencyProperty IconForegroundProperty = Icon.ForegroundProperty.AddOwner(typeof(CloseButton), new FrameworkPropertyMetadata((sender, e) => ((CloseButton)sender).pen.Brush = (Brush)e.NewValue));
+            public Brush IconForeground
             {
-                get { return (Brush)GetValue(ForegroundProperty); }
-                set { SetValue(ForegroundProperty, value); }
+                get { return (Brush)GetValue(IconForegroundProperty); }
+                set { SetValue(IconForegroundProperty, value); }
             }
+
+            private const double DrawingSize = 8;
 
             private readonly Pen pen;
 
             public CloseButton(IApplicationTheme theme) :
                 base(theme)
             {
-                this.pen = new Pen(this.Foreground, 1);
+                this.pen = new Pen(theme.IconForeground.Value, 1);
+                theme.IconForeground.SetReference(this, Icon.ForegroundProperty);
             }
 
             protected override void OnRender(DrawingContext drawingContext)
@@ -192,7 +193,7 @@
             this.MinHeight = 100;
 
             this.closeButton = new CloseButton(theme) { Width = 20, Height = 20 };
-            this.closeButton.MouseDown += (sender, e) =>
+            this.closeButton.Click += (sender, e) =>
             {
                 this.Visibility = Visibility.Collapsed;
                 this.Closed?.Invoke(this, EventArgs.Empty);

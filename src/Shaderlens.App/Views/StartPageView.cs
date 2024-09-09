@@ -74,7 +74,7 @@ namespace Shaderlens.Views
 
                 this.content = new ImplicitButton(theme)
                 {
-                    Child = new StackPanel().WithChildren
+                    Content = new StackPanel().WithChildren
                     (
                         new StackPanel { Orientation = Orientation.Horizontal }.WithChildren(icon, this.headerTextBlock),
                         this.pathTextBlock
@@ -85,20 +85,24 @@ namespace Shaderlens.Views
                 };
 
                 this.content.Click += OnClick;
+                this.content.MouseUp += OnMouseUp;
 
                 this.IsVisible = true;
             }
 
-            private void OnClick(object sender, MouseButtonEventArgs e)
+            private void OnMouseUp(object sender, MouseButtonEventArgs e)
             {
                 if (e.ChangedButton == MouseButton.Right)
                 {
                     this.view.OpenContextMenu(this);
+                    e.Handled = true;
                 }
-                else
-                {
-                    this.view.OpenProject(this.Path);
-                }
+            }
+
+            private void OnClick(object sender, RoutedEventArgs e)
+            {
+                this.view.OpenProject(this.Path);
+                e.Handled = true;
             }
 
             public void SetFilter(string filter)
@@ -228,7 +232,7 @@ namespace Shaderlens.Views
 
             var clearSearchButton = new ImplicitButton(theme)
             {
-                Child = CreatePath(ClearGeometry.Value, this.theme.IconForeground),
+                Content = CreatePath(ClearGeometry.Value, this.theme.IconForeground),
                 Background = Brushes.Transparent,
                 Margin = new Thickness(1),
                 HorizontalAlignment = HorizontalAlignment.Right,

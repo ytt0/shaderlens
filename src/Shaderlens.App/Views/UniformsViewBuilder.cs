@@ -17,38 +17,6 @@
             }
         }
 
-        private class ResetButton : ImplicitButton
-        {
-            private const double DrawingSize = 24;
-            private static readonly Geometry ResetGeometry = Geometry.Parse("M14.394 5.422a7 7 0 0 1 4.44 8.093 7 7 0 0 1-7.444 5.458 7 7 0 0 1-6.383-6.668 7 7 0 0 1 5.777-7.199M14 10V5h5").WithFreeze();
-
-            public static readonly DependencyProperty ForegroundProperty = Icon.ForegroundProperty.AddOwner(typeof(ResetButton), new FrameworkPropertyMetadata((sender, e) => ((ResetButton)sender).pen.Brush = (Brush)e.NewValue));
-            public Brush Foreground
-            {
-                get { return (Brush)GetValue(ForegroundProperty); }
-                set { SetValue(ForegroundProperty, value); }
-            }
-
-            private readonly Pen pen;
-            private readonly Geometry geometry;
-
-            public ResetButton(IApplicationTheme theme) :
-                base(theme)
-            {
-                this.pen = new Pen(this.Foreground, 1.25) { StartLineCap = PenLineCap.Round, EndLineCap = PenLineCap.Round };
-                this.geometry = ResetGeometry;
-                this.Width = DrawingSize;
-                this.Height = DrawingSize;
-                this.CornerRadius = new CornerRadius(4);
-            }
-
-            protected override void OnRender(DrawingContext drawingContext)
-            {
-                base.OnRender(drawingContext);
-                drawingContext.DrawGeometry(null, this.pen, this.geometry);
-            }
-        }
-
         public FrameworkElement ViewElement { get { return this.dockPanel; } }
 
         private readonly IApplication application;

@@ -1,14 +1,7 @@
 ﻿namespace Shaderlens.Presentation.Elements
 {
-    public class ImplicitButton : Border
+    public class ImplicitButton : ButtonBase
     {
-        public static readonly RoutedEvent ClickEvent = EventManager.RegisterRoutedEvent("Click", RoutingStrategy.Direct, typeof(MouseButtonEventHandler), typeof(ImplicitButton));
-        public event MouseButtonEventHandler Click
-        {
-            add { AddHandler(ClickEvent, value); }
-            remove { RemoveHandler(ClickEvent, value); }
-        }
-
         public static readonly DependencyProperty HoverBackgroundProperty = DependencyProperty.Register("HoverBackground", typeof(Brush), typeof(ImplicitButton), new FrameworkPropertyMetadata(Brushes.Transparent, FrameworkPropertyMetadataOptions.Inherits | FrameworkPropertyMetadataOptions.AffectsRender));
         public Brush HoverBackground
         {
@@ -23,12 +16,67 @@
             set { SetValue(PressedBackgroundProperty, value); }
         }
 
+        public static readonly DependencyProperty CornerRadiusProperty = Border.CornerRadiusProperty.AddOwner(typeof(ImplicitButton));
+        public CornerRadius CornerRadius
+        {
+            get { return (CornerRadius)GetValue(CornerRadiusProperty); }
+            set { SetValue(CornerRadiusProperty, value); }
+        }
+
+        protected override int VisualChildrenCount { get { return 1; } }
+
+        private readonly ContentPresenter contentPresenter;
+
         public ImplicitButton(IApplicationTheme theme)
         {
+            this.contentPresenter = new ContentPresenter();
+            AddVisualChild(this.contentPresenter);
+
+            this.Background = Brushes.Transparent;
+            this.Template = null;
+            this.FocusVisualStyle = null;
+            this.Focusable = false;
+
             theme.IconForeground.SetReference(this, Icon.ForegroundProperty);
             theme.ControlHoveredBackground.SetReference(this, HoverBackgroundProperty);
             theme.ControlPressedBackground.SetReference(this, PressedBackgroundProperty);
-            this.Background = Brushes.Transparent;
+        }
+
+        protected override Visual GetVisualChild(int index)
+        {
+            return index == 0 ? this.contentPresenter : throw new IndexOutOfRangeException();
+        }
+
+        protected override void OnPropertyChanged(DependencyPropertyChangedEventArgs e)
+        {
+            base.OnPropertyChanged(e);
+
+            if (e.Property == PaddingProperty)
+            {
+                this.contentPresenter.Margin = (Thickness)e.NewValue;
+            }
+
+            if (e.Property == BackgroundProperty)
+            {
+                InvalidateVisual();
+            }
+        }
+
+        protected override void OnContentChanged(object oldContent, object newContent)
+        {
+            this.contentPresenter.Content = newContent;
+        }
+
+        protected override Size MeasureOverride(Size constraint)
+        {
+            this.contentPresenter.Measure(constraint);
+            return this.contentPresenter.DesiredSize;
+        }
+
+        protected override Size ArrangeOverride(Size arrangeBounds)
+        {
+            this.contentPresenter.Arrange(new Rect(arrangeBounds));
+            return arrangeBounds;
         }
 
         protected override void OnRender(DrawingContext drawingContext)
@@ -55,29 +103,9 @@
             InvalidateVisual();
         }
 
-        protected override void OnMouseDown(MouseButtonEventArgs e)
+        protected override void OnIsPressedChanged(DependencyPropertyChangedEventArgs e)
         {
             InvalidateVisual();
-
-            if (e.MouseDevice.Captured == null)
-            {
-                e.MouseDevice.Capture(this);
-            }
-        }
-
-        protected override void OnMouseUp(MouseButtonEventArgs e)
-        {
-            InvalidateVisual();
-
-            if (this.IsMouseCaptured)
-            {
-                e.MouseDevice.Capture(null);
-
-                if (this.IsMouseOver)
-                {
-                    RaiseEvent(new MouseButtonEventArgs(e.MouseDevice, e.Timestamp, e.ChangedButton) { RoutedEvent = ClickEvent });
-                }
-            }
         }
     }
 }

@@ -62,8 +62,8 @@
             var horizontalPadding = this.Padding.Left + this.Padding.Right;
             var verticalPadding = this.Padding.Top + this.Padding.Bottom;
             this.path.Measure(constraint);
-            this.Child.Measure(new Size(Math.Max(0, constraint.Width - DrawingSize - horizontalPadding), Math.Max(0, constraint.Height - verticalPadding)));
-            return new Size(this.Child.DesiredSize.Width + DrawingSize + horizontalPadding, this.Child.DesiredSize.Height + verticalPadding);
+            var size = base.MeasureOverride(new Size(Math.Max(0, constraint.Width - DrawingSize - horizontalPadding), Math.Max(0, constraint.Height - verticalPadding)));
+            return new Size(size.Width + DrawingSize + horizontalPadding, size.Height + verticalPadding);
         }
 
         protected override Size ArrangeOverride(Size arrangeSize)
@@ -71,7 +71,8 @@
             var horizontalPadding = this.Padding.Left + this.Padding.Right;
             var verticalPadding = this.Padding.Top + this.Padding.Bottom;
             this.path.Arrange(new Rect(arrangeSize.Width - this.path.DesiredSize.Width - this.Padding.Right, (arrangeSize.Height - this.path.DesiredSize.Height) / 2, this.path.DesiredSize.Width, this.path.DesiredSize.Height));
-            this.Child.Arrange(new Rect(this.Padding.Left, this.Padding.Top, Math.Max(0, arrangeSize.Width - arrangeSize.Height - horizontalPadding), Math.Max(0, arrangeSize.Height - verticalPadding)));
+            this.VisualOffset = new System.Windows.Vector(this.Padding.Left, this.Padding.Top);
+            base.ArrangeOverride(new Size(Math.Max(0, arrangeSize.Width - arrangeSize.Height - horizontalPadding), Math.Max(0, arrangeSize.Height - verticalPadding)));
             return arrangeSize;
         }
 

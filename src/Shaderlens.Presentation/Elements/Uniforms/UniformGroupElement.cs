@@ -13,10 +13,10 @@
             this.header = new GroupHeader(theme)
             {
                 IsExpanded = expandedSettingsValue.Value,
-                Child = new TextBlock { Text = displayName, FontWeight = FontWeights.Bold },
+                Content = new TextBlock { Text = displayName, FontWeight = FontWeights.Bold },
             };
 
-            this.header.MouseDown += (sender, e) =>
+            this.header.Click += (sender, e) =>
             {
                 expandedSettingsValue.Value = !expandedSettingsValue.Value;
 

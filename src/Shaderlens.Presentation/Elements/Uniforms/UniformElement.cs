@@ -12,11 +12,11 @@
             private const double DrawingSize = 24;
             private static readonly Geometry ResetValueGeometry = Geometry.Parse("M14.394 5.422a7 7 0 0 1 4.44 8.093 7 7 0 0 1-7.444 5.458 7 7 0 0 1-6.383-6.668 7 7 0 0 1 5.777-7.199M14 10V5h5").WithFreeze();
 
-            public static readonly DependencyProperty ForegroundProperty = Icon.ForegroundProperty.AddOwner(typeof(ResetValueButton), new FrameworkPropertyMetadata((sender, e) => ((ResetValueButton)sender).pen.Brush = (Brush)e.NewValue));
-            public Brush Foreground
+            public static readonly DependencyProperty IconForegroundProperty = Icon.ForegroundProperty.AddOwner(typeof(ResetValueButton), new FrameworkPropertyMetadata((sender, e) => ((ResetValueButton)sender).pen.Brush = (Brush)e.NewValue));
+            public Brush IconForeground
             {
-                get { return (Brush)GetValue(ForegroundProperty); }
-                set { SetValue(ForegroundProperty, value); }
+                get { return (Brush)GetValue(IconForegroundProperty); }
+                set { SetValue(IconForegroundProperty, value); }
             }
 
             private readonly Pen pen;
@@ -25,11 +25,12 @@
             public ResetValueButton(IApplicationTheme theme) :
                 base(theme)
             {
-                this.pen = new Pen(this.Foreground, 1.25) { StartLineCap = PenLineCap.Round, EndLineCap = PenLineCap.Round };
+                this.pen = new Pen(this.IconForeground, 1.25) { StartLineCap = PenLineCap.Round, EndLineCap = PenLineCap.Round };
                 this.geometry = ResetValueGeometry;
                 this.Width = DrawingSize;
                 this.Height = DrawingSize;
                 this.CornerRadius = new CornerRadius(4);
+                this.ClickMode = ClickMode.Press;
             }
 
             protected override void OnRender(DrawingContext drawingContext)
@@ -98,7 +99,7 @@
                 WithReference(ResetValueButton.ForegroundProperty, theme.IconForeground).
                 WithReference(ImplicitButton.HoverBackgroundProperty, theme.ControlHoveredBackground);
 
-            this.resetButton.PreviewMouseDown += (sender, e) =>
+            this.resetButton.Click += (sender, e) =>
             {
                 ClearTextBoxKeyboardFocus();
                 RaiseResetValueEvent();

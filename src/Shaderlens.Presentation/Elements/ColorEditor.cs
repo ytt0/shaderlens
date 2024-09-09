@@ -232,7 +232,7 @@
 
             var modeButton = new ImplicitButton(theme)
             {
-                Child = this.modeTextBlock
+                Content = this.modeTextBlock
             };
 
             modeButton.Click += (sender, e) =>
