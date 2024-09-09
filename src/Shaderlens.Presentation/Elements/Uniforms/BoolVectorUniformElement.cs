@@ -26,7 +26,8 @@
             this.valuesCheckBox = settingsValue.Value.Select((value, index) => new StyledCheckBox(theme)
             {
                 IsChecked = value,
-                HorizontalAlignment = HorizontalAlignment.Stretch
+                HorizontalAlignment = HorizontalAlignment.Stretch,
+                ClickMode = ClickMode.Press,
             }.WithHandler(ButtonBase.ClickEvent, OnClick)).ToArray();
 
             this.child = new UniformElement(theme)

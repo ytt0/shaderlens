@@ -23,7 +23,13 @@
         {
             this.settingsValue = settingsValue;
 
-            this.valueCheckBox = new StyledCheckBox(theme) { IsChecked = settingsValue.Value, HorizontalAlignment = HorizontalAlignment.Stretch };
+            this.valueCheckBox = new StyledCheckBox(theme)
+            {
+                IsChecked = settingsValue.Value,
+                ClickMode = ClickMode.Press,
+                HorizontalAlignment = HorizontalAlignment.Stretch
+            };
+
             this.valueCheckBox.Click += (sender, e) =>
             {
                 this.settingsValue.Value = this.valueCheckBox.IsChecked == true;

@@ -70,6 +70,8 @@
             this.uniformsPanel.SizeChanged += (sender, e) => SetColumnSize();
 
             MultiNumberTextBoxEditBehavior.Register(this.uniformsPanel);
+            MultiToggleButtonClickBehavior.Register(this.uniformsPanel);
+            MultiButtonClickBehavior.Register(this.uniformsPanel);
 
             this.columnSplit = new ColumnSplitContainer { Child = this.uniformsPanel, Ratio = this.projectSettings.UniformColumnRatio.Value };
             this.columnSplit.SetReference(ColumnSplitContainer.HoverBrushProperty, theme.ControlHoveredBackground);

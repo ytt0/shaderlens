@@ -9,6 +9,8 @@
     {
         private class ResetValueButton : ImplicitButton
         {
+            private static readonly object GroupKey = new object();
+
             private const double DrawingSize = 24;
             private static readonly Geometry ResetValueGeometry = Geometry.Parse("M14.394 5.422a7 7 0 0 1 4.44 8.093 7 7 0 0 1-7.444 5.458 7 7 0 0 1-6.383-6.668 7 7 0 0 1 5.777-7.199M14 10V5h5").WithFreeze();
 
@@ -31,6 +33,8 @@
                 this.Height = DrawingSize;
                 this.CornerRadius = new CornerRadius(4);
                 this.ClickMode = ClickMode.Press;
+
+                SetValue(MultiButtonClickBehavior.GroupKeyProperty, GroupKey);
             }
 
             protected override void OnRender(DrawingContext drawingContext)
