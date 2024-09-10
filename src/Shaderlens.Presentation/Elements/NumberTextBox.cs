@@ -262,6 +262,8 @@
                 Text = "0.000",
             };
 
+            this.textBox.ContextMenu = new StyledTextBoxMenu(this.textBox, theme.Menu);
+
             this.textBox.TextChanged += OnTextBoxTextChanged;
             this.textBox.GotFocus += (sender, e) =>
             {
@@ -297,6 +299,8 @@
                 this.textBox.Select(this.textBox.Text.Length, 0);
                 e.Handled = true;
             };
+
+            TextBoxSelectionBehavior.Register(this.textBox);
 
             this.rawValue = 0.0;
             this.RawText = "0.000";

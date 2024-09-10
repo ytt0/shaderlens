@@ -101,7 +101,7 @@ namespace Shaderlens.Views
         private bool pathsExist;
         private int buffersCount;
 
-        public RenderSequenceSettingsView(Window window, IApplicationTheme theme, Transform scrollBarTransform, IEnumerable<string> supportedExtensions, SaveFileDialog saveFileDialog)
+        public RenderSequenceSettingsView(Window window, IApplicationTheme theme, Transform scrollBarTransform, Transform menuTransform, IEnumerable<string> supportedExtensions, SaveFileDialog saveFileDialog)
         {
             this.window = window;
             this.theme = theme;
@@ -185,7 +185,8 @@ namespace Shaderlens.Views
 
             this.locationTextBox = new StyledTextBox(theme)
             {
-                Margin = new Thickness(Spacing.Left, Spacing.Top, Spacing.Top, Spacing.Bottom)
+                Margin = new Thickness(Spacing.Left, Spacing.Top, Spacing.Top, Spacing.Bottom),
+                MenuTransform = menuTransform,
             }.
             WithHandler(TextBoxBase.TextChangedEvent, (sender, e) =>
             {

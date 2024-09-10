@@ -46,20 +46,29 @@
             set { SetValue(FocusedBorderBrushProperty, value); }
         }
 
+        public Transform MenuTransform
+        {
+            get { return this.ContextMenu.LayoutTransform; }
+            set { this.ContextMenu.LayoutTransform = value; }
+        }
+
         private readonly IStyle<TextBox> style;
         private Border? border;
 
         public StyledTextBox(IApplicationTheme theme) :
-            this(new TextBoxStyle(theme))
+            this(new TextBoxStyle(theme), new ContextMenuStyle(theme.Menu), theme.Menu)
         {
         }
 
-        public StyledTextBox(IStyle<TextBox> style)
+        public StyledTextBox(IStyle<TextBox> style, IStyle<ContextMenu> menuStyle, IMenuTheme menuTheme)
         {
             this.style = style;
             this.Height = 28;
             this.VerticalContentAlignment = VerticalAlignment.Center;
             this.Padding = new Thickness(3, 0, 3, 0);
+            this.ContextMenu = new StyledTextBoxMenu(this, menuTheme, menuStyle);
+
+            TextBoxSelectionBehavior.Register(this);
         }
 
         public override void OnApplyTemplate()
@@ -106,6 +115,55 @@
             {
                 this.border.BorderBrush = this.IsFocused ? this.FocusedBorderBrush : this.IsMouseOver ? this.HoveredBorderBrush : this.BorderBrush;
             }
+        }
+    }
+
+    public class StyledTextBoxMenu : StyledContextMenu
+    {
+        private readonly TextBox target;
+        private readonly IMenuTheme theme;
+        private bool isInitialized;
+
+        public StyledTextBoxMenu(TextBox target, IMenuTheme theme) :
+            this(target, theme, new ContextMenuStyle(theme))
+        {
+        }
+
+        public StyledTextBoxMenu(TextBox target, IMenuTheme theme, IStyle<ContextMenu> style) :
+            base(style)
+        {
+            this.target = target;
+            this.theme = theme;
+        }
+
+        public override void OnApplyTemplate()
+        {
+            base.OnApplyTemplate();
+
+            if (!this.isInitialized)
+            {
+                this.isInitialized = true;
+
+                var resources = new TextBoxMenuResourcesFactory(this.theme);
+                var menuBuilder = new MenuBuilder(this, this.theme);
+                menuBuilder.AddItem("Paste", new AllInputSpans(new IInputSpan[] { new ModifierKeyInputSpan(ModifierKey.Ctrl), new KeyInputSpan(Key.V) }), resources.CreatePasteIcon(), null, this.target.Paste, state => state.IsEnabled = System.Windows.Clipboard.ContainsText());
+                menuBuilder.AddItem("Copy", new AllInputSpans(new IInputSpan[] { new ModifierKeyInputSpan(ModifierKey.Ctrl), new KeyInputSpan(Key.C) }), resources.CreateCopyIcon(), null, this.target.Copy, state => state.IsEnabled = this.target.SelectionLength > 0);
+                menuBuilder.AddItem("Cut", new AllInputSpans(new IInputSpan[] { new ModifierKeyInputSpan(ModifierKey.Ctrl), new KeyInputSpan(Key.X) }), resources.CreateCutIcon(), null, this.target.Cut, state => state.IsEnabled = this.target.SelectionLength > 0);
+                menuBuilder.AddSeparator();
+                menuBuilder.AddItem("Select All", new AllInputSpans(new IInputSpan[] { new ModifierKeyInputSpan(ModifierKey.Ctrl), new KeyInputSpan(Key.A) }), resources.CreateSelectIcon(), null, this.target.SelectAll, state => state.IsEnabled = !String.IsNullOrEmpty(this.target.Text));
+                menuBuilder.AddItem("Delete", new AllInputSpans(new IInputSpan[] { new KeyInputSpan(Key.Delete) }), resources.CreateDeleteIcon(), null, Delete, state => state.IsEnabled = this.target.SelectionLength > 0);
+            }
+        }
+
+        private void Delete()
+        {
+            var caretIndex = this.target.CaretIndex;
+
+            this.target.Text =
+                this.target.Text.Substring(0, this.target.SelectionStart) +
+                this.target.Text.Substring(this.target.SelectionStart + this.target.SelectionLength);
+
+            this.target.CaretIndex = caretIndex;
         }
     }
 

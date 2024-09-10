@@ -63,7 +63,7 @@ namespace Shaderlens.Views
 
             this.textureWriterFactory = new TextureWriterFactory();
 
-            this.settingsView = new RenderSequenceSettingsView(window, theme, this.windowContainer.InverseTransform, this.textureWriterFactory.SupportedExtensions, saveFileDialog);
+            this.settingsView = new RenderSequenceSettingsView(window, theme, this.windowContainer.InverseTransform, this.windowContainer.Transform, this.textureWriterFactory.SupportedExtensions, saveFileDialog);
             this.settingsView.RenderClicked += OnRenderClicked;
 
             this.progressView = new RenderSequenceProgressView(application, theme);

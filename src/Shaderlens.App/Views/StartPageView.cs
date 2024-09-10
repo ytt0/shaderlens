@@ -240,8 +240,7 @@ namespace Shaderlens.Views
                 CornerRadius = new CornerRadius(4)
             };
 
-            this.searchTextBox = new StyledTextBox(this.theme) { Padding = new Thickness(3, 0, 24, 0) };
-
+            this.searchTextBox = new StyledTextBox(this.theme) { Padding = new Thickness(3, 0, 24, 0), MenuTransform = windowContainer.Transform };
             this.searchTextBox.TextChanged += (sender, e) =>
             {
                 var text = this.searchTextBox.Text;
@@ -525,7 +524,7 @@ namespace Shaderlens.Views
             if (this.projectCreationView == null)
             {
                 var templates = this.application.GetProjectTemplates();
-                this.projectCreationView = new ProjectCreationViewContent(this.window, this.theme, this.openFolderDialog, this.windowContainer.InverseTransform, templates, this.settings.CreateProjectTemplateIndex, this.settings.CreateProjectPath, this.settings.CreateProjectOpenFolder, true);
+                this.projectCreationView = new ProjectCreationViewContent(this.window, this.theme, this.openFolderDialog, this.windowContainer.InverseTransform, this.windowContainer.Transform, templates, this.settings.CreateProjectTemplateIndex, this.settings.CreateProjectPath, this.settings.CreateProjectOpenFolder, true);
                 this.projectCreationView.BackButtonClicked += OnBackButtonClicked;
                 this.projectCreationView.CreateProjectRequested += OnProjectCreateRequested;
                 this.content.Children.Add(this.projectCreationView.Content);
