@@ -24,9 +24,9 @@
             var rectangles = descendants.OfType<Rectangle>().ToArray();
 
             target.BorderThickness = new Thickness();
+            target.LayoutTransform = (Transform)target.GetValue(ScaleBehavior.InverseTransformProperty);
 
             target.SetReference(Control.BackgroundProperty, this.theme.Track);
-            target.SetReference(FrameworkElement.LayoutTransformProperty, this.theme.Scale);
 
             foreach (var border in borders)
             {
@@ -118,26 +118,7 @@
 
     public class StyledScrollViewer : ScrollViewer
     {
-        public Transform? scrollBarTransform;
-        public Transform? ScrollBarTransform
-        {
-            get { return this.scrollBarTransform; }
-            set
-            {
-                this.scrollBarTransform = value;
-
-                if (this.scrollBars != null)
-                {
-                    foreach (var scrollBar in this.scrollBars)
-                    {
-                        scrollBar.LayoutTransform = this.scrollBarTransform ?? Transform.Identity;
-                    }
-                }
-            }
-        }
-
         private readonly IStyle<ScrollViewer> style;
-        private ScrollBar[]? scrollBars;
 
         public StyledScrollViewer(IScrollBarTheme theme) :
             this(new ScrollViewerStyle(theme))
@@ -154,16 +135,6 @@
             base.OnApplyTemplate();
 
             this.style.Apply(this);
-
-            this.scrollBars = this.GetVisualDescendants(3).OfType<ScrollBar>().ToArray();
-
-            if (this.scrollBars != null)
-            {
-                foreach (var scrollBar in this.scrollBars)
-                {
-                    scrollBar.LayoutTransform = this.scrollBarTransform ?? Transform.Identity;
-                }
-            }
         }
 
         protected override void OnMouseWheel(MouseWheelEventArgs e)

@@ -99,7 +99,7 @@
         public void SetContent(IUniform projectUniforms, IProjectSettings projectSettings)
         {
             var dragSensitivity = this.application.GetDragSensitivity(this.window);
-            var builder = new UniformsViewBuilder(this.application, projectSettings, this.theme, this.windowContainer.InverseTransform, this.application.Clipboard, dragSensitivity);
+            var builder = new UniformsViewBuilder(this.application, projectSettings, this.theme, this.application.Clipboard, dragSensitivity);
             projectUniforms.AddViewElement(builder);
             builder.SetSettingsState();
 

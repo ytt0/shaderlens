@@ -46,12 +46,6 @@
             set { SetValue(FocusedBorderBrushProperty, value); }
         }
 
-        public Transform MenuTransform
-        {
-            get { return this.ContextMenu.LayoutTransform; }
-            set { this.ContextMenu.LayoutTransform = value; }
-        }
-
         private readonly IStyle<TextBox> style;
         private Border? border;
 

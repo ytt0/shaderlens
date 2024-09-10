@@ -100,28 +100,9 @@
             set { SetValue(FocusedBorderBrushProperty, value); }
         }
 
-        public Transform? scrollBarTransform;
-        public Transform? ScrollBarTransform
-        {
-            get { return this.scrollBarTransform; }
-            set
-            {
-                this.scrollBarTransform = value;
-
-                if (this.scrollBars != null)
-                {
-                    foreach (var scrollBar in this.scrollBars)
-                    {
-                        scrollBar.LayoutTransform = this.scrollBarTransform ?? Transform.Identity;
-                    }
-                }
-            }
-        }
-
         private readonly IStyle<StyledComboBox> style;
         private Border? border;
         private FrameworkElement? popupContent;
-        private ScrollBar[]? scrollBars;
 
         public StyledComboBox(IApplicationTheme theme) :
             this(new ComboBoxStyle(theme))
@@ -166,16 +147,6 @@
             {
                 popupShadow!.Child = null;
                 popup!.Child = this.popupContent;
-            }
-
-            this.scrollBars = this.popupContent?.GetVisualDescendants(4).OfType<ScrollBar>().ToArray();
-
-            if (this.scrollBars != null)
-            {
-                foreach (var scrollBar in this.scrollBars)
-                {
-                    scrollBar.LayoutTransform = this.scrollBarTransform ?? Transform.Identity;
-                }
             }
         }
 

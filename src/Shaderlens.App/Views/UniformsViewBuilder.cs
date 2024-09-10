@@ -39,7 +39,7 @@
         private ColorDockUniformElement? colorDockUniformElement;
         private ISettingsValue<SrgbColor>? colorSettingsValue;
 
-        public UniformsViewBuilder(IApplication application, IProjectSettings projectSettings, IApplicationTheme theme, Transform scrollBarTransform, IClipboard clipboard, double dragSensitivity)
+        public UniformsViewBuilder(IApplication application, IProjectSettings projectSettings, IApplicationTheme theme, IClipboard clipboard, double dragSensitivity)
         {
             this.application = application;
             this.projectSettings = projectSettings;
@@ -84,7 +84,6 @@
             this.scrollViewer = new StyledScrollViewer(theme.ScrollBar)
             {
                 VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
-                ScrollBarTransform = scrollBarTransform,
                 Content = new Border
                 {
                     Child = this.columnSplit,

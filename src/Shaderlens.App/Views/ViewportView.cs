@@ -71,9 +71,9 @@
                     this.menu = new StyledContextMenu(this.theme)
                     {
                         Resources = this.viewportView.window.Resources,
-                        LayoutTransform = this.viewportView.scaleBehavior.Transform,
                         Visibility = Visibility.Hidden
-                    };
+                    }.
+                    WithValue(ScaleBehavior.TransformProperty, this.viewportView.scaleBehavior.Transform);
 
                     this.menu.Opened += OnOpened;
                     this.menu.Closed += OnClosed;
@@ -408,7 +408,7 @@
 
             var loggerResourcesFactory = new LoggerResourcesFactory(this.theme.Log);
 
-            IProjectLoadLogger logger = new ProjectLoadLogger(loggerContainer, this.application, this.scaleBehavior.InverseTransform, StopwatchTimeSource.Instance, loggerResourcesFactory, this.theme, projectPath, this.settings.LogErrorContextLines, TimeSpan.FromSeconds(this.settings.LogVisibilityDelaySeconds), true);
+            IProjectLoadLogger logger = new ProjectLoadLogger(loggerContainer, this.application, StopwatchTimeSource.Instance, loggerResourcesFactory, this.theme, projectPath, this.settings.LogErrorContextLines, TimeSpan.FromSeconds(this.settings.LogVisibilityDelaySeconds), true);
             logger = new BackgroundImageLogger(imageContainer, this.application, logger, this.theme.Log);
             logger = new DispatcherLogger(logger, this.viewThread);
 

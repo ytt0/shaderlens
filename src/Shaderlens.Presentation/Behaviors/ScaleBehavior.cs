@@ -10,6 +10,9 @@
 
     public class ScaleBehavior : IScaleBehavior
     {
+        public static readonly DependencyProperty TransformProperty = DependencyProperty.RegisterAttached("Transform", typeof(Transform), typeof(ScaleBehavior), new FrameworkPropertyMetadata(Transform.Identity, FrameworkPropertyMetadataOptions.Inherits));
+        public static readonly DependencyProperty InverseTransformProperty = DependencyProperty.RegisterAttached("InverseTransform", typeof(Transform), typeof(ScaleBehavior), new FrameworkPropertyMetadata(Transform.Identity, FrameworkPropertyMetadataOptions.Inherits));
+
         public Transform Transform { get { return this.transform; } }
         public Transform InverseTransform { get { return this.inverseTransform; } }
 
@@ -51,29 +54,33 @@
             this.inverseTransform = new ScaleTransform();
             this.Scale = defaultScale;
 
-            this.target.PreviewMouseWheel += OnMouseWheel;
-            this.target.PreviewKeyDown += OnKeyDown;
+            this.target.SetValue(TransformProperty, this.transform);
+            this.target.SetValue(InverseTransformProperty, this.inverseTransform);
+
+            this.target.MouseWheel += OnMouseWheel;
+            this.target.KeyDown += OnKeyDown;
         }
 
         public void Dispose()
         {
-            this.target.PreviewMouseWheel -= OnMouseWheel;
-            this.target.PreviewKeyDown -= OnKeyDown;
+            this.target.MouseWheel -= OnMouseWheel;
+            this.target.KeyDown -= OnKeyDown;
         }
 
         private void OnMouseWheel(object sender, MouseWheelEventArgs e)
         {
-            if (this.IsEnabled && Keyboard.PrimaryDevice.Modifiers == ModifierKeys.Control)
+            if (!this.IsEnabled || Keyboard.PrimaryDevice.Modifiers != ModifierKeys.Control || Mouse.PrimaryDevice.Captured != null)
             {
-                this.Scale *= e.Delta > 0 ? this.scaleFactor : 1.0 / this.scaleFactor;
-
-                e.Handled = true;
+                return;
             }
+
+            this.Scale *= e.Delta > 0 ? this.scaleFactor : 1.0 / this.scaleFactor;
+            e.Handled = true;
         }
 
         private void OnKeyDown(object sender, KeyEventArgs e)
         {
-            if (!this.IsEnabled || Keyboard.PrimaryDevice.Modifiers != ModifierKeys.Control)
+            if (!this.IsEnabled || Keyboard.PrimaryDevice.Modifiers != ModifierKeys.Control || Mouse.PrimaryDevice.Captured != null)
             {
                 return;
             }

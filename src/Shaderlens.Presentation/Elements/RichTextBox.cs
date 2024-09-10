@@ -29,26 +29,7 @@
 
     public class StyledRichTextBox : RichTextBox
     {
-        private Transform scrollBarTransform;
-        public Transform ScrollBarTransform
-        {
-            get { return this.scrollBarTransform; }
-            set
-            {
-                this.scrollBarTransform = value;
-
-                if (this.scrollBars != null)
-                {
-                    foreach (var scrollBar in this.scrollBars)
-                    {
-                        scrollBar.LayoutTransform = this.scrollBarTransform;
-                    }
-                }
-            }
-        }
-
         private readonly IStyle<RichTextBox> style;
-        private ScrollBar[]? scrollBars;
 
         public StyledRichTextBox(IApplicationTheme theme) :
             this(new RichTextBoxStyle(theme), new ContextMenuStyle(theme.Menu), theme.Menu)
@@ -58,8 +39,6 @@
         public StyledRichTextBox(IStyle<RichTextBox> style, IStyle<ContextMenu> menuStyle, IMenuTheme menuTheme)
         {
             this.style = style;
-            this.scrollBarTransform = Transform.Identity;
-
             this.IsInactiveSelectionHighlightEnabled = true;
             this.IsReadOnly = true;
             this.AutoWordSelection = false;
@@ -74,16 +53,6 @@
             base.OnApplyTemplate();
 
             this.style.Apply(this);
-
-            this.scrollBars = this.GetVisualDescendants(5).OfType<ScrollBar>().ToArray();
-
-            if (this.scrollBars != null)
-            {
-                foreach (var scrollBar in this.scrollBars)
-                {
-                    scrollBar.LayoutTransform = this.scrollBarTransform;
-                }
-            }
 
             var contentPresenter = this.GetVisualDescendants(5).OfType<ScrollContentPresenter>().First();
             var flowDocumentView = contentPresenter.GetVisualDescendants(2).OfType<FrameworkElement>().Skip(1).First();

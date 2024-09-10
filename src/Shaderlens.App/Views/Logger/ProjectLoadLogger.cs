@@ -98,7 +98,7 @@
         private TimeSpan lastElapsedTime;
         private bool lastSucceeded;
 
-        public ProjectLoadLogger(Decorator container, IApplication application, Transform scrollBarTransform, ITimeSource timeSource, ILoggerResourcesFactory resourcesFactory, IApplicationTheme theme, string projectPath, int contextLinesCount, TimeSpan visibleDelay, bool hideOnSuccess)
+        public ProjectLoadLogger(Decorator container, IApplication application, ITimeSource timeSource, ILoggerResourcesFactory resourcesFactory, IApplicationTheme theme, string projectPath, int contextLinesCount, TimeSpan visibleDelay, bool hideOnSuccess)
         {
             this.container = container;
             this.application = application;
@@ -126,11 +126,7 @@
             headerTextBlock.Inlines.Add(this.stateSeparatorRun);
             headerTextBlock.Inlines.Add(this.stateContentRun);
 
-            this.documentView = new StyledRichTextBox(theme)
-            {
-                Document = this.document,
-                ScrollBarTransform = scrollBarTransform,
-            }.
+            this.documentView = new StyledRichTextBox(theme) { Document = this.document }.
             WithReference(Control.ForegroundProperty, theme.Log.ContextForeground).
             WithReference(Control.BackgroundProperty, theme.Log.ContextBackground);
 

@@ -16,6 +16,7 @@
             target.FontSize = 16;
             target.UseLayoutRounding = true;
             target.HasDropShadow = false;
+            target.LayoutTransform = (Transform)target.GetValue(ScaleBehavior.TransformProperty);
             target.SetReference(Control.BackgroundProperty, this.theme.Background);
             target.SetReference(Control.ForegroundProperty, this.theme.Foreground);
 

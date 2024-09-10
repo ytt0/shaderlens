@@ -45,7 +45,7 @@ namespace Shaderlens.Views
         {
             this.windowContainer = new WindowContainer(window, theme, settings.CreateProjectWindowState, "New Project");
 
-            var viewContent = new ProjectCreationViewContent(window, theme, openFolderDialog, this.windowContainer.InverseTransform, this.windowContainer.Transform, templates, selectedTemplateIndex, location, settings.CreateProjectOpenFolder, false);
+            var viewContent = new ProjectCreationViewContent(window, theme, openFolderDialog, templates, selectedTemplateIndex, location, settings.CreateProjectOpenFolder, false);
             viewContent.CreateProjectRequested += (sender, e) =>
             {
                 if (!application.ShowProjectCloseDialog())
@@ -171,7 +171,7 @@ namespace Shaderlens.Views
 
             public void AddParameter(string replaceSource, string displayName, string defaultValue)
             {
-                var parameterTextBox = new StyledTextBox(this.view.theme) { MenuTransform = this.view.menuTransform };
+                var parameterTextBox = new StyledTextBox(this.view.theme);
                 parameterTextBox.TextChanged += (sender, e) =>
                 {
                     this.view.parameters[replaceSource] = parameterTextBox.Text;
@@ -215,7 +215,6 @@ namespace Shaderlens.Views
         private readonly TextBlock statusTextBlock;
         private readonly StyledButton createButton;
         private readonly OpenFolderDialog openFolderDialog;
-        private readonly Transform menuTransform;
         private readonly Paragraph pathsParagraph;
         private readonly StyledRichTextBox pathsDocumentView;
         private readonly HashSet<string> existingPaths;
@@ -225,12 +224,11 @@ namespace Shaderlens.Views
         private bool pathsValidated;
         private bool isValid;
 
-        public ProjectCreationViewContent(Window window, IApplicationTheme theme, OpenFolderDialog openFolderDialog, Transform scrollBarTransform, Transform menuTransform, IEnumerable<IProjectTemplate> templates, int selectedTemplateIndex, string location, bool openContainingFolder, bool addBackButton)
+        public ProjectCreationViewContent(Window window, IApplicationTheme theme, OpenFolderDialog openFolderDialog, IEnumerable<IProjectTemplate> templates, int selectedTemplateIndex, string location, bool openContainingFolder, bool addBackButton)
         {
             this.window = window;
             this.theme = theme;
             this.openFolderDialog = openFolderDialog;
-            this.menuTransform = menuTransform;
             this.templates = templates;
             this.parameters = new Dictionary<string, string>();
 
@@ -241,7 +239,7 @@ namespace Shaderlens.Views
                 ValidateValues();
             };
 
-            this.templateSelector = new StyledComboBox(theme) { IsEditable = false, ScrollBarTransform = scrollBarTransform };
+            this.templateSelector = new StyledComboBox(theme) { IsEditable = false };
             this.existingPaths = new HashSet<string>();
 
             var builder = new SelectionViewBuilder(theme);
@@ -254,14 +252,14 @@ namespace Shaderlens.Views
             this.templateSelector.SelectedIndex = selectedTemplateIndex;
             this.templateSelector.SelectionChanged += (sender, e) => SetTemplateSelection();
 
-            this.locationTextBox = new StyledTextBox(theme) { Text = Path.Exists(location) ? Path.GetFullPath(location) : Environment.CurrentDirectory, MenuTransform = menuTransform };
+            this.locationTextBox = new StyledTextBox(theme) { Text = Path.Exists(location) ? Path.GetFullPath(location) : Environment.CurrentDirectory };
             this.locationTextBox.TextChanged += (sender, e) =>
             {
                 InvalidatePaths();
                 ValidateValues();
             };
 
-            this.projectNameTextBox = new StyledTextBox(theme) { MenuTransform = menuTransform };
+            this.projectNameTextBox = new StyledTextBox(theme);
             this.projectNameTextBox.TextChanged += (sender, e) =>
             {
                 InvalidatePaths();
@@ -293,7 +291,6 @@ namespace Shaderlens.Views
             this.pathsDocumentView = new StyledRichTextBox(theme)
             {
                 Document = new FlowDocument(this.pathsParagraph),
-                ScrollBarTransform = scrollBarTransform,
                 VerticalScrollBarVisibility = ScrollBarVisibility.Disabled,
                 Margin = Spacing
             }.
@@ -351,7 +348,6 @@ namespace Shaderlens.Views
                 {
                     VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
                     HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled,
-                    ScrollBarTransform = scrollBarTransform,
                     Content = new StackPanel { Margin = Spacing }.WithChildren
                     (
                         new DockPanel { LastChildFill = true, Margin = Spacing }.WithChildren
