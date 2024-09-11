@@ -52,7 +52,7 @@ Project Structure Example
     }
 
 .. code-block:: json
-    :caption: Project definition - Shader1.json
+    :caption: Project Definition - Shader1.json
 
     {
         "Common": "Common.cs",
@@ -67,7 +67,6 @@ Project Structure Example
     :caption: C# Project - Shader1.csproj
 
     <Project Sdk="Microsoft.NET.Sdk">
-
       <PropertyGroup>
         <TargetFramework>netstandard2.0</TargetFramework>
         <LangVersion>10.0</LangVersion>
@@ -76,35 +75,21 @@ Project Structure Example
         <EnvironmentPath>...\path\to\Shaderlens\Resources\CSharpEnvironment</EnvironmentPath>
       </PropertyGroup>
 
-      <ItemGroup>
-        <Compile Include="$(EnvironmentPath)\*.cs">
-        <Link>Environment\%(RecursiveDir)%(Filename)%(Extension)</Link>
-        <Visible>false</Visible>
-        </Compile>
-      </ItemGroup>
-
-      <ItemGroup>
-        <Compile Update="GlobalSuppressions.cs">
-        <Visible>false</Visible>
-        </Compile>
-      </ItemGroup>
-
+      <Import Project="$(EnvironmentPath)\Build\Environment.targets" />
     </Project>
 
 .. code-block:: text
-    :caption: File Structure
+    :caption: C# Project File Structure
 
-    │   Shader1.sln                     -- Visual Studio solution
-    │   Shader1.csproj                  -- A class library project
+    │   Shader1.sln                        -- Visual Studio solution
+    │   Shader1.csproj                     -- A class library project
     │
-    │   Shader1.json                    -- Project definition
+    │   Shader1.json                       -- Project definition
     │
-    │   Common.cs                       -- Common code
-    │   Image.cs                        -- Image pass
+    │   Common.cs                          -- Common code
+    │   Image.cs                           -- Image pass
     │
-    │   GlobalSuppressions.cs (hidden)
-    │
-    ├───Environment (hidden)            -- Linked Environment files
+    ├── Environment (hidden)               -- Linked Environment files
     │       Float.cs
     │       Vec2.cs
     │       ...
@@ -112,5 +97,8 @@ Project Structure Example
     │       Uniforms.cs
     │       Usings.cs
     │
-    └───Properties
-        launchSettings.json             -- Enable Ctrl+F5 launch
+    ├── Properties
+    │       launchSettings.json            -- Enable Ctrl+F5 launch
+    │
+    └── obj\Debug\netstandard2.0 (hidden)
+            Environment.Suppressions.g.cs  -- Auto generated suppressions

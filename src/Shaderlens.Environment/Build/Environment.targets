@@ -1,0 +1,10 @@
+﻿<Project>
+  <ItemGroup>
+    <Compile Include="$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)\..))\*.cs">
+      <Link>Environment\%(RecursiveDir)%(Filename)%(Extension)</Link>
+      <Visible>false</Visible>
+    </Compile>
+  </ItemGroup>
+
+  <Import Project="$(MSBuildThisFileDirectory)SuppressionsTask.targets"/>
+</Project>

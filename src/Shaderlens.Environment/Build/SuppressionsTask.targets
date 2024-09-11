@@ -1,0 +1,29 @@
+<Project>
+  <PropertyGroup>
+    <CoreCompileDependsOn>CreateEnvironmentSuppressionsFile;$(CoreCompileDependsOn)</CoreCompileDependsOn>
+  </PropertyGroup>
+
+  <UsingTask TaskName="SuppressionsTask" TaskFactory="RoslynCodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll">
+    <ParameterGroup>
+      <Compile ParameterType="Microsoft.Build.Framework.ITaskItem[]" Required="true" />
+      <TargetPath Required="true" />
+    </ParameterGroup>
+    <Task>
+      <Code Type="Class" Language="cs" Source="$(MSBuildThisFileDirectory)SuppressionsTask.cs" />
+    </Task>
+  </UsingTask>
+
+  <Target Name="SetEnvironmentSuppressionsPath" DependsOnTargets="$(PrepareForBuildDependsOn)">
+    <PropertyGroup>
+      <EnvironmentSuppressionsPath>$(IntermediateOutputPath)\Environment.Suppressions.g.cs</EnvironmentSuppressionsPath>
+    </PropertyGroup>
+  </Target>
+
+  <Target Name="CreateEnvironmentSuppressionsFile" DependsOnTargets="SetEnvironmentSuppressionsPath">
+    <SuppressionsTask Compile="@(Compile)" TargetPath="$(EnvironmentSuppressionsPath)"/>
+    <ItemGroup>
+      <Compile Include="$(EnvironmentSuppressionsPath)" />
+      <FileWrites Include="$(EnvironmentSuppressionsPath)" />
+    </ItemGroup>
+  </Target>
+</Project>

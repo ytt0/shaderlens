@@ -1,24 +1,11 @@
-<Project Sdk="Microsoft.NET.Sdk">
-
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <LangVersion>10.0</LangVersion>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>disable</Nullable>
-    <EnvironmentPath>..\..\..\src\Shaderlens.App\bin\Debug\net8.0-windows\Resources\CSharpEnvironment</EnvironmentPath>
+    <EnvironmentPath>..\..\..\src\Shaderlens.Environment</EnvironmentPath>
   </PropertyGroup>
 
-  <ItemGroup>
-    <Compile Include="$(EnvironmentPath)\*.cs">
-      <Link>Environment\%(RecursiveDir)%(Filename)%(Extension)</Link>
-      <Visible>false</Visible>
-    </Compile>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Compile Update="GlobalSuppressions.cs">
-      <Visible>false</Visible>
-    </Compile>
-  </ItemGroup>
-
+  <Import Project="$(EnvironmentPath)\Build\Environment.targets" />
 </Project>

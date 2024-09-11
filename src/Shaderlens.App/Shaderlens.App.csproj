@@ -37,6 +37,11 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
 
+    <None Include="..\Shaderlens.Environment\Build\*.*">
+      <Link>Resources\CSharpEnvironment\Build\%(RecursiveDir)%(Filename)%(Extension)</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+
     <None Include="..\..\resources\Templates\**\*.*">
       <Link>Resources\Templates\%(RecursiveDir)%(Filename)%(Extension)</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
