@@ -70,10 +70,10 @@
                 {
                     this.menu = new StyledContextMenu(this.theme)
                     {
+                        PlacementTarget = this.viewportView.window,
                         Resources = this.viewportView.window.Resources,
                         Visibility = Visibility.Hidden
-                    }.
-                    WithValue(ScaleBehavior.TransformProperty, this.viewportView.scaleBehavior.Transform);
+                    };
 
                     this.menu.Opened += OnOpened;
                     this.menu.Closed += OnClosed;
