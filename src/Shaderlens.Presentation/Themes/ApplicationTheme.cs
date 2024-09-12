@@ -34,8 +34,11 @@
         IThemeResource<FontFamily> WindowFontFamily { get; }
         IThemeResource<double> CodeFontSize { get; }
         IThemeResource<FontFamily> CodeFontFamily { get; }
-        IThemeResource<double> TextSelectionOpacity { get; }
         IThemeResource<Brush> TextSelectionBackground { get; }
+        IThemeResource<double> TextSelectionOpacity { get; }
+        IThemeResource<double> ToolTipOpacity { get; }
+        IThemeResource<Color> StatisticsGraphFill { get; }
+        IThemeResource<Color> StatisticsGraphStroke { get; }
     }
 
     public class LightApplicationTheme : IApplicationTheme
@@ -74,6 +77,9 @@
         public IThemeResource<FontFamily> CodeFontFamily { get; }
         public IThemeResource<Brush> TextSelectionBackground { get; }
         public IThemeResource<double> TextSelectionOpacity { get; }
+        public IThemeResource<double> ToolTipOpacity { get; }
+        public IThemeResource<Color> StatisticsGraphStroke { get; }
+        public IThemeResource<Color> StatisticsGraphFill { get; }
 
         private readonly ThemeResources resources;
 
@@ -119,8 +125,11 @@
             this.WindowFontFamily = this.resources.AddResource(nameof(this.WindowFontFamily), fontFamilySerializer, new FontFamily());
             this.CodeFontSize = this.resources.AddResource(nameof(this.CodeFontSize), fontSizeSerializer, 16.0);
             this.CodeFontFamily = this.resources.AddResource(nameof(this.CodeFontFamily), fontFamilySerializer, new FontFamily("Consolas"));
-            this.TextSelectionOpacity = this.resources.AddResource(nameof(this.TextSelectionOpacity), doubleSerializer, 0.3);
             this.TextSelectionBackground = this.resources.AddResource(nameof(this.TextSelectionBackground), brushSerializer, new SolidColorBrush(Color.FromRgb(0, 200, 255)));
+            this.TextSelectionOpacity = this.resources.AddResource(nameof(this.TextSelectionOpacity), doubleSerializer, 0.3);
+            this.ToolTipOpacity = this.resources.AddResource(nameof(this.ToolTipOpacity), doubleSerializer, 0.95);
+            this.StatisticsGraphStroke = this.resources.AddResource(nameof(this.StatisticsGraphStroke), colorSerializer, Color.FromArgb(255, 100, 100, 100));
+            this.StatisticsGraphFill = this.resources.AddResource(nameof(this.StatisticsGraphFill), colorSerializer, Color.FromArgb(60, 100, 100, 100));
 
             this.ScrollBar = new LightScrollBarTheme(settings);
             this.Menu = new LightMenuTheme(this, settings);
@@ -171,8 +180,11 @@
         public IThemeResource<FontFamily> WindowFontFamily { get; }
         public IThemeResource<double> CodeFontSize { get; }
         public IThemeResource<FontFamily> CodeFontFamily { get; }
-        public IThemeResource<double> TextSelectionOpacity { get; }
         public IThemeResource<Brush> TextSelectionBackground { get; }
+        public IThemeResource<double> TextSelectionOpacity { get; }
+        public IThemeResource<double> ToolTipOpacity { get; }
+        public IThemeResource<Color> StatisticsGraphStroke { get; }
+        public IThemeResource<Color> StatisticsGraphFill { get; }
 
         private readonly ThemeResources resources;
 
@@ -218,8 +230,11 @@
             this.WindowFontFamily = this.resources.AddResource(nameof(this.WindowFontFamily), fontFamilySerializer, new FontFamily());
             this.CodeFontSize = this.resources.AddResource(nameof(this.CodeFontSize), fontSizeSerializer, 16.0);
             this.CodeFontFamily = this.resources.AddResource(nameof(this.CodeFontFamily), fontFamilySerializer, new FontFamily("Consolas"));
-            this.TextSelectionOpacity = this.resources.AddResource(nameof(this.TextSelectionOpacity), doubleSerializer, 0.3);
             this.TextSelectionBackground = this.resources.AddResource(nameof(this.TextSelectionBackground), brushSerializer, new SolidColorBrush(Color.FromRgb(0, 200, 255)));
+            this.TextSelectionOpacity = this.resources.AddResource(nameof(this.TextSelectionOpacity), doubleSerializer, 0.3);
+            this.ToolTipOpacity = this.resources.AddResource(nameof(this.ToolTipOpacity), doubleSerializer, 0.95);
+            this.StatisticsGraphStroke = this.resources.AddResource(nameof(this.StatisticsGraphStroke), colorSerializer, Color.FromArgb(255, 200, 200, 200));
+            this.StatisticsGraphFill = this.resources.AddResource(nameof(this.StatisticsGraphFill), colorSerializer, Color.FromArgb(140, 200, 200, 200));
 
             this.ScrollBar = new DarkScrollBarTheme(settings);
             this.Menu = new DarkMenuTheme(this, settings);

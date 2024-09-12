@@ -119,7 +119,6 @@
         private readonly InputStateBindings inputStateBindings;
         private readonly InputStateSourceBehavior inputStateSource;
         private readonly InputPositionBindings inputPositionBindings;
-        private readonly StatisticsFormatter tooltipFormatter;
         private readonly StatisticsFormatter titleFormatter;
         private readonly char[] titleBuffer;
         private readonly ViewportFrameRateTarget frameRateTarget;
@@ -142,7 +141,7 @@
         private readonly IScaleBehavior scaleBehavior;
         private readonly CopyMenuState menuCopyState;
         private readonly ToolTip statisticsTooltip;
-        private readonly TextBlock statisticsTooltipContent;
+        private readonly StatisticsElement statisticsTooltipContent;
 
         private readonly MenuContainer exportMenu;
         private readonly MenuContainer resolutionMenu;
@@ -230,12 +229,12 @@
 
             this.frameRateTarget = new ViewportFrameRateTarget(this, this.viewThread);
 
-            this.tooltipFormatter = new StatisticsFormatter(Environment.NewLine);
             this.titleFormatter = new StatisticsFormatter(" | ");
             this.titleBuffer = new char[2000];
 
-            this.statisticsTooltipContent = new TextBlock();
-            this.statisticsTooltip = new ToolTip { Content = this.statisticsTooltipContent };
+            this.statisticsTooltipContent = new StatisticsElement(theme);
+            this.statisticsTooltip = new StyledToolTip(theme) { Content = this.statisticsTooltipContent, Resources = this.window.Resources, LayoutTransform = this.scaleBehavior.Transform };
+
             this.inputDisplayNameFormatter = new InputDisplayNameFormatter(new InputValueSerializer());
 
             this.frameRateTextBlock = new TextBlock { HorizontalAlignment = HorizontalAlignment.Center };
@@ -374,6 +373,11 @@
 
             this.scaleBehavior.IsEnabled = !this.project.IsFullyLoaded;
             this.window.Topmost = this.application.AlwaysOnTop;
+
+            if (!this.project.IsFullyLoaded)
+            {
+                this.statisticsTooltipContent.ClearStatisticsValues();
+            }
 
             InvalidateView();
         }
@@ -861,7 +865,7 @@
                 OnExitSizeMove();
             }
 
-            if (msg == WM_NCMOUSEMOVE)
+            if (msg == WM_NCMOUSEMOVE && !this.statisticsTooltip.IsOpen)
             {
                 this.statisticsTooltipTimer.Stop();
                 this.statisticsTooltipTimer.Start();
@@ -1176,10 +1180,9 @@
 
         private void SetStatistics()
         {
-            if (this.statisticsTooltip.IsOpen)
+            if (this.application.IsFullyLoaded)
             {
-                this.statisticsTooltipContent.Text = !this.application.IsFullyLoaded ? ApplicationName :
-                    this.tooltipFormatter.GetStatistics(this.frameRateTarget.FrameIndex, this.frameRateTarget.Rate, this.frameRateTarget.Average, this.bufferWidth, this.bufferHeight, this.application.Speed < 1.0);
+                this.statisticsTooltipContent.SetStatisticsValues(this.frameRateTarget.FrameIndex, this.frameRateTarget.Rate, this.frameRateTarget.Average, this.bufferWidth, this.bufferHeight, this.application.Speed < 1.0);
             }
 
             this.window.Title = FormatWindowTitle();
