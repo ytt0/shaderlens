@@ -121,9 +121,9 @@
             this.CommentTextForeground = this.resources.AddResource(nameof(this.CommentTextForeground), brushSerializer, new SolidColorBrush(Color.FromRgb(150, 150, 150)));
             this.TextHighlightForeground = this.resources.AddResource(nameof(this.TextHighlightForeground), brushSerializer, new SolidColorBrush(Color.FromRgb(0, 60, 76)));
             this.TextHighlightBackground = this.resources.AddResource(nameof(this.TextHighlightBackground), brushSerializer, new SolidColorBrush(Color.FromRgb(179, 239, 255)));
-            this.WindowFontSize = this.resources.AddResource(nameof(this.WindowFontSize), fontSizeSerializer, 16.0);
-            this.WindowFontFamily = this.resources.AddResource(nameof(this.WindowFontFamily), fontFamilySerializer, new FontFamily());
-            this.CodeFontSize = this.resources.AddResource(nameof(this.CodeFontSize), fontSizeSerializer, 16.0);
+            this.WindowFontSize = this.resources.AddResource(nameof(this.WindowFontSize), fontSizeSerializer, 14.0);
+            this.WindowFontFamily = this.resources.AddResource(nameof(this.WindowFontFamily), fontFamilySerializer, new FontFamily("Segoe UI"));
+            this.CodeFontSize = this.resources.AddResource(nameof(this.CodeFontSize), fontSizeSerializer, 14.0);
             this.CodeFontFamily = this.resources.AddResource(nameof(this.CodeFontFamily), fontFamilySerializer, new FontFamily("Consolas"));
             this.TextSelectionBackground = this.resources.AddResource(nameof(this.TextSelectionBackground), brushSerializer, new SolidColorBrush(Color.FromRgb(0, 200, 255)));
             this.TextSelectionOpacity = this.resources.AddResource(nameof(this.TextSelectionOpacity), doubleSerializer, 0.3);
@@ -226,9 +226,9 @@
             this.CommentTextForeground = this.resources.AddResource(nameof(this.CommentTextForeground), brushSerializer, new SolidColorBrush(Color.FromRgb(150, 150, 150)));
             this.TextHighlightForeground = this.resources.AddResource(nameof(this.TextHighlightForeground), brushSerializer, new SolidColorBrush(Color.FromRgb(179, 239, 255)));
             this.TextHighlightBackground = this.resources.AddResource(nameof(this.TextHighlightBackground), brushSerializer, new SolidColorBrush(Color.FromRgb(8, 68, 84)));
-            this.WindowFontSize = this.resources.AddResource(nameof(this.WindowFontSize), fontSizeSerializer, 16.0);
-            this.WindowFontFamily = this.resources.AddResource(nameof(this.WindowFontFamily), fontFamilySerializer, new FontFamily());
-            this.CodeFontSize = this.resources.AddResource(nameof(this.CodeFontSize), fontSizeSerializer, 16.0);
+            this.WindowFontSize = this.resources.AddResource(nameof(this.WindowFontSize), fontSizeSerializer, 14.0);
+            this.WindowFontFamily = this.resources.AddResource(nameof(this.WindowFontFamily), fontFamilySerializer, new FontFamily("Segoe UI"));
+            this.CodeFontSize = this.resources.AddResource(nameof(this.CodeFontSize), fontSizeSerializer, 14.0);
             this.CodeFontFamily = this.resources.AddResource(nameof(this.CodeFontFamily), fontFamilySerializer, new FontFamily("Consolas"));
             this.TextSelectionBackground = this.resources.AddResource(nameof(this.TextSelectionBackground), brushSerializer, new SolidColorBrush(Color.FromRgb(0, 200, 255)));
             this.TextSelectionOpacity = this.resources.AddResource(nameof(this.TextSelectionOpacity), doubleSerializer, 0.3);

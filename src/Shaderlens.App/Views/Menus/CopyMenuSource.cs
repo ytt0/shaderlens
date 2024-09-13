@@ -76,7 +76,9 @@
             public CopyMenuItemHeader(IMenuTheme theme)
             {
                 this.headerTextBlock = new TextBlock { VerticalAlignment = VerticalAlignment.Center };
-                this.valueTextBlock = new TextBlock { VerticalAlignment = VerticalAlignment.Center }.WithReference(TextBlock.FontFamilyProperty, theme.CodeFontFamily);
+                this.valueTextBlock = new TextBlock { VerticalAlignment = VerticalAlignment.Center }.
+                    WithReference(TextBlock.FontFamilyProperty, theme.CodeFontFamily).
+                    WithReference(TextBlock.FontSizeProperty, theme.CodeFontSize);
 
                 this.valueBorder = new Border
                 {

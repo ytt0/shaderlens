@@ -16,6 +16,8 @@
         IThemeResource<Brush> Checkmark { get; }
         IThemeResource<Brush> ValueBorder { get; }
         IThemeResource<double> Opacity { get; }
+        IThemeResource<double> FontSize { get; }
+        IThemeResource<FontFamily> FontFamily { get; }
         IThemeResource<double> CodeFontSize { get; }
         IThemeResource<FontFamily> CodeFontFamily { get; }
     }
@@ -36,6 +38,8 @@
         public IThemeResource<Brush> Checkmark { get; }
         public IThemeResource<Brush> ValueBorder { get; }
         public IThemeResource<double> Opacity { get; }
+        public IThemeResource<double> FontSize { get; }
+        public IThemeResource<FontFamily> FontFamily { get; }
         public IThemeResource<double> CodeFontSize { get; }
         public IThemeResource<FontFamily> CodeFontFamily { get; }
 
@@ -62,6 +66,8 @@
             this.Checkmark = this.resources.AddResource(nameof(this.Checkmark), brushSerializer, new SolidColorBrush(Color.FromRgb(0, 0, 0)));
             this.ValueBorder = this.resources.AddResource(nameof(this.ValueBorder), brushSerializer, new SolidColorBrush(Color.FromRgb(150, 150, 150)));
             this.Opacity = this.resources.AddResource(nameof(this.Opacity), doubleSerializer, 0.95);
+            this.FontSize = this.resources.AddResource(applicationTheme.WindowFontSize);
+            this.FontFamily = this.resources.AddResource(applicationTheme.WindowFontFamily);
             this.CodeFontSize = this.resources.AddResource(applicationTheme.CodeFontSize);
             this.CodeFontFamily = this.resources.AddResource(applicationTheme.CodeFontFamily);
         }
@@ -88,6 +94,8 @@
         public IThemeResource<Brush> Checkmark { get; }
         public IThemeResource<Brush> ValueBorder { get; }
         public IThemeResource<double> Opacity { get; }
+        public IThemeResource<double> FontSize { get; }
+        public IThemeResource<FontFamily> FontFamily { get; }
         public IThemeResource<double> CodeFontSize { get; }
         public IThemeResource<FontFamily> CodeFontFamily { get; }
 
@@ -114,6 +122,8 @@
             this.Checkmark = this.resources.AddResource(nameof(this.Checkmark), brushSerializer, Brushes.White);
             this.ValueBorder = this.resources.AddResource(nameof(this.ValueBorder), brushSerializer, new SolidColorBrush(Color.FromRgb(100, 100, 100)));
             this.Opacity = this.resources.AddResource(nameof(this.Opacity), doubleSerializer, 0.95);
+            this.FontSize = this.resources.AddResource(applicationTheme.WindowFontSize);
+            this.FontFamily = this.resources.AddResource(applicationTheme.WindowFontFamily);
             this.CodeFontSize = this.resources.AddResource(applicationTheme.CodeFontSize);
             this.CodeFontFamily = this.resources.AddResource(applicationTheme.CodeFontFamily);
         }

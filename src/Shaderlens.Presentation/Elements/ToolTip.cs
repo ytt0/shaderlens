@@ -22,6 +22,8 @@
 
             theme.WindowForeground.SetReference(this.border, ForegroundProperty);
             theme.WindowBackground.SetReference(this.border, BackgroundProperty);
+            theme.WindowFontSize.SetReference(this.border, TextElement.FontSizeProperty);
+            theme.WindowFontFamily.SetReference(this.border, TextElement.FontFamilyProperty);
             theme.ControlBorder.SetReference(this.border, BorderBrushProperty);
             theme.ToolTipOpacity.SetReference(this.border, OpacityProperty);
 
