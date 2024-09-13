@@ -111,7 +111,7 @@
             this.ControlHoveredBackground = this.resources.AddResource(nameof(this.ControlHoveredBackground), brushSerializer, new SolidColorBrush(Color.FromRgb(240, 240, 240)));
             this.ControlPressedBackground = this.resources.AddResource(nameof(this.ControlPressedBackground), brushSerializer, new SolidColorBrush(Color.FromRgb(235, 235, 235)));
             this.ControlSelectionBackground = this.resources.AddResource(nameof(this.ControlSelectionBackground), brushSerializer, new SolidColorBrush(Color.FromRgb(235, 235, 235)));
-            this.ControlBorder = this.resources.AddResource(nameof(this.ControlBorder), brushSerializer, new SolidColorBrush(Color.FromRgb(170, 170, 170)));
+            this.ControlBorder = this.resources.AddResource(nameof(this.ControlBorder), brushSerializer, new SolidColorBrush(Color.FromRgb(185, 185, 185)));
             this.ControlFocusedBorder = this.resources.AddResource(nameof(this.ControlFocusedBorder), brushSerializer, new SolidColorBrush(Color.FromRgb(0, 0, 0)));
             this.ControlHoveredBorder = this.resources.AddResource(nameof(this.ControlHoveredBorder), brushSerializer, new SolidColorBrush(Color.FromRgb(140, 140, 140)));
             this.GroupBackground = this.resources.AddResource(nameof(this.GroupBackground), brushSerializer, new SolidColorBrush(Color.FromRgb(245, 245, 245)));
@@ -216,7 +216,7 @@
             this.ControlHoveredBackground = this.resources.AddResource(nameof(this.ControlHoveredBackground), brushSerializer, new SolidColorBrush(Color.FromRgb(45, 45, 45)));
             this.ControlPressedBackground = this.resources.AddResource(nameof(this.ControlPressedBackground), brushSerializer, new SolidColorBrush(Color.FromRgb(55, 55, 55)));
             this.ControlSelectionBackground = this.resources.AddResource(nameof(this.ControlSelectionBackground), brushSerializer, new SolidColorBrush(Color.FromRgb(55, 55, 55)));
-            this.ControlBorder = this.resources.AddResource(nameof(this.ControlBorder), brushSerializer, new SolidColorBrush(Color.FromRgb(100, 100, 100)));
+            this.ControlBorder = this.resources.AddResource(nameof(this.ControlBorder), brushSerializer, new SolidColorBrush(Color.FromRgb(80, 80, 80)));
             this.ControlFocusedBorder = this.resources.AddResource(nameof(this.ControlFocusedBorder), brushSerializer, new SolidColorBrush(Color.FromRgb(255, 255, 255)));
             this.ControlHoveredBorder = this.resources.AddResource(nameof(this.ControlHoveredBorder), brushSerializer, new SolidColorBrush(Color.FromRgb(150, 150, 150)));
             this.GroupBackground = this.resources.AddResource(nameof(this.GroupBackground), brushSerializer, new SolidColorBrush(Color.FromRgb(32, 32, 32)));

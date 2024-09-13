@@ -54,14 +54,14 @@
 
             this.Background = this.resources.AddResource(nameof(this.Background), brushSerializer, Brushes.White);
             this.Foreground = this.resources.AddResource(nameof(this.Foreground), brushSerializer, Brushes.Black);
-            this.Border = this.resources.AddResource(nameof(this.Border), brushSerializer, Brushes.DarkGray);
+            this.Border = this.resources.AddResource(nameof(this.Border), brushSerializer, new SolidColorBrush(Color.FromRgb(230, 230, 230)));
             this.HighlightBackground = this.resources.AddResource(nameof(this.HighlightBackground), brushSerializer, new SolidColorBrush(Color.FromArgb(10, 0, 0, 0)));
             this.HeaderBackground = this.resources.AddResource(nameof(this.HeaderBackground), brushSerializer, new SolidColorBrush(Color.FromRgb(250, 250, 250)));
             this.HeaderForeground = this.resources.AddResource(nameof(this.HeaderForeground), brushSerializer, Brushes.Black);
             this.SelectionBackground = this.resources.AddResource(nameof(this.SelectionBackground), brushSerializer, Brushes.Gray);
             this.IconForeground = this.resources.AddResource(nameof(this.IconForeground), brushSerializer, new SolidColorBrush(Color.FromRgb(150, 150, 150)));
             this.GestureForeground = this.resources.AddResource(nameof(this.GestureForeground), brushSerializer, new SolidColorBrush(Color.FromRgb(100, 100, 100)));
-            this.Separator = this.resources.AddResource(nameof(this.Separator), brushSerializer, new SolidColorBrush(Color.FromRgb(200, 200, 200)));
+            this.Separator = this.resources.AddResource(nameof(this.Separator), brushSerializer, new SolidColorBrush(Color.FromRgb(230, 230, 230)));
             this.Arrow = this.resources.AddResource(nameof(this.Arrow), brushSerializer, new SolidColorBrush(Color.FromRgb(100, 100, 100)));
             this.Checkmark = this.resources.AddResource(nameof(this.Checkmark), brushSerializer, new SolidColorBrush(Color.FromRgb(0, 0, 0)));
             this.ValueBorder = this.resources.AddResource(nameof(this.ValueBorder), brushSerializer, new SolidColorBrush(Color.FromRgb(150, 150, 150)));
@@ -110,14 +110,14 @@
 
             this.Background = this.resources.AddResource(nameof(this.Background), brushSerializer, new SolidColorBrush(Color.FromRgb(32, 32, 32)));
             this.Foreground = this.resources.AddResource(nameof(this.Foreground), brushSerializer, Brushes.White);
-            this.Border = this.resources.AddResource(nameof(this.Border), brushSerializer, new SolidColorBrush(Color.FromRgb(57, 57, 57)));
+            this.Border = this.resources.AddResource(nameof(this.Border), brushSerializer, new SolidColorBrush(Color.FromRgb(45, 45, 45)));
             this.HighlightBackground = this.resources.AddResource(nameof(this.HighlightBackground), brushSerializer, new SolidColorBrush(Color.FromRgb(57, 57, 57)));
-            this.HeaderBackground = this.resources.AddResource(nameof(this.HeaderBackground), brushSerializer, new SolidColorBrush(Color.FromRgb(20, 20, 20)));
+            this.HeaderBackground = this.resources.AddResource(nameof(this.HeaderBackground), brushSerializer, new SolidColorBrush(Color.FromRgb(45, 45, 45)));
             this.HeaderForeground = this.resources.AddResource(nameof(this.HeaderForeground), brushSerializer, Brushes.White);
             this.SelectionBackground = this.resources.AddResource(nameof(this.SelectionBackground), brushSerializer, Brushes.Gray);
             this.IconForeground = this.resources.AddResource(nameof(this.IconForeground), brushSerializer, new SolidColorBrush(Color.FromRgb(180, 180, 180)));
             this.GestureForeground = this.resources.AddResource(nameof(this.GestureForeground), brushSerializer, new SolidColorBrush(Color.FromRgb(150, 150, 150)));
-            this.Separator = this.resources.AddResource(nameof(this.Separator), brushSerializer, new SolidColorBrush(Color.FromRgb(57, 57, 57)));
+            this.Separator = this.resources.AddResource(nameof(this.Separator), brushSerializer, new SolidColorBrush(Color.FromRgb(45, 45, 45)));
             this.Arrow = this.resources.AddResource(nameof(this.Arrow), brushSerializer, new SolidColorBrush(Color.FromRgb(100, 100, 100)));
             this.Checkmark = this.resources.AddResource(nameof(this.Checkmark), brushSerializer, Brushes.White);
             this.ValueBorder = this.resources.AddResource(nameof(this.ValueBorder), brushSerializer, new SolidColorBrush(Color.FromRgb(100, 100, 100)));
