@@ -27,7 +27,7 @@
             if (border != null)
             {
                 border.BorderThickness = new Thickness(0, 0, 0, 1);
-                border.CornerRadius = new CornerRadius(6, 6, 0, 0);
+                border.CornerRadius = new CornerRadius(2, 2, 0, 0);
                 border.Padding = new Thickness(0, 4, 0, 6);
                 border.SetReference(TextElement.ForegroundProperty, this.theme.HeaderForeground);
             }

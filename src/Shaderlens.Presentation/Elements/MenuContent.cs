@@ -28,7 +28,7 @@
             if (border != null)
             {
                 border.Padding = new Thickness(isPopup ? 2 : 0);
-                border.CornerRadius = new CornerRadius(8);
+                border.CornerRadius = new CornerRadius(4);
                 border.SetReference(UIElement.OpacityProperty, this.theme.Opacity);
                 border.SetReference(Border.BackgroundProperty, this.theme.Background);
                 border.SetReference(Border.BorderBrushProperty, this.theme.Border);

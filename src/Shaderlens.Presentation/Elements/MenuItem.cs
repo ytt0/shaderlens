@@ -78,7 +78,7 @@
             if (templateRoot != null)
             {
                 templateRoot.BorderThickness = new Thickness(0);
-                templateRoot.CornerRadius = new CornerRadius(6);
+                templateRoot.CornerRadius = new CornerRadius(2);
                 templateRoot.Padding = new Thickness(0, 4, 0, 4);
                 HighlightBehavior.Register(templateRoot, this.theme.HighlightBackground);
             }
