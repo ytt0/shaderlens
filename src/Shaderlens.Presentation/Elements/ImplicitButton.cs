@@ -26,6 +26,7 @@
         protected override int VisualChildrenCount { get { return 1; } }
 
         private readonly ContentPresenter contentPresenter;
+        private readonly Pen pen;
 
         public ImplicitButton(IApplicationTheme theme)
         {
@@ -33,6 +34,7 @@
             AddVisualChild(this.contentPresenter);
 
             this.Background = Brushes.Transparent;
+            this.pen = new Pen();
             this.Template = null;
             this.FocusVisualStyle = null;
             this.Focusable = false;
@@ -58,6 +60,18 @@
 
             if (e.Property == BackgroundProperty)
             {
+                InvalidateVisual();
+            }
+
+            if (e.Property == BorderBrushProperty)
+            {
+                this.pen.Brush = (Brush)e.NewValue;
+                InvalidateVisual();
+            }
+
+            if (e.Property == BorderThicknessProperty)
+            {
+                this.pen.Thickness = ((Thickness)e.NewValue).Left;
                 InvalidateVisual();
             }
         }
@@ -90,7 +104,7 @@
 
             var brush = isCaptured || isPressed ? this.PressedBackground : isHovered ? this.HoverBackground : this.Background;
 
-            drawingContext.DrawRoundedRectangle(brush, null, new Rect(this.RenderSize), this.CornerRadius.TopLeft, this.CornerRadius.TopRight);
+            drawingContext.DrawRoundedRectangle(brush, this.pen, new Rect(this.RenderSize), this.CornerRadius.TopLeft, this.CornerRadius.TopRight);
         }
 
         protected override void OnMouseEnter(MouseEventArgs e)
@@ -106,6 +120,39 @@
         protected override void OnIsPressedChanged(DependencyPropertyChangedEventArgs e)
         {
             InvalidateVisual();
+        }
+    }
+
+    public class GeometryButton : ImplicitButton
+    {
+        private const double DrawingSize = 24;
+
+        public static readonly DependencyProperty IconForegroundProperty = Icon.ForegroundProperty.AddOwner(typeof(GeometryButton), new FrameworkPropertyMetadata((sender, e) => ((GeometryButton)sender).pen.Brush = (Brush)e.NewValue));
+        public Brush IconForeground
+        {
+            get { return (Brush)GetValue(IconForegroundProperty); }
+            set { SetValue(IconForegroundProperty, value); }
+        }
+
+        private readonly Pen pen;
+        private readonly Geometry geometry;
+
+        public GeometryButton(Geometry geometry, IApplicationTheme theme) :
+            base(theme)
+        {
+            this.geometry = geometry;
+
+            this.pen = new Pen(this.IconForeground, 1.0) { StartLineCap = PenLineCap.Round, EndLineCap = PenLineCap.Round };
+            this.Width = DrawingSize;
+            this.Height = DrawingSize;
+            this.CornerRadius = new CornerRadius(4);
+            this.ClickMode = ClickMode.Press;
+        }
+
+        protected override void OnRender(DrawingContext drawingContext)
+        {
+            base.OnRender(drawingContext);
+            drawingContext.DrawGeometry(null, this.pen, this.geometry);
         }
     }
 }

@@ -7,42 +7,8 @@
 
     public class UniformElement : VisualChildContainer, IRowHeaderContainer
     {
-        private class ResetValueButton : ImplicitButton
-        {
-            private static readonly object GroupKey = new object();
-
-            private const double DrawingSize = 24;
-            private static readonly Geometry ResetValueGeometry = Geometry.Parse("M14.394 5.422a7 7 0 0 1 4.44 8.093 7 7 0 0 1-7.444 5.458 7 7 0 0 1-6.383-6.668 7 7 0 0 1 5.777-7.199M14 10V5h5").WithFreeze();
-
-            public static readonly DependencyProperty IconForegroundProperty = Icon.ForegroundProperty.AddOwner(typeof(ResetValueButton), new FrameworkPropertyMetadata((sender, e) => ((ResetValueButton)sender).pen.Brush = (Brush)e.NewValue));
-            public Brush IconForeground
-            {
-                get { return (Brush)GetValue(IconForegroundProperty); }
-                set { SetValue(IconForegroundProperty, value); }
-            }
-
-            private readonly Pen pen;
-            private readonly Geometry geometry;
-
-            public ResetValueButton(IApplicationTheme theme) :
-                base(theme)
-            {
-                this.pen = new Pen(this.IconForeground, 1.25) { StartLineCap = PenLineCap.Round, EndLineCap = PenLineCap.Round };
-                this.geometry = ResetValueGeometry;
-                this.Width = DrawingSize;
-                this.Height = DrawingSize;
-                this.CornerRadius = new CornerRadius(4);
-                this.ClickMode = ClickMode.Press;
-
-                SetValue(MultiButtonClickBehavior.GroupKeyProperty, GroupKey);
-            }
-
-            protected override void OnRender(DrawingContext drawingContext)
-            {
-                base.OnRender(drawingContext);
-                drawingContext.DrawGeometry(null, this.pen, this.geometry);
-            }
-        }
+        private static readonly Geometry ResetValueGeometry = Geometry.Parse("M14.394 5.422a7 7 0 0 1 4.44 8.093 7 7 0 0 1-7.444 5.458 7 7 0 0 1-6.383-6.668 7 7 0 0 1 5.777-7.199M14 10V5h5").WithFreeze();
+        private static readonly object ResetValueGroupKey = new object();
 
         public static readonly RoutedEvent ResetValueEvent = EventManager.RegisterRoutedEvent("ResetValue", RoutingStrategy.Direct, typeof(RoutedEventHandler), typeof(UniformElement));
         public event RoutedEventHandler ResetValue
@@ -90,7 +56,7 @@
         }
 
         private readonly TextBlock headerTextBlock;
-        private readonly ResetValueButton resetButton;
+        private readonly GeometryButton resetButton;
         private readonly Decorator valueContentContainer;
         private readonly DockPanel headerContainer;
         private readonly DockPanel child;
@@ -99,10 +65,8 @@
         {
             this.headerTextBlock = new TextBlock { TextTrimming = TextTrimming.CharacterEllipsis, VerticalAlignment = VerticalAlignment.Center };
 
-            this.resetButton = new ResetValueButton(theme) { Margin = new Thickness(4, -8, 4, -8), }.
-                WithReference(ResetValueButton.ForegroundProperty, theme.IconForeground).
-                WithReference(ImplicitButton.HoverBackgroundProperty, theme.ControlHoveredBackground);
-
+            this.resetButton = new GeometryButton(ResetValueGeometry, theme) { Margin = new Thickness(4, -8, 4, -8), }.
+                WithValue(MultiButtonClickBehavior.GroupKeyProperty, ResetValueGroupKey);
             this.resetButton.Click += (sender, e) =>
             {
                 ClearTextBoxKeyboardFocus();

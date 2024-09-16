@@ -115,7 +115,7 @@
             this.ControlFocusedBorder = this.resources.AddResource(nameof(this.ControlFocusedBorder), brushSerializer, new SolidColorBrush(Color.FromRgb(0, 0, 0)));
             this.ControlHoveredBorder = this.resources.AddResource(nameof(this.ControlHoveredBorder), brushSerializer, new SolidColorBrush(Color.FromRgb(140, 140, 140)));
             this.GroupBackground = this.resources.AddResource(nameof(this.GroupBackground), brushSerializer, new SolidColorBrush(Color.FromRgb(245, 245, 245)));
-            this.IconForeground = this.resources.AddResource(nameof(this.IconForeground), brushSerializer, new SolidColorBrush(Color.FromRgb(180, 180, 180)));
+            this.IconForeground = this.resources.AddResource(nameof(this.IconForeground), brushSerializer, new SolidColorBrush(Color.FromRgb(100, 100, 100)));
             this.Separator = this.resources.AddResource(nameof(this.Separator), brushSerializer, new SolidColorBrush(Color.FromRgb(150, 150, 150)));
             this.WarningTextForeground = this.resources.AddResource(nameof(this.WarningTextForeground), brushSerializer, new SolidColorBrush(Color.FromRgb(180, 0, 0)));
             this.CommentTextForeground = this.resources.AddResource(nameof(this.CommentTextForeground), brushSerializer, new SolidColorBrush(Color.FromRgb(150, 150, 150)));
