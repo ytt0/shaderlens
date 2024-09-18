@@ -2,6 +2,10 @@
 {
     public class ColorEditor : FrameworkElement
     {
+        private static readonly Brush RedBrush = new SolidColorBrush(System.Windows.Media.Color.FromRgb(255, 20, 20));
+        private static readonly Brush GreenBrush = new SolidColorBrush(System.Windows.Media.Color.FromRgb(20, 200, 20));
+        private static readonly Brush BlueBrush = new SolidColorBrush(System.Windows.Media.Color.FromRgb(20, 120, 255));
+
         private enum TextBoxMode { Okhsv, LinearRgb, Srgb }
 
         protected override int VisualChildrenCount { get { return this.visualChildren.Length; } }
@@ -443,9 +447,9 @@
 
             if (this.textBoxMode == TextBoxMode.LinearRgb || this.textBoxMode == TextBoxMode.Srgb)
             {
-                this.colorTextBox1.ProgressBrush = Brushes.Red;
-                this.colorTextBox2.ProgressBrush = Brushes.Green;
-                this.colorTextBox3.ProgressBrush = Brushes.Blue;
+                this.colorTextBox1.ProgressBrush = RedBrush;
+                this.colorTextBox2.ProgressBrush = GreenBrush;
+                this.colorTextBox3.ProgressBrush = BlueBrush;
             }
         }
 
