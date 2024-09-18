@@ -72,7 +72,7 @@
 
             if (isChanged)
             {
-                TryHandleInputStateChange();
+                TryHandleInputStateChange(false);
             }
         }
 
@@ -93,7 +93,7 @@
 
             if (isChanged)
             {
-                TryHandleInputStateChange();
+                TryHandleInputStateChange(false);
             }
         }
 
@@ -114,7 +114,7 @@
 
             if (isChanged)
             {
-                TryHandleInputStateChange();
+                TryHandleInputStateChange(false);
             }
         }
 
@@ -130,7 +130,7 @@
                 this.keysDown[(int)key] = false;
                 if (!e.Handled)
                 {
-                    repeatKeyUpHandled = TryHandleInputStateChange();
+                    repeatKeyUpHandled = TryHandleInputStateChange(true);
                 }
             }
 
@@ -138,7 +138,7 @@
             this.keysDown[(int)key] = e.IsDown;
             if (!e.Handled)
             {
-                e.Handled = TryHandleInputStateChange() || repeatKeyUpHandled;
+                e.Handled = TryHandleInputStateChange(e.IsRepeat) || repeatKeyUpHandled;
             }
         }
 
@@ -148,7 +148,7 @@
             this.mouseButtonsDown[(int)e.ChangedButton] = e.ButtonState == MouseButtonState.Pressed;
             if (!e.Handled)
             {
-                e.Handled = TryHandleInputStateChange();
+                e.Handled = TryHandleInputStateChange(false);
             }
         }
 
@@ -159,8 +159,8 @@
             var noScrollState = new InputState(this.keysDown, this.mouseButtonsDown, null);
             var scrollState = new InputState(this.keysDown, this.mouseButtonsDown, mouseScroll);
 
-            var scrollStartEvent = new InputSpanEventArgs(noScrollState, scrollState);
-            var scrollEndEvent = new InputSpanEventArgs(scrollState, noScrollState);
+            var scrollStartEvent = new InputSpanEventArgs(noScrollState, scrollState, false);
+            var scrollEndEvent = new InputSpanEventArgs(scrollState, noScrollState, false);
 
             this.listener.InputStateChanged(scrollStartEvent);
             this.listener.InputStateChanged(scrollEndEvent);
@@ -168,12 +168,12 @@
             e.Handled = scrollStartEvent.Handled || scrollEndEvent.Handled;
         }
 
-        private bool TryHandleInputStateChange()
+        private bool TryHandleInputStateChange(bool isRepeat)
         {
             var previousState = new InputState(this.previousKeysDown, this.previousMouseButtonsDown, null);
             var state = new InputState(this.keysDown, this.mouseButtonsDown, null);
 
-            var stateChangedEvent = new InputSpanEventArgs(previousState, state);
+            var stateChangedEvent = new InputSpanEventArgs(previousState, state, isRepeat);
             this.listener.InputStateChanged(stateChangedEvent);
             return stateChangedEvent.Handled;
         }

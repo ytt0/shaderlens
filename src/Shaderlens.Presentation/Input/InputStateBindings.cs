@@ -5,7 +5,7 @@
     public interface IInputStateBindings
     {
         IDisposable PushScope();
-        void Add(IInputSpan inputSpan, InputSpanEventHandler startHandler, InputSpanEventHandler endHandler, bool requireSpanStart);
+        void Add(IInputSpan inputSpan, InputSpanEventHandler startHandler, InputSpanEventHandler endHandler, bool requireSpanStart, bool allowRepeat);
     }
 
     public interface IInputStateListener
@@ -17,12 +17,14 @@
     {
         public IInputState PreviousState { get; }
         public IInputState State { get; }
+        public bool IsRepeat { get; }
         public bool Handled { get; set; }
 
-        public InputSpanEventArgs(IInputState previousState, IInputState state)
+        public InputSpanEventArgs(IInputState previousState, IInputState state, bool isRepeat)
         {
             this.PreviousState = previousState;
             this.State = state;
+            this.IsRepeat = isRepeat;
         }
     }
 
@@ -30,43 +32,43 @@
     {
         private static readonly InputSpanEventHandler EmptyAction = e => e.Handled = true;
 
-        public static void AddSpanStart(this IInputStateBindings inputStateBindings, IInputSpan? inputSpan, InputSpanEventHandler startAction)
+        public static void AddSpanStart(this IInputStateBindings inputStateBindings, IInputSpan? inputSpan, InputSpanEventHandler startAction, bool allowRepeat = false)
         {
-            inputStateBindings.AddSpan(inputSpan, startAction, EmptyAction, true);
+            inputStateBindings.AddSpan(inputSpan, startAction, EmptyAction, true, allowRepeat);
         }
 
-        public static void AddSpanStart(this IInputStateBindings inputStateBindings, IInputSpan? inputSpan, Action startAction)
+        public static void AddSpanStart(this IInputStateBindings inputStateBindings, IInputSpan? inputSpan, Action startAction, bool allowRepeat = false)
         {
-            inputStateBindings.AddSpan(inputSpan, e => { startAction(); e.Handled = true; }, EmptyAction, true);
+            inputStateBindings.AddSpan(inputSpan, e => { startAction(); e.Handled = true; }, EmptyAction, true, allowRepeat);
         }
 
         public static void AddSpanEnd(this IInputStateBindings inputStateBindings, IInputSpan? inputSpan, InputSpanEventHandler endAction, bool requireSpanStart = false)
         {
-            inputStateBindings.AddSpan(inputSpan, EmptyAction, endAction, requireSpanStart);
+            inputStateBindings.AddSpan(inputSpan, EmptyAction, endAction, requireSpanStart, false);
         }
 
         public static void AddSpanEnd(this IInputStateBindings inputStateBindings, IInputSpan? inputSpan, Action endAction, bool requireSpanStart = false)
         {
-            inputStateBindings.AddSpan(inputSpan, EmptyAction, e => { endAction(); e.Handled = true; }, requireSpanStart);
+            inputStateBindings.AddSpan(inputSpan, EmptyAction, e => { endAction(); e.Handled = true; }, requireSpanStart, false);
         }
 
-        public static void AddSpan(this IInputStateBindings inputStateBindings, IInputSpan? inputSpan, Action startAction, Action endAction, bool requireSpanStart = false)
+        public static void AddSpan(this IInputStateBindings inputStateBindings, IInputSpan? inputSpan, Action startAction, Action endAction, bool requireSpanStart = false, bool allowRepeat = false)
         {
-            inputStateBindings.AddSpan(inputSpan, e => { startAction(); e.Handled = true; }, e => { endAction(); e.Handled = true; }, requireSpanStart);
+            inputStateBindings.AddSpan(inputSpan, e => { startAction(); e.Handled = true; }, e => { endAction(); e.Handled = true; }, requireSpanStart, allowRepeat);
         }
 
-        public static void AddSpan(this IInputStateBindings inputStateBindings, IInputSpan? inputSpan, InputSpanEventHandler startAction, InputSpanEventHandler endAction, bool requireSpanStart = false)
+        public static void AddSpan(this IInputStateBindings inputStateBindings, IInputSpan? inputSpan, InputSpanEventHandler startAction, InputSpanEventHandler endAction, bool requireSpanStart = false, bool allowRepeat = false)
         {
             if (inputSpan != null)
             {
-                inputStateBindings.Add(inputSpan, startAction, endAction, requireSpanStart);
+                inputStateBindings.Add(inputSpan, startAction, endAction, requireSpanStart, allowRepeat);
             }
         }
     }
 
     public class InputStateBindings : IInputStateBindings, IInputStateListener
     {
-        private record Binding(IInputSpan InputSpan, InputSpanEventHandler StartHandler, InputSpanEventHandler EndHandler, bool RequireSpanStart);
+        private record Binding(IInputSpan InputSpan, InputSpanEventHandler StartHandler, InputSpanEventHandler EndHandler, bool RequireSpanStart, bool AllowRepeat);
         private record BindingMatch(IInputSpan InputSpan, int Length, InputSpanEventHandler Handler);
 
         private class Scope : IDisposable
@@ -111,6 +113,11 @@
 
                 foreach (var binding in this.bindings)
                 {
+                    if (e.IsRepeat && !binding.AllowRepeat)
+                    {
+                        continue;
+                    }
+
                     var startLength = MatchStart(binding.InputSpan, e.PreviousState, e.State);
                     if (startLength > 0)
                     {
@@ -129,6 +136,7 @@
 
                 if (startMatches.Count == 0 && endMatches.Count == 0)
                 {
+                    e.Handled = e.IsRepeat && this.startInputSpan != null;
                     return;
                 }
 
@@ -180,9 +188,9 @@
             this.scope.TryInvoke(e);
         }
 
-        public void Add(IInputSpan inputSpan, InputSpanEventHandler startHandler, InputSpanEventHandler endHandler, bool requireSpanStart)
+        public void Add(IInputSpan inputSpan, InputSpanEventHandler startHandler, InputSpanEventHandler endHandler, bool requireSpanStart, bool allowRepeat)
         {
-            this.scope.AddBinding(new Binding(inputSpan, startHandler, endHandler, requireSpanStart));
+            this.scope.AddBinding(new Binding(inputSpan, startHandler, endHandler, requireSpanStart, allowRepeat));
         }
 
         public IDisposable PushScope()
