@@ -7,7 +7,7 @@
         void AddFloatElement(ISettingsValue<double> settingsValue, string displayName, double minValue, double maxValue, double step, int roundDecimals);
         void AddVectorElement(ISettingsValue<Vector<bool>> settingsValue, string displayName);
         void AddVectorElement(ISettingsValue<Vector<double>> settingsValue, string displayName, Vector<double> minValue, Vector<double> maxValue, Vector<double> step, int roundDecimals);
-        void AddColorElement(ISettingsValue<SrgbColor> settingsValue, bool editAlpha, string name, string displayName);
+        void AddColorElement(ISettingsValue<SrgbColor> settingsValue, bool editAlpha, string displayName);
         void SetSettingsState();
     }
 
@@ -154,9 +154,9 @@
             builder.AddVectorElement(new UIntVectorAdapter(settingsValue), displayName, ToFloatVector(minValue), ToFloatVector(maxValue), ToFloatVector(step), 0);
         }
 
-        public static void AddColorElement(this IUniformsViewBuilder builder, ISettingsValue<LinearRgbColor> settingsValue, bool editAlpha, string name, string displayName)
+        public static void AddColorElement(this IUniformsViewBuilder builder, ISettingsValue<LinearRgbColor> settingsValue, bool editAlpha, string displayName)
         {
-            builder.AddColorElement(new SrgbColorAdapter(settingsValue), editAlpha, name, displayName);
+            builder.AddColorElement(new SrgbColorAdapter(settingsValue), editAlpha, displayName);
         }
 
         private static Vector<double> ToFloatVector(Vector<int> vector)

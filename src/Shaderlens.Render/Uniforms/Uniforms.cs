@@ -56,14 +56,12 @@
         }
 
         private readonly IDispatcherThread renderThread;
-        private readonly string name;
         private readonly ISettingsValue<T> settingsValue;
         private T value;
 
-        public Uniform(IDispatcherThread renderThread, string name, ISettingsValue<T> settingsValue)
+        public Uniform(IDispatcherThread renderThread, ISettingsValue<T> settingsValue)
         {
             this.renderThread = renderThread;
-            this.name = name;
             this.settingsValue = settingsValue;
             this.value = settingsValue.Value;
         }
@@ -75,7 +73,7 @@
 
         public IUniformBinding CreateBinding(uint programId)
         {
-            var location = glGetUniformLocation(programId, this.name);
+            var location = glGetUniformLocation(programId, this.settingsValue.Name);
             return location != -1 ? new UniformBinding(this, location) : Uniforms.UniformBinding.Empty;
         }
 

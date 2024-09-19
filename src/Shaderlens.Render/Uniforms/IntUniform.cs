@@ -9,8 +9,8 @@
         private readonly int maxValue;
         private readonly int step;
 
-        public IntUniform(IDispatcherThread renderThread, string name, string displayName, int minValue, int maxValue, int step, ISettingsValue<int> settingsValue) :
-            base(renderThread, name, settingsValue)
+        public IntUniform(IDispatcherThread renderThread, string displayName, int minValue, int maxValue, int step, ISettingsValue<int> settingsValue) :
+            base(renderThread, settingsValue)
         {
             this.displayName = displayName;
             this.minValue = minValue;

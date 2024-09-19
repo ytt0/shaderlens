@@ -9,8 +9,8 @@
         private readonly double maxValue;
         private readonly double step;
 
-        public FloatUniform(IDispatcherThread renderThread, string name, string displayName, double minValue, double maxValue, double step, ISettingsValue<double> settingsValue) :
-            base(renderThread, name, settingsValue)
+        public FloatUniform(IDispatcherThread renderThread, string displayName, double minValue, double maxValue, double step, ISettingsValue<double> settingsValue) :
+            base(renderThread, settingsValue)
         {
             this.displayName = displayName;
             this.minValue = minValue;

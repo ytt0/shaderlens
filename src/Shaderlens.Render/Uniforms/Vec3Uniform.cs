@@ -9,8 +9,8 @@
         private readonly Vector<double> maxValue;
         private readonly Vector<double> step;
 
-        public Vec3Uniform(IDispatcherThread renderThread, string name, string displayName, Vector<double> minValue, Vector<double> maxValue, Vector<double> step, ISettingsValue<Vector<double>> settingsValue) :
-            base(renderThread, name, settingsValue)
+        public Vec3Uniform(IDispatcherThread renderThread, string displayName, Vector<double> minValue, Vector<double> maxValue, Vector<double> step, ISettingsValue<Vector<double>> settingsValue) :
+            base(renderThread, settingsValue)
         {
             this.displayName = displayName;
             this.minValue = minValue;
@@ -36,8 +36,8 @@
         private readonly Vector<int> maxValue;
         private readonly Vector<int> step;
 
-        public IVec3Uniform(IDispatcherThread renderThread, string name, string displayName, Vector<int> minValue, Vector<int> maxValue, Vector<int> step, ISettingsValue<Vector<int>> settingsValue) :
-            base(renderThread, name, settingsValue)
+        public IVec3Uniform(IDispatcherThread renderThread, string displayName, Vector<int> minValue, Vector<int> maxValue, Vector<int> step, ISettingsValue<Vector<int>> settingsValue) :
+            base(renderThread, settingsValue)
         {
             this.displayName = displayName;
             this.minValue = minValue;
@@ -63,8 +63,8 @@
         private readonly Vector<uint> maxValue;
         private readonly Vector<uint> step;
 
-        public UVec3Uniform(IDispatcherThread renderThread, string name, string displayName, Vector<uint> minValue, Vector<uint> maxValue, Vector<uint> step, ISettingsValue<Vector<uint>> settingsValue) :
-            base(renderThread, name, settingsValue)
+        public UVec3Uniform(IDispatcherThread renderThread, string displayName, Vector<uint> minValue, Vector<uint> maxValue, Vector<uint> step, ISettingsValue<Vector<uint>> settingsValue) :
+            base(renderThread, settingsValue)
         {
             this.displayName = displayName;
             this.minValue = minValue;
@@ -87,8 +87,8 @@
     {
         private readonly string displayName;
 
-        public BVec3Uniform(IDispatcherThread renderThread, string name, string displayName, ISettingsValue<Vector<bool>> settingsValue) :
-            base(renderThread, name, settingsValue)
+        public BVec3Uniform(IDispatcherThread renderThread, string displayName, ISettingsValue<Vector<bool>> settingsValue) :
+            base(renderThread, settingsValue)
         {
             this.displayName = displayName;
         }

@@ -148,7 +148,7 @@
             this.targetPanel.Children.Add(element);
         }
 
-        public void AddColorElement(ISettingsValue<SrgbColor> settingsValue, bool editAlpha, string name, string displayName)
+        public void AddColorElement(ISettingsValue<SrgbColor> settingsValue, bool editAlpha, string displayName)
         {
             var element = new ColorUniformElement(settingsValue, displayName, this.clipboard, this.theme) { Height = 28 };
             element.ValueChanged += (sender, e) =>
@@ -171,7 +171,7 @@
             this.rowHeaderContainers.Add(element);
             this.targetPanel.Children.Add(element);
 
-            if (this.projectSettings.UniformDockName.Value == name)
+            if (this.projectSettings.UniformDockName.Value == settingsValue.Name)
             {
                 ToggleDockElement(settingsValue, editAlpha, element);
             }

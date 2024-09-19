@@ -28,19 +28,17 @@
             }
         }
 
-        private readonly string name;
         private readonly string displayName;
 
-        public SrgbColorUniform(IDispatcherThread renderThread, string name, string displayName, ISettingsValue<Vector<double>> settingsValue) :
-            base(renderThread, name, settingsValue)
+        public SrgbColorUniform(IDispatcherThread renderThread, string displayName, ISettingsValue<Vector<double>> settingsValue) :
+            base(renderThread, settingsValue)
         {
-            this.name = name;
             this.displayName = displayName;
         }
 
         protected override void AddViewElement(IUniformsViewBuilder uniformElementBuilder, ISettingsValue<Vector<double>> settingsValue)
         {
-            uniformElementBuilder.AddColorElement(new Vec3Adapter(settingsValue), false, this.name, this.displayName);
+            uniformElementBuilder.AddColorElement(new Vec3Adapter(settingsValue), false, this.displayName);
         }
 
         protected override void SetUniformValue(int location, Vector<double> value)

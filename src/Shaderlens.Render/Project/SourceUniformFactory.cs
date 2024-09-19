@@ -46,7 +46,7 @@ namespace Shaderlens.Render.Project
                         var settingsValue = GetVectorSettingsValue(settings, VectorJsonSerializer.Double, name, defaultValue);
 
                         annotationReader.ValidateEmpty();
-                        return new SrgbColorUniform(this.renderThread, name, displayName, settingsValue);
+                        return new SrgbColorUniform(this.renderThread, displayName, settingsValue);
                     }
 
                     if (conversionType.ToString() == "linear-rgb")
@@ -55,7 +55,7 @@ namespace Shaderlens.Render.Project
                         var settingsValue = GetVectorSettingsValue(settings, VectorJsonSerializer.Double, name, defaultValue);
 
                         annotationReader.ValidateEmpty();
-                        return new LinearRgbColorUniform(this.renderThread, name, displayName, settingsValue);
+                        return new LinearRgbColorUniform(this.renderThread, displayName, settingsValue);
                     }
 
                     throw new SourceLineException($"Unexpected vec3 uniform conversion type \"{conversionType}\", supported types are \"srgb\", \"linear-rgb\"", annotationReader.SourceLine);
@@ -69,7 +69,7 @@ namespace Shaderlens.Render.Project
                         var settingsValue = GetVectorSettingsValue(settings, VectorJsonSerializer.Double, name, defaultValue);
 
                         annotationReader.ValidateEmpty();
-                        return new SrgbaColorUniform(this.renderThread, name, displayName, settingsValue);
+                        return new SrgbaColorUniform(this.renderThread, displayName, settingsValue);
                     }
 
                     if (conversionType.ToString() == "linear-rgb")
@@ -78,7 +78,7 @@ namespace Shaderlens.Render.Project
                         var settingsValue = GetVectorSettingsValue(settings, VectorJsonSerializer.Double, name, defaultValue);
 
                         annotationReader.ValidateEmpty();
-                        return new LinearRgbaColorUniform(this.renderThread, name, displayName, settingsValue);
+                        return new LinearRgbaColorUniform(this.renderThread, displayName, settingsValue);
                     }
 
                     throw new SourceLineException($"Unexpected vec4 uniform conversion type \"{conversionType}\", supported types are \"srgb\", \"linear-rgb\"", annotationReader.SourceLine);
@@ -92,7 +92,7 @@ namespace Shaderlens.Render.Project
                 var settingsValue = settings.GetUniformValue(ValueJsonSerializer.Bool, name, defaultValue);
 
                 annotationReader.ValidateEmpty();
-                return new BoolUniform(this.renderThread, name, displayName, settingsValue);
+                return new BoolUniform(this.renderThread, displayName, settingsValue);
             }
 
             if (type == "int")
@@ -101,7 +101,7 @@ namespace Shaderlens.Render.Project
                 var settingsValue = settings.GetUniformValue(ValueJsonSerializer.Int, name, defaultValue);
 
                 annotationReader.ValidateEmpty();
-                return new IntUniform(this.renderThread, name, displayName, minValue, maxValue, stepValue, settingsValue);
+                return new IntUniform(this.renderThread, displayName, minValue, maxValue, stepValue, settingsValue);
             }
 
             if (type == "float")
@@ -110,7 +110,7 @@ namespace Shaderlens.Render.Project
                 var settingsValue = settings.GetUniformValue(ValueJsonSerializer.Double, name, defaultValue);
 
                 annotationReader.ValidateEmpty();
-                return new FloatUniform(this.renderThread, name, displayName, minValue, maxValue, stepValue, settingsValue);
+                return new FloatUniform(this.renderThread, displayName, minValue, maxValue, stepValue, settingsValue);
             }
 
             if (type == "vec2")
@@ -119,7 +119,7 @@ namespace Shaderlens.Render.Project
                 var settingsValue = GetVectorSettingsValue(settings, VectorJsonSerializer.Double, name, defaultValue);
 
                 annotationReader.ValidateEmpty();
-                return new Vec2Uniform(this.renderThread, name, displayName, minValue, maxValue, stepValue, settingsValue);
+                return new Vec2Uniform(this.renderThread, displayName, minValue, maxValue, stepValue, settingsValue);
             }
 
             if (type == "ivec2")
@@ -128,7 +128,7 @@ namespace Shaderlens.Render.Project
                 var settingsValue = GetVectorSettingsValue(settings, VectorJsonSerializer.Int, name, defaultValue);
 
                 annotationReader.ValidateEmpty();
-                return new IVec2Uniform(this.renderThread, name, displayName, minValue, maxValue, stepValue, settingsValue);
+                return new IVec2Uniform(this.renderThread, displayName, minValue, maxValue, stepValue, settingsValue);
             }
 
             if (type == "uvec2")
@@ -137,7 +137,7 @@ namespace Shaderlens.Render.Project
                 var settingsValue = GetVectorSettingsValue(settings, VectorJsonSerializer.UInt, name, defaultValue);
 
                 annotationReader.ValidateEmpty();
-                return new UVec2Uniform(this.renderThread, name, displayName, minValue, maxValue, stepValue, settingsValue);
+                return new UVec2Uniform(this.renderThread, displayName, minValue, maxValue, stepValue, settingsValue);
             }
 
             if (type == "bvec2")
@@ -146,7 +146,7 @@ namespace Shaderlens.Render.Project
                 var settingsValue = GetVectorSettingsValue(settings, VectorJsonSerializer.Bool, name, defaultValue);
 
                 annotationReader.ValidateEmpty();
-                return new BVec2Uniform(this.renderThread, name, displayName, settingsValue);
+                return new BVec2Uniform(this.renderThread, displayName, settingsValue);
             }
 
             if (type == "vec3")
@@ -155,7 +155,7 @@ namespace Shaderlens.Render.Project
                 var settingsValue = GetVectorSettingsValue(settings, VectorJsonSerializer.Double, name, defaultValue);
 
                 annotationReader.ValidateEmpty();
-                return new Vec3Uniform(this.renderThread, name, displayName, minValue, maxValue, stepValue, settingsValue);
+                return new Vec3Uniform(this.renderThread, displayName, minValue, maxValue, stepValue, settingsValue);
             }
 
             if (type == "ivec3")
@@ -164,7 +164,7 @@ namespace Shaderlens.Render.Project
                 var settingsValue = GetVectorSettingsValue(settings, VectorJsonSerializer.Int, name, defaultValue);
 
                 annotationReader.ValidateEmpty();
-                return new IVec3Uniform(this.renderThread, name, displayName, minValue, maxValue, stepValue, settingsValue);
+                return new IVec3Uniform(this.renderThread, displayName, minValue, maxValue, stepValue, settingsValue);
             }
 
             if (type == "uvec3")
@@ -173,7 +173,7 @@ namespace Shaderlens.Render.Project
                 var settingsValue = GetVectorSettingsValue(settings, VectorJsonSerializer.UInt, name, defaultValue);
 
                 annotationReader.ValidateEmpty();
-                return new UVec3Uniform(this.renderThread, name, displayName, minValue, maxValue, stepValue, settingsValue);
+                return new UVec3Uniform(this.renderThread, displayName, minValue, maxValue, stepValue, settingsValue);
             }
 
             if (type == "bvec3")
@@ -182,7 +182,7 @@ namespace Shaderlens.Render.Project
                 var settingsValue = GetVectorSettingsValue(settings, VectorJsonSerializer.Bool, name, defaultValue);
 
                 annotationReader.ValidateEmpty();
-                return new BVec3Uniform(this.renderThread, name, displayName, settingsValue);
+                return new BVec3Uniform(this.renderThread, displayName, settingsValue);
             }
 
             if (type == "vec4")
@@ -191,7 +191,7 @@ namespace Shaderlens.Render.Project
                 var settingsValue = GetVectorSettingsValue(settings, VectorJsonSerializer.Double, name, defaultValue);
 
                 annotationReader.ValidateEmpty();
-                return new Vec4Uniform(this.renderThread, name, displayName, minValue, maxValue, stepValue, settingsValue);
+                return new Vec4Uniform(this.renderThread, displayName, minValue, maxValue, stepValue, settingsValue);
             }
 
             if (type == "ivec4")
@@ -200,7 +200,7 @@ namespace Shaderlens.Render.Project
                 var settingsValue = GetVectorSettingsValue(settings, VectorJsonSerializer.Int, name, defaultValue);
 
                 annotationReader.ValidateEmpty();
-                return new IVec4Uniform(this.renderThread, name, displayName, minValue, maxValue, stepValue, settingsValue);
+                return new IVec4Uniform(this.renderThread, displayName, minValue, maxValue, stepValue, settingsValue);
             }
 
             if (type == "uvec4")
@@ -209,7 +209,7 @@ namespace Shaderlens.Render.Project
                 var settingsValue = GetVectorSettingsValue(settings, VectorJsonSerializer.UInt, name, defaultValue);
 
                 annotationReader.ValidateEmpty();
-                return new UVec4Uniform(this.renderThread, name, displayName, minValue, maxValue, stepValue, settingsValue);
+                return new UVec4Uniform(this.renderThread, displayName, minValue, maxValue, stepValue, settingsValue);
             }
 
             if (type == "bvec4")
@@ -218,7 +218,7 @@ namespace Shaderlens.Render.Project
                 var settingsValue = GetVectorSettingsValue(settings, VectorJsonSerializer.Bool, name, defaultValue);
 
                 annotationReader.ValidateEmpty();
-                return new BVec4Uniform(this.renderThread, name, displayName, settingsValue);
+                return new BVec4Uniform(this.renderThread, displayName, settingsValue);
             }
 
             throw new SourceLineException($"Unexpected uniform type \"{type}\"", annotationReader.SourceLine);

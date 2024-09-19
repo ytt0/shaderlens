@@ -6,8 +6,8 @@
     {
         private readonly string displayName;
 
-        public BoolUniform(IDispatcherThread renderThread, string name, string displayName, ISettingsValue<bool> settingsValue) :
-            base(renderThread, name, settingsValue)
+        public BoolUniform(IDispatcherThread renderThread, string displayName, ISettingsValue<bool> settingsValue) :
+            base(renderThread, settingsValue)
         {
             this.displayName = displayName;
         }
