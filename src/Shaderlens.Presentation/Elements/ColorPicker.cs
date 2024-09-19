@@ -82,6 +82,8 @@
             this.cursorPen1 = null;
             this.cursorPen2 = null;
             this.svBitmapClip = null;
+
+            InvalidateVisual();
         }
 
         protected override void OnRender(DrawingContext drawingContext)
