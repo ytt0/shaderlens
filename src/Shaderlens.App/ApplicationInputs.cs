@@ -221,158 +221,116 @@
         public IInputSpan OpenInputsFile { get; }
         public IInputSpan OpenThemeFile { get; }
 
-        private readonly IJsonSettings settings;
-        private readonly IJsonSerializer<IInputSpan> serializer;
-
-        public ApplicationInputs(IJsonSerializer<IInputSpan> serializer, IJsonSettings settings, string settingsPath)
+        public ApplicationInputs(IInputSettings settings, string settingsPath)
         {
-            this.settings = settings;
-            this.serializer = serializer;
-
             this.Path = settingsPath;
 
-            this.Play = GetInputSpan("Shader.Play", All(ModifierKey.Alt, Key.Up));
-            this.Pause = GetInputSpan("Shader.Pause", All(ModifierKey.Alt, Key.Up));
-            this.Step = GetInputSpan("Shader.Step", Any(All(ModifierKey.Alt, Key.Right), Key.OemPlus));
-            this.Restart = GetInputSpan("Shader.Restart", Any(All(ModifierKey.Alt, Key.Left), All(ModifierKey.Alt, Key.Down)));
-            this.Uniforms = GetInputSpan("Uniforms", All(ModifierKey.Ctrl, Key.U));
-            this.StartPage = GetInputSpan("StartPage");
-            this.ProjectNew = GetInputSpan("Project.New", All(ModifierKey.Ctrl, Key.N));
-            this.ProjectOpen = GetInputSpan("Project.Open", All(ModifierKey.Ctrl, Key.O));
-            this.ProjectReload = GetInputSpan("Project.Reload", All(ModifierKey.Ctrl, ModifierKey.Shift, Key.R));
-            this.ProjectSave = GetInputSpan("Project.Save", All(ModifierKey.Ctrl, Key.S));
-            this.Help = GetInputSpan("Help");
+            var factory = InputSpanFactory.Instance;
 
-            this.ShaderMouseState = GetInputSpan("Shader.Mouse", MouseButton.Left);
+            this.Play = settings.GetOrSetDefault("Shader.Play", factory.All(ModifierKey.Alt, Key.Up));
+            this.Pause = settings.GetOrSetDefault("Shader.Pause", factory.All(ModifierKey.Alt, Key.Up));
+            this.Step = settings.GetOrSetDefault("Shader.Step", factory.All(ModifierKey.Alt, Key.Right), factory.Create(Key.OemPlus));
+            this.Restart = settings.GetOrSetDefault("Shader.Restart", factory.All(ModifierKey.Alt, Key.Left), factory.All(ModifierKey.Alt, Key.Down));
+            this.Uniforms = settings.GetOrSetDefault("Uniforms", factory.All(ModifierKey.Ctrl, Key.U));
+            this.StartPage = settings.GetOrSetDefault("StartPage");
+            this.ProjectNew = settings.GetOrSetDefault("Project.New", factory.All(ModifierKey.Ctrl, Key.N));
+            this.ProjectOpen = settings.GetOrSetDefault("Project.Open", factory.All(ModifierKey.Ctrl, Key.O));
+            this.ProjectReload = settings.GetOrSetDefault("Project.Reload", factory.All(ModifierKey.Ctrl, ModifierKey.Shift, Key.R));
+            this.ProjectSave = settings.GetOrSetDefault("Project.Save", factory.All(ModifierKey.Ctrl, Key.S));
+            this.Help = settings.GetOrSetDefault("Help");
 
-            this.MenuMain = GetInputSpan("Menu.Main", Any(MouseButton.Right, Key.Apps));
-            this.MenuRecentProjects = GetInputSpan("Menu.RecentProjects", All(ModifierKey.Ctrl, ModifierKey.Shift, Key.O));
-            this.MenuProjectFiles = GetInputSpan("Menu.ProjectFiles", All(ModifierKey.Ctrl, ModifierKey.Shift, Key.F));
-            this.MenuBuffers = GetInputSpan("Menu.Buffers", All(ModifierKey.Ctrl, Key.B));
-            this.MenuExport = GetInputSpan("Menu.Export", All(ModifierKey.Ctrl, ModifierKey.Shift, Key.E));
-            this.MenuCopy = GetInputSpan("Menu.Copy", All(ModifierKey.Ctrl, ModifierKey.Shift, Key.C));
-            this.MenuResolution = GetInputSpan("Menu.Resolution");
-            this.MenuFrameRate = GetInputSpan("Menu.FrameRate");
-            this.MenuSpeed = GetInputSpan("Menu.Speed");
-            this.MenuViewer = GetInputSpan("Menu.Viewer");
-            this.MenuOptions = GetInputSpan("Menu.Options");
+            this.ShaderMouseState = settings.GetOrSetDefault("Shader.Mouse", factory.Create(MouseButton.Left));
 
-            this.ResizeSnapSmall = GetInputSpan("Resize.SnapSmall", ModifierKey.Shift);
-            this.ResizeSnapMedium = GetInputSpan("Resize.SnapMedium", ModifierKey.Ctrl);
-            this.ResizeKeepRatio = GetInputSpan("Resize.KeepRatio", ModifierKey.Alt);
+            this.MenuMain = settings.GetOrSetDefault("Menu.Main", factory.Create(MouseButton.Right), factory.Create(Key.Apps));
+            this.MenuRecentProjects = settings.GetOrSetDefault("Menu.RecentProjects", factory.All(ModifierKey.Ctrl, ModifierKey.Shift, Key.O));
+            this.MenuProjectFiles = settings.GetOrSetDefault("Menu.ProjectFiles", factory.All(ModifierKey.Ctrl, ModifierKey.Shift, Key.F));
+            this.MenuBuffers = settings.GetOrSetDefault("Menu.Buffers", factory.All(ModifierKey.Ctrl, Key.B));
+            this.MenuExport = settings.GetOrSetDefault("Menu.Export", factory.All(ModifierKey.Ctrl, ModifierKey.Shift, Key.E));
+            this.MenuCopy = settings.GetOrSetDefault("Menu.Copy", factory.All(ModifierKey.Ctrl, ModifierKey.Shift, Key.C));
+            this.MenuResolution = settings.GetOrSetDefault("Menu.Resolution");
+            this.MenuFrameRate = settings.GetOrSetDefault("Menu.FrameRate");
+            this.MenuSpeed = settings.GetOrSetDefault("Menu.Speed");
+            this.MenuViewer = settings.GetOrSetDefault("Menu.Viewer");
+            this.MenuOptions = settings.GetOrSetDefault("Menu.Options");
 
-            this.ViewerPan = GetInputSpan("Viewer.Pan", Any(MouseButton.Middle));
-            this.ViewerPanSpeed = GetInputSpan("Viewer.PanSpeed", Any(ModifierKey.Shift));
-            this.ViewerPanSnap = GetInputSpan("Viewer.PanSnap", Any(ModifierKey.Alt));
-            this.ViewerScale = GetInputSpan("Viewer.Scale", Any(All(ModifierKey.Ctrl, MouseButton.Middle), All(MouseButton.Right, MouseButton.Middle)));
-            this.ViewerScaleUp = GetInputSpan("Viewer.ScaleUp", Any(All(ModifierKey.Ctrl, MouseScroll.ScrollUp), All(MouseButton.Right, MouseScroll.ScrollUp), All(ModifierKey.Ctrl, Key.OemPlus)));
-            this.ViewerScaleDown = GetInputSpan("Viewer.ScaleDown", Any(All(ModifierKey.Ctrl, MouseScroll.ScrollDown), All(MouseButton.Right, MouseScroll.ScrollDown), All(ModifierKey.Ctrl, Key.OemMinus)));
-            this.ViewerScaleReset = GetInputSpan("Viewer.ScaleReset", All(ModifierKey.Ctrl, Key.D0));
-            this.ViewerScaleSpeed = GetInputSpan("Viewer.ScaleSpeed", ModifierKey.Shift);
+            this.ResizeSnapSmall = settings.GetOrSetDefault("Resize.SnapSmall", factory.Create(ModifierKey.Shift));
+            this.ResizeSnapMedium = settings.GetOrSetDefault("Resize.SnapMedium", factory.Create(ModifierKey.Ctrl));
+            this.ResizeKeepRatio = settings.GetOrSetDefault("Resize.KeepRatio", factory.Create(ModifierKey.Alt));
 
-            this.CopyRepeat = GetInputSpan("Copy.Repeat", All(ModifierKey.Ctrl, Key.C));
-            this.CopyFrame = GetInputSpan("Copy.Frame");
-            this.CopyFrameWithAlpha = GetInputSpan("Copy.FrameWithAlpha");
+            this.ViewerPan = settings.GetOrSetDefault("Viewer.Pan", factory.Create(MouseButton.Middle));
+            this.ViewerPanSpeed = settings.GetOrSetDefault("Viewer.PanSpeed", factory.Create(ModifierKey.Shift));
+            this.ViewerPanSnap = settings.GetOrSetDefault("Viewer.PanSnap", factory.Create(ModifierKey.Alt));
+            this.ViewerScale = settings.GetOrSetDefault("Viewer.Scale", factory.All(ModifierKey.Ctrl, MouseButton.Middle), factory.All(MouseButton.Right, MouseButton.Middle));
+            this.ViewerScaleUp = settings.GetOrSetDefault("Viewer.ScaleUp", factory.All(ModifierKey.Ctrl, MouseScroll.ScrollUp), factory.All(MouseButton.Right, MouseScroll.ScrollUp), factory.All(ModifierKey.Ctrl, Key.OemPlus));
+            this.ViewerScaleDown = settings.GetOrSetDefault("Viewer.ScaleDown", factory.All(ModifierKey.Ctrl, MouseScroll.ScrollDown), factory.All(MouseButton.Right, MouseScroll.ScrollDown), factory.All(ModifierKey.Ctrl, Key.OemMinus));
+            this.ViewerScaleReset = settings.GetOrSetDefault("Viewer.ScaleReset", factory.All(ModifierKey.Ctrl, Key.D0));
+            this.ViewerScaleSpeed = settings.GetOrSetDefault("Viewer.ScaleSpeed", factory.Create(ModifierKey.Shift));
 
-            this.FullScreenToggle = GetInputSpan("FullScreen.Toggle", Key.F11);
-            this.FullScreenLeave = GetInputSpan("FullScreen.Leave", Key.Escape);
-            this.ProjectOpenFolder = GetInputSpan("Project.OpenFolder");
+            this.CopyRepeat = settings.GetOrSetDefault("Copy.Repeat", factory.All(ModifierKey.Ctrl, Key.C));
+            this.CopyFrame = settings.GetOrSetDefault("Copy.Frame");
+            this.CopyFrameWithAlpha = settings.GetOrSetDefault("Copy.FrameWithAlpha");
 
-            this.FrameRateFull = GetInputSpan("FrameRate.Full");
-            this.FrameRate2 = GetInputSpan("FrameRate.2");
-            this.FrameRate4 = GetInputSpan("FrameRate.4");
-            this.FrameRate8 = GetInputSpan("FrameRate.8");
-            this.FrameRate16 = GetInputSpan("FrameRate.16");
-            this.FrameRateDecrease = GetInputSpan("FrameRate.Decrease");
-            this.FrameRateIncrease = GetInputSpan("FrameRate.Increase");
+            this.FullScreenToggle = settings.GetOrSetDefault("FullScreen.Toggle", factory.Create(Key.F11));
+            this.FullScreenLeave = settings.GetOrSetDefault("FullScreen.Leave", factory.Create(Key.Escape));
+            this.ProjectOpenFolder = settings.GetOrSetDefault("Project.OpenFolder");
 
-            this.ResolutionFull = GetInputSpan("Resolution.Full", All(ModifierKey.Ctrl, Key.OemPipe));
-            this.Resolution2 = GetInputSpan("Resolution.2");
-            this.Resolution4 = GetInputSpan("Resolution.4");
-            this.Resolution8 = GetInputSpan("Resolution.8");
-            this.Resolution16 = GetInputSpan("Resolution.16");
-            this.Resolution32 = GetInputSpan("Resolution.32");
-            this.Resolution64 = GetInputSpan("Resolution.64");
-            this.ResolutionDecrease = GetInputSpan("Resolution.Decrease", All(ModifierKey.Ctrl, Key.OemOpenBrackets));
-            this.ResolutionIncrease = GetInputSpan("Resolution.Increase", All(ModifierKey.Ctrl, Key.OemCloseBrackets));
+            this.FrameRateFull = settings.GetOrSetDefault("FrameRate.Full");
+            this.FrameRate2 = settings.GetOrSetDefault("FrameRate.2");
+            this.FrameRate4 = settings.GetOrSetDefault("FrameRate.4");
+            this.FrameRate8 = settings.GetOrSetDefault("FrameRate.8");
+            this.FrameRate16 = settings.GetOrSetDefault("FrameRate.16");
+            this.FrameRateDecrease = settings.GetOrSetDefault("FrameRate.Decrease");
+            this.FrameRateIncrease = settings.GetOrSetDefault("FrameRate.Increase");
 
-            this.Speed1_16 = GetInputSpan("Speed.1_16");
-            this.Speed1_8 = GetInputSpan("Speed.1_8");
-            this.Speed1_4 = GetInputSpan("Speed.1_4");
-            this.Speed1_2 = GetInputSpan("Speed.1_2");
-            this.SpeedNormal = GetInputSpan("Speed.Normal", All(ModifierKey.Shift, Key.OemQuestion));
-            this.Speed2 = GetInputSpan("Speed.2");
-            this.Speed4 = GetInputSpan("Speed.4");
-            this.Speed8 = GetInputSpan("Speed.8");
-            this.Speed16 = GetInputSpan("Speed.16");
-            this.SpeedIncrease = GetInputSpan("Speed.Increase", All(ModifierKey.Shift, Key.OemPeriod));
-            this.SpeedDecrease = GetInputSpan("Speed.Decrease", All(ModifierKey.Shift, Key.OemComma));
+            this.ResolutionFull = settings.GetOrSetDefault("Resolution.Full", factory.All(ModifierKey.Ctrl, Key.OemPipe));
+            this.Resolution2 = settings.GetOrSetDefault("Resolution.2");
+            this.Resolution4 = settings.GetOrSetDefault("Resolution.4");
+            this.Resolution8 = settings.GetOrSetDefault("Resolution.8");
+            this.Resolution16 = settings.GetOrSetDefault("Resolution.16");
+            this.Resolution32 = settings.GetOrSetDefault("Resolution.32");
+            this.Resolution64 = settings.GetOrSetDefault("Resolution.64");
+            this.ResolutionDecrease = settings.GetOrSetDefault("Resolution.Decrease", factory.All(ModifierKey.Ctrl, Key.OemOpenBrackets));
+            this.ResolutionIncrease = settings.GetOrSetDefault("Resolution.Increase", factory.All(ModifierKey.Ctrl, Key.OemCloseBrackets));
 
-            this.Buffer = Enumerable.Range(0, 8).Select(index => GetInputSpan($"Buffer.{index + 1}")).ToArray();
-            this.BufferImage = GetInputSpan("Buffer.Image", All(ModifierKey.Ctrl, Key.OemQuestion));
-            this.BufferNext = GetInputSpan("Buffer.Next", All(ModifierKey.Ctrl, Key.OemPeriod));
-            this.BufferPrevious = GetInputSpan("Buffer.Previous", All(ModifierKey.Ctrl, Key.OemComma));
+            this.Speed1_16 = settings.GetOrSetDefault("Speed.1_16");
+            this.Speed1_8 = settings.GetOrSetDefault("Speed.1_8");
+            this.Speed1_4 = settings.GetOrSetDefault("Speed.1_4");
+            this.Speed1_2 = settings.GetOrSetDefault("Speed.1_2");
+            this.SpeedNormal = settings.GetOrSetDefault("Speed.Normal", factory.All(ModifierKey.Shift, Key.OemQuestion));
+            this.Speed2 = settings.GetOrSetDefault("Speed.2");
+            this.Speed4 = settings.GetOrSetDefault("Speed.4");
+            this.Speed8 = settings.GetOrSetDefault("Speed.8");
+            this.Speed16 = settings.GetOrSetDefault("Speed.16");
+            this.SpeedIncrease = settings.GetOrSetDefault("Speed.Increase", factory.All(ModifierKey.Shift, Key.OemPeriod));
+            this.SpeedDecrease = settings.GetOrSetDefault("Speed.Decrease", factory.All(ModifierKey.Shift, Key.OemComma));
 
-            this.ExportFrame = GetInputSpan("Export.Frame");
-            this.ExportFrameRepeat = GetInputSpan("Export.FrameRepeat");
-            this.ExportRenderSequence = GetInputSpan("Export.RenderSequence");
+            this.Buffer = Enumerable.Range(0, 8).Select(index => settings.GetOrSetDefault($"Buffer.{index + 1}")).ToArray();
+            this.BufferImage = settings.GetOrSetDefault("Buffer.Image", factory.All(ModifierKey.Ctrl, Key.OemQuestion));
+            this.BufferNext = settings.GetOrSetDefault("Buffer.Next", factory.All(ModifierKey.Ctrl, Key.OemPeriod));
+            this.BufferPrevious = settings.GetOrSetDefault("Buffer.Previous", factory.All(ModifierKey.Ctrl, Key.OemComma));
 
-            this.PinnedProject = Enumerable.Range(0, 5).Select(index => GetInputSpan($"PinnedProject.{index + 1}")).ToArray();
-            this.RecentProject = Enumerable.Range(0, 5).Select(index => GetInputSpan($"RecentProject.{index + 1}", index == 0 ? All(ModifierKey.Ctrl, ModifierKey.Shift, ModifierKey.Alt, Key.O) : null)).ToArray();
+            this.ExportFrame = settings.GetOrSetDefault("Export.Frame");
+            this.ExportFrameRepeat = settings.GetOrSetDefault("Export.FrameRepeat");
+            this.ExportRenderSequence = settings.GetOrSetDefault("Export.RenderSequence");
 
-            this.ViewerNone = GetInputSpan("Viewer.None");
-            this.ViewerValuesOverlay = GetInputSpan("Viewer.ValuesOverlay");
+            this.PinnedProject = Enumerable.Range(0, 5).Select(index => settings.GetOrSetDefault($"PinnedProject.{index + 1}")).ToArray();
+            this.RecentProject = Enumerable.Range(0, 5).Select(index => settings.GetOrSetDefault($"RecentProject.{index + 1}", index == 0 ? factory.All(ModifierKey.Ctrl, ModifierKey.Shift, ModifierKey.Alt, Key.O) : InputSpan.None)).ToArray();
 
-            this.AlwaysOnTop = GetInputSpan("Options.AlwaysOnTop", All(ModifierKey.Ctrl, ModifierKey.Shift, Key.A));
-            this.AutoReload = GetInputSpan("Options.AutoReload");
-            this.RestartOnAutoReload = GetInputSpan("Options.RestartOnAutoReload");
-            this.ClearStateOnRestart = GetInputSpan("Options.ClearStateOnRestart");
-            this.PauseOnInactivity = GetInputSpan("Options.PauseOnInactivity");
-            this.RenderInputEventsWhenPaused = GetInputSpan("Options.RenderInputEventsWhenPaused");
-            this.WrapShaderInputCursor = GetInputSpan("Options.WrapShaderInputCursor");
-            this.EnableShaderCache = GetInputSpan("Options.EnableShaderCache");
-            this.DarkTheme = GetInputSpan("Options.DarkTheme");
-            this.OpenSettingsFile = GetInputSpan("Options.OpenSettingsFile");
-            this.OpenInputsFile = GetInputSpan("Options.OpenInputsFile");
-            this.OpenThemeFile = GetInputSpan("Options.OpenThemeFile");
-        }
+            this.ViewerNone = settings.GetOrSetDefault("Viewer.None");
+            this.ViewerValuesOverlay = settings.GetOrSetDefault("Viewer.ValuesOverlay");
 
-        private IInputSpan GetInputSpan(string name, object defaultInput)
-        {
-            return GetInputSpan(name, Create(defaultInput));
-        }
-
-        private IInputSpan GetInputSpan(string name, IInputSpan? defaultInput = null)
-        {
-            if (this.settings.TryGet(this.serializer, name, out var inputSpan))
-            {
-                return inputSpan;
-            }
-
-            this.settings.Set(this.serializer, name, defaultInput ?? InputSpan.None);
-            return defaultInput ?? InputSpan.None;
-        }
-
-        private static AnyInputSpan Any(params object[] values)
-        {
-            return new AnyInputSpan(values.Select(Create).ToArray());
-        }
-
-        private static AllInputSpans All(params object[] values)
-        {
-            return new AllInputSpans(values.Select(Create).ToArray());
-        }
-
-        private static IInputSpan Create(object value)
-        {
-            return value is IInputSpan inputSpan ? inputSpan :
-                value is Key key ? new KeyInputSpan(key) :
-                value is ModifierKey modifierKey ? new ModifierKeyInputSpan(modifierKey) :
-                value is MouseButton mouseButton ? new MouseButtonInputSpan(mouseButton) :
-                value is MouseScroll mouseScroll ? new MouseScrollInputSpan(mouseScroll) :
-                value is ModifierKeys ?
-                    throw new NotSupportedException($"Unexpected modifier key type {typeof(ModifierKeys).FullName}, modifier key type {typeof(ModifierKey).FullName} should be used instead") :
-                    throw new NotSupportedException($"Unexpected input type {value?.GetType().Name}");
+            this.AlwaysOnTop = settings.GetOrSetDefault("Options.AlwaysOnTop", factory.All(ModifierKey.Ctrl, ModifierKey.Shift, Key.A));
+            this.AutoReload = settings.GetOrSetDefault("Options.AutoReload");
+            this.RestartOnAutoReload = settings.GetOrSetDefault("Options.RestartOnAutoReload");
+            this.ClearStateOnRestart = settings.GetOrSetDefault("Options.ClearStateOnRestart");
+            this.PauseOnInactivity = settings.GetOrSetDefault("Options.PauseOnInactivity");
+            this.RenderInputEventsWhenPaused = settings.GetOrSetDefault("Options.RenderInputEventsWhenPaused");
+            this.WrapShaderInputCursor = settings.GetOrSetDefault("Options.WrapShaderInputCursor");
+            this.EnableShaderCache = settings.GetOrSetDefault("Options.EnableShaderCache");
+            this.DarkTheme = settings.GetOrSetDefault("Options.DarkTheme");
+            this.OpenSettingsFile = settings.GetOrSetDefault("Options.OpenSettingsFile");
+            this.OpenInputsFile = settings.GetOrSetDefault("Options.OpenInputsFile");
+            this.OpenThemeFile = settings.GetOrSetDefault("Options.OpenThemeFile");
         }
     }
 }

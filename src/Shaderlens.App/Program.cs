@@ -75,7 +75,8 @@
             var jsonSettingsFile = JsonSettingsFile.Load(path);
             var valueSerializer = new InputValueSerializer();
             var serializer = new InputSpanJsonSerializer(valueSerializer);
-            var applicationInputs = new ApplicationInputs(serializer, jsonSettingsFile.Content, jsonSettingsFile.Path);
+            var inputJsonSettings = new InputJsonSettings(jsonSettingsFile.Content, serializer);
+            var applicationInputs = new ApplicationInputs(inputJsonSettings, jsonSettingsFile.Path);
 
             jsonSettingsFile.Content.ClearUnusedValues();
             jsonSettingsFile.Save();
