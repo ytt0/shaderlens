@@ -6,6 +6,7 @@
 
         IScrollBarTheme ScrollBar { get; }
         IMenuTheme Menu { get; }
+        IGraphTheme Graph { get; }
         ILogTheme Log { get; }
 
         IThemeResource<Brush> WindowBackground { get; }
@@ -47,6 +48,7 @@
 
         public IScrollBarTheme ScrollBar { get; }
         public IMenuTheme Menu { get; }
+        public IGraphTheme Graph { get; }
         public ILogTheme Log { get; }
 
         public IThemeResource<Brush> WindowBackground { get; }
@@ -129,10 +131,11 @@
             this.TextSelectionOpacity = this.resources.AddResource(nameof(this.TextSelectionOpacity), doubleSerializer, 0.3);
             this.ToolTipOpacity = this.resources.AddResource(nameof(this.ToolTipOpacity), doubleSerializer, 0.95);
             this.StatisticsGraphStroke = this.resources.AddResource(nameof(this.StatisticsGraphStroke), colorSerializer, Color.FromArgb(255, 100, 100, 100));
-            this.StatisticsGraphFill = this.resources.AddResource(nameof(this.StatisticsGraphFill), colorSerializer, Color.FromArgb(60, 100, 100, 100));
+            this.StatisticsGraphFill = this.resources.AddResource(nameof(this.StatisticsGraphFill), colorSerializer, Color.FromArgb(40, 100, 100, 100));
 
             this.ScrollBar = new LightScrollBarTheme(settings);
             this.Menu = new LightMenuTheme(this, settings);
+            this.Graph = new LightGraphTheme(settings);
             this.Log = new LightLogTheme(this, settings);
         }
 
@@ -142,6 +145,7 @@
 
             this.ScrollBar.SetResources(target);
             this.Menu.SetResources(target);
+            this.Graph.SetResources(target);
             this.Log.SetResources(target);
         }
     }
@@ -152,6 +156,7 @@
 
         public IScrollBarTheme ScrollBar { get; }
         public IMenuTheme Menu { get; }
+        public IGraphTheme Graph { get; }
         public ILogTheme Log { get; }
 
         public IThemeResource<Brush> WindowBackground { get; }
@@ -234,10 +239,11 @@
             this.TextSelectionOpacity = this.resources.AddResource(nameof(this.TextSelectionOpacity), doubleSerializer, 0.3);
             this.ToolTipOpacity = this.resources.AddResource(nameof(this.ToolTipOpacity), doubleSerializer, 0.95);
             this.StatisticsGraphStroke = this.resources.AddResource(nameof(this.StatisticsGraphStroke), colorSerializer, Color.FromArgb(255, 200, 200, 200));
-            this.StatisticsGraphFill = this.resources.AddResource(nameof(this.StatisticsGraphFill), colorSerializer, Color.FromArgb(140, 200, 200, 200));
+            this.StatisticsGraphFill = this.resources.AddResource(nameof(this.StatisticsGraphFill), colorSerializer, Color.FromArgb(100, 200, 200, 200));
 
             this.ScrollBar = new DarkScrollBarTheme(settings);
             this.Menu = new DarkMenuTheme(this, settings);
+            this.Graph = new DarkGraphTheme(settings);
             this.Log = new DarkLogTheme(this, settings);
         }
 
@@ -247,6 +253,7 @@
 
             this.ScrollBar.SetResources(target);
             this.Menu.SetResources(target);
+            this.Graph.SetResources(target);
             this.Log.SetResources(target);
         }
     }

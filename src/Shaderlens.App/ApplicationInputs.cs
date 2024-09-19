@@ -2,6 +2,8 @@
 {
     public interface IApplicationInputs
     {
+        IPositionGraphInputs PositionGraph { get; }
+
         string Path { get; }
 
         IInputSpan Play { get; }
@@ -113,6 +115,8 @@
 
     public class ApplicationInputs : IApplicationInputs
     {
+        public IPositionGraphInputs PositionGraph { get; }
+
         public string Path { get; }
 
         public IInputSpan Play { get; }
@@ -331,6 +335,8 @@
             this.OpenSettingsFile = settings.GetOrSetDefault("Options.OpenSettingsFile");
             this.OpenInputsFile = settings.GetOrSetDefault("Options.OpenInputsFile");
             this.OpenThemeFile = settings.GetOrSetDefault("Options.OpenThemeFile");
+
+            this.PositionGraph = new PositionGraphInputs(settings, "Graph");
         }
     }
 }

@@ -63,7 +63,7 @@
             this.scaleBehavior = ScaleBehavior.Register(this.window);
             this.scaleBehavior.Scale = state.Scale;
 
-            this.windowContent = new Decorator { LayoutTransform = this.scaleBehavior.Transform };
+            this.windowContent = new Decorator { LayoutTransform = this.scaleBehavior.Transform, SnapsToDevicePixels = true };
             this.window.Content = this.windowContent;
 
             MouseHoverKeyEventBehavior.Register(this.window);

@@ -266,3 +266,68 @@ Default Inputs
 - ``Options.OpenSettingsFile`` - Open application settings file.
 - ``Options.OpenInputsFile`` - Open application inputs file.
 - ``Options.OpenThemeFile`` - Open selected theme file.
+
+Uniform Graph Editor
+    - ``Graph.Drag`` -  Drag value cursor.
+
+        - :kbd:`MouseLeft`,
+
+    - ``Graph.DragCancel`` - Cancel value change.
+
+        - :kbd:`MouseRight`
+        - :kbd:`Esc`
+
+    - ``Graph.SmallStepModifier`` - Snap to small increments.
+
+        - :kbd:`Shift`
+
+    - ``Graph.MediumStepModifier`` - Snap to medium increments.
+
+        - :kbd:`Ctrl`
+    - ``Graph.LargeStepModifier`` - Snap to large increments.
+
+        - :kbd:`Ctrl` + :kbd:`Shift`,
+
+    - ``Graph.Pan`` - Pan view.
+
+        - :kbd:`Mouse Middle Button`
+
+    - ``Graph.Scale`` - Scale view.
+
+        - :kbd:`Ctrl` + :kbd:`Mouse Middle Button`
+        - :kbd:`Mouse Middle Button` + :kbd:`Mouse Right Button`
+
+    - ``Graph.ScaleUp`` - Scale up.
+
+        - :kbd:`Mouse Scroll Up`
+        - :kbd:`Mouse Right Button` + :kbd:`Mouse Scroll Up`
+        - :kbd:`Ctrl` + :kbd:`+`
+        - :kbd:`Ctrl` + :kbd:`Num+`
+
+    - ``Graph.ScaleDown`` - Scale down.
+
+        - :kbd:`Mouse Scroll Down`
+        - :kbd:`Mouse Right Button` + :kbd:`Mouse Scroll Down`
+        - :kbd:`Ctrl` + :kbd:`-`
+        - :kbd:`Ctrl` + :kbd:`Num-`
+
+    - ``Graph.ScaleReset`` - Reset scale.
+
+        - :kbd:`Ctrl` + :kbd:`0`
+        - :kbd:`Ctrl` + :kbd:`Num0`
+
+    - ``Graph.ResetView`` - Reset pan and scale.
+
+        - :kbd:`R`
+
+    - ``Graph.FocusView`` - Focus on cursor position.
+
+        - :kbd:`F`
+
+    - ``Graph.ToggleTargetValue`` - Revert current value back to the initial value.
+
+        - :kbd:`Mouse Right Button`
+
+    - ``Graph.ToggleSourceValue`` - Set current value as an initial value.
+
+        - :kbd:`Ctrl` + :kbd:`Mouse Right Button`

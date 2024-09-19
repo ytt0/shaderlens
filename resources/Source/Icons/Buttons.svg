@@ -24,9 +24,9 @@
      inkscape:deskcolor="#d1d1d1"
      inkscape:document-units="mm"
      showgrid="false"
-     inkscape:zoom="4.9576051"
-     inkscape:cx="110.73895"
-     inkscape:cy="69.287487"
+     inkscape:zoom="9.9152102"
+     inkscape:cx="67.018246"
+     inkscape:cy="55.419904"
      inkscape:window-width="3840"
      inkscape:window-height="2066"
      inkscape:window-x="-11"
@@ -44,5 +44,15 @@
        style="display:inline;fill:none;stroke:#000000;stroke-linecap:round;stroke-linejoin:round"
        d="M 14.394141,5.4221516 A 7,7 0 0 1 18.834072,13.515077 7,7 0 0 1 11.38991,18.973363 7,7 0 0 1 5.0066624,12.305336 7,7 0 0 1 10.784463,5.1063457 m 3.215534,4.8936573 V 4.9999989 H 19"
        inkscape:label="ResetValue" />
+    <path
+       id="FocusView"
+       style="display:none;fill:none;stroke:#000000;stroke-width:0.999992;stroke-linecap:round;stroke-linejoin:round"
+       d="m 20.5,16.999996 c -5.666667,0 -11.3333333,0 -17,0 M 6.999996,3.498419 c 0,5.6671937 0,11.334387 0,17.001581 M 15,12 c 0.159784,2.796331 -3.912676,4.119554 -5.427051,1.763356 C 7.5958975,11.35533 10.823825,7.8144501 13.39417,9.3436319 14.367789,9.8428602 15.010419,10.9059 15,12 Z"
+       inkscape:label="FocusView" />
+    <path
+       id="ResetView"
+       style="display:none;fill:none;stroke:#000000;stroke-width:0.999992;stroke-linecap:round;stroke-linejoin:round"
+       d="M 20.5,12 H 3.5 M 12,3.5 v 17 M 20,7 a 3,3 0 0 1 -3,3 3,3 0 0 1 -3,-3 3,3 0 0 1 3,-3 3,3 0 0 1 3,3 z"
+       inkscape:label="ResetView" />
   </g>
 </svg>

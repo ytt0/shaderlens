@@ -8,6 +8,11 @@
 
         private readonly T[] values;
 
+        public Vector(params T[] values) :
+            this((IEnumerable<T>)values)
+        {
+        }
+
         public Vector(IEnumerable<T> values)
         {
             this.values = values.ToArray();
@@ -64,5 +69,4 @@
             return new Vector<T>(Enumerable.Range(0, count).Select(i => value).ToArray());
         }
     }
-
 }
