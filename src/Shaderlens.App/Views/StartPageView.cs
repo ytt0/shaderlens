@@ -319,6 +319,7 @@ namespace Shaderlens.Views
 
             this.theme.SetResources(this.contextMenu.Resources);
             MenuPreserveSelectionBehavior.Register(this.contextMenu);
+            MenuOpenInputReleaseBehavior.Register(this.contextMenu);
 
             var menuBuilder = new MenuBuilder(this.contextMenu, this.theme.Menu);
             menuBuilder.AddItem("Open Project", null, resources.CreateProjectIcon(), null, () => OpenProject(this.selectedProjectItem!.Path), null);

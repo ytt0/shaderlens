@@ -14,18 +14,18 @@
             this.menu.Closed += OnClosed;
         }
 
-        private void OnClosed(object sender, RoutedEventArgs e)
-        {
-            this.menu.HorizontalOffset = 0;
-            this.menu.VerticalOffset = 0;
-        }
-
         public void Dispose()
         {
             this.menu.PreviewMouseDown -= OnPreviewMouseDown;
             this.menu.PreviewKeyDown -= OnPreviewKeyDown;
             this.menu.Opened -= OnOpened;
             this.menu.Closed -= OnClosed;
+        }
+
+        private void OnClosed(object sender, RoutedEventArgs e)
+        {
+            this.menu.HorizontalOffset = 0;
+            this.menu.VerticalOffset = 0;
         }
 
         private void OnOpened(object sender, RoutedEventArgs e)

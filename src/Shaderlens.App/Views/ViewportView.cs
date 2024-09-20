@@ -79,6 +79,7 @@
                     this.menu.Closed += OnClosed;
 
                     MenuPreserveSelectionBehavior.Register(this.menu);
+                    MenuOpenInputReleaseBehavior.Register(this.menu);
 
                     var builder = new MenuBuilder(this.menu, this.theme);
                     this.menuSource.AddTo(builder);
