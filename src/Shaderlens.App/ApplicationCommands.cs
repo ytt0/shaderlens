@@ -86,68 +86,39 @@
     {
         private class Command : ICommand
         {
-            private readonly Action action;
-            private readonly Func<bool>? isVisible;
+            private readonly Action handler;
+            private readonly Func<bool>? isEnabled;
+            private readonly bool allowRepeat;
             private readonly Func<bool>? isChecked;
-            private readonly IInputSpan? inputSpan;
-            private readonly bool isStartAction;
+            private readonly IInputSpanEvent? inputSpanEvent;
 
-            public Command(IInputSpan? inputSpan, Action action, Func<bool>? isChecked, Func<bool>? isVisible, bool isStartAction = true)
+            public Command(IInputSpanEvent? inputSpanEvent, Action handler, Func<bool>? isChecked, Func<bool>? isEnabled, bool allowRepeat = false)
             {
-                this.action = action;
-                this.isVisible = isVisible;
+                this.handler = handler;
+                this.isEnabled = isEnabled;
+                this.allowRepeat = allowRepeat;
                 this.isChecked = isChecked;
-                this.inputSpan = inputSpan;
-                this.isStartAction = isStartAction;
+                this.inputSpanEvent = inputSpanEvent;
             }
 
             public void Invoke()
             {
-                if (this.isVisible?.Invoke() ?? true)
-                {
-                    this.action();
-                }
+                this.handler();
             }
 
             public void AddBindings(IInputStateBindings bindings)
             {
-                bindings.AddSpan(this.inputSpan, StartAction, EndAction);
+                this.inputSpanEvent?.AddTo(bindings, this.handler, this.isEnabled, true, this.allowRepeat);
             }
 
             public void AddMenuItem(IMenuBuilder builder, object header, object? icon = null, object? tooltip = null, Action<IMenuItemState>? setState = null)
             {
-                builder.AddItem(header, this.inputSpan, icon, tooltip, this.action, state =>
+                builder.AddItem(header, this.inputSpanEvent, icon, tooltip, this.handler, state =>
                 {
-                    state.IsVisible = this.isVisible?.Invoke() ?? true;
+                    state.IsVisible = this.isEnabled?.Invoke() ?? true;
                     state.IsChecked = this.isChecked?.Invoke() ?? false;
                     setState?.Invoke(state);
                 });
-            }
-
-            private void StartAction(InputSpanEventArgs e)
-            {
-                if (this.isVisible?.Invoke() ?? true)
-                {
-                    if (this.isStartAction)
-                    {
-                        this.action();
-                    }
-
-                    e.Handled = true;
-                }
-            }
-
-            private void EndAction(InputSpanEventArgs e)
-            {
-                if (this.isVisible?.Invoke() ?? true)
-                {
-                    if (!this.isStartAction)
-                    {
-                        this.action();
-                    }
-
-                    e.Handled = true;
-                }
             }
         }
 
@@ -236,7 +207,7 @@
             this.Pause = Add(commands, new Command(inputs.Pause, application.PausePipeline, null, () => application.IsFullyLoaded && !application.IsPaused));
             this.Step = Add(commands, new Command(inputs.Step, application.StepPipeline, null, () => application.IsFullyLoaded && application.IsPaused));
             this.Restart = Add(commands, new Command(inputs.Restart, application.RestartPipeline, null, IsFullyLoaded));
-            this.Uniforms = Add(commands, new Command(inputs.Uniforms, application.ToggleUniformsView, null, IsPartiallyLoaded, false));
+            this.Uniforms = Add(commands, new Command(inputs.Uniforms, application.ToggleUniformsView, null, IsPartiallyLoaded));
             this.StartPage = Add(commands, new Command(inputs.StartPage, application.ShowStartPage, null, null));
             this.ProjectNew = Add(commands, new Command(inputs.ProjectNew, application.CreateProject, null, null));
             this.ProjectOpen = Add(commands, new Command(inputs.ProjectOpen, application.OpenProject, null, null));
@@ -251,8 +222,8 @@
             this.FrameRate4 = Add(commands, new Command(inputs.FrameRate4, () => application.FrameRate = 4, () => application.FrameRate == 4, null));
             this.FrameRate8 = Add(commands, new Command(inputs.FrameRate8, () => application.FrameRate = 8, () => application.FrameRate == 8, null));
             this.FrameRate16 = Add(commands, new Command(inputs.FrameRate16, () => application.FrameRate = 16, () => application.FrameRate == 16, null));
-            this.FrameRateIncrease = Add(commands, new Command(inputs.FrameRateIncrease, () => application.FrameRate = Math.Max(1, application.FrameRate / 2), null, null));
-            this.FrameRateDecrease = Add(commands, new Command(inputs.FrameRateDecrease, () => application.FrameRate = Math.Min(128, application.FrameRate * 2), null, null));
+            this.FrameRateIncrease = Add(commands, new Command(inputs.FrameRateIncrease, () => application.FrameRate = Math.Max(1, application.FrameRate / 2), null, null, true));
+            this.FrameRateDecrease = Add(commands, new Command(inputs.FrameRateDecrease, () => application.FrameRate = Math.Min(128, application.FrameRate * 2), null, null, true));
 
             this.ResolutionFull = Add(commands, new Command(inputs.ResolutionFull, () => application.RenderDownscale = 1, () => application.RenderDownscale == 1, IsFullyLoaded));
             this.Resolution2 = Add(commands, new Command(inputs.Resolution2, () => application.RenderDownscale = 2, () => application.RenderDownscale == 2, IsFullyLoaded));
@@ -261,8 +232,8 @@
             this.Resolution16 = Add(commands, new Command(inputs.Resolution16, () => application.RenderDownscale = 16, () => application.RenderDownscale == 16, IsFullyLoaded));
             this.Resolution32 = Add(commands, new Command(inputs.Resolution32, () => application.RenderDownscale = 32, () => application.RenderDownscale == 32, IsFullyLoaded));
             this.Resolution64 = Add(commands, new Command(inputs.Resolution64, () => application.RenderDownscale = 64, () => application.RenderDownscale == 64, IsFullyLoaded));
-            this.ResolutionIncrease = Add(commands, new Command(inputs.ResolutionIncrease, () => application.RenderDownscale = Math.Max(1, application.RenderDownscale / 2), null, IsFullyLoaded));
-            this.ResolutionDecrease = Add(commands, new Command(inputs.ResolutionDecrease, () => application.RenderDownscale = Math.Min(1024, application.RenderDownscale * 2), null, IsFullyLoaded));
+            this.ResolutionIncrease = Add(commands, new Command(inputs.ResolutionIncrease, () => application.RenderDownscale = Math.Max(1, application.RenderDownscale / 2), null, IsFullyLoaded, true));
+            this.ResolutionDecrease = Add(commands, new Command(inputs.ResolutionDecrease, () => application.RenderDownscale = Math.Min(1024, application.RenderDownscale * 2), null, IsFullyLoaded, true));
 
             this.Speed1_16 = Add(commands, new Command(inputs.Speed1_16, () => application.Speed = 0.0625, () => Math.Abs(application.Speed - 0.0625) < 0.001, IsFullyLoaded));
             this.Speed1_8 = Add(commands, new Command(inputs.Speed1_8, () => application.Speed = 0.125, () => Math.Abs(application.Speed - 0.125) < 0.001, IsFullyLoaded));
@@ -273,8 +244,8 @@
             this.Speed4 = Add(commands, new Command(inputs.Speed4, () => application.Speed = 4, () => Math.Abs(application.Speed - 4) < 0.001, IsFullyLoaded));
             this.Speed8 = Add(commands, new Command(inputs.Speed8, () => application.Speed = 8, () => Math.Abs(application.Speed - 8) < 0.001, IsFullyLoaded));
             this.Speed16 = Add(commands, new Command(inputs.Speed16, () => application.Speed = 16, () => Math.Abs(application.Speed - 16) < 0.001, IsFullyLoaded));
-            this.SpeedIncrease = Add(commands, new Command(inputs.SpeedIncrease, () => application.Speed = Math.Min(1024, application.Speed * 2), null, IsFullyLoaded));
-            this.SpeedDecrease = Add(commands, new Command(inputs.SpeedDecrease, () => application.Speed = Math.Max(1.0 / 1024, application.Speed / 2), null, IsFullyLoaded));
+            this.SpeedIncrease = Add(commands, new Command(inputs.SpeedIncrease, () => application.Speed = Math.Min(1024, application.Speed * 2), null, IsFullyLoaded, true));
+            this.SpeedDecrease = Add(commands, new Command(inputs.SpeedDecrease, () => application.Speed = Math.Max(1.0 / 1024, application.Speed / 2), null, IsFullyLoaded, true));
 
             this.Buffer = Add(commands, inputs.Buffer.Select((inputSpan, index) => new Command(inputSpan, () => application.ViewerBufferIndex = index, () => application.ViewerBufferIndex == index, IsFullyLoaded)).ToArray());
             this.BufferImage = Add(commands, new Command(inputs.BufferImage, () => application.ViewerBufferIndex = application.ViewerBuffersCount - 1, null, null));

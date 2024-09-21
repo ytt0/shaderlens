@@ -32,6 +32,19 @@
         public static readonly IInputSpan None = new NoneInputSpan();
     }
 
+    public static class InputSpanExtensions
+    {
+        public static IInputSpanEvent CreateStartEvent(this IInputSpan inputSpan)
+        {
+            return new StartInputSpanEvent(inputSpan);
+        }
+
+        public static IInputSpanEvent CreateEndEvent(this IInputSpan inputSpan)
+        {
+            return new EndInputSpanEvent(inputSpan);
+        }
+    }
+
     public class AllInputSpans : IInputSpan
     {
         private readonly IEnumerable<IInputSpan> inputSpans;
@@ -200,17 +213,17 @@
         private readonly IInputValueSerializer serializer;
         private readonly InputSpanReader reader;
 
-        public InputSpanJsonSerializer(IInputValueSerializer serializer)
+        public InputSpanJsonSerializer(IInputValueSerializer serializer, IInputSpanFactory factory)
         {
             this.serializer = serializer;
-            this.reader = new InputSpanReader(serializer);
+            this.reader = new InputSpanReader(serializer, factory);
         }
 
         public JsonNode? Serialize(IInputSpan inputSpan)
         {
             if (inputSpan == InputSpan.None)
             {
-                return null!;
+                return null;
             }
 
             var writer = new InputSpanWriter(this.serializer);

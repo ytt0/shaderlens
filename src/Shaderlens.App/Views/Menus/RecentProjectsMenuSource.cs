@@ -52,11 +52,11 @@
             }
         }
 
-        private void AddProjectItem(IMenuBuilder builder, string path, IInputSpan? inputSpan)
+        private void AddProjectItem(IMenuBuilder builder, string path, IInputSpanEvent? inputSpanEvent)
         {
             var displayName = path.Contains('\\') ? path.Substring(path.Substring(0, path.LastIndexOf('\\')).LastIndexOf('\\') + 1) : path;
             var icon = Path.GetExtension(path).Equals(".json", StringComparison.InvariantCultureIgnoreCase) ? this.resources.CreateProjectIcon() : this.resources.CreateFileCodeIcon();
-            builder.AddItem(displayName, inputSpan, icon, path, () => this.application.OpenProject(path));
+            builder.AddItem(displayName, inputSpanEvent, icon, path, () => this.application.OpenProject(path));
         }
     }
 }

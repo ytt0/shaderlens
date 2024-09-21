@@ -15,6 +15,12 @@
 
     public class InputValueSerializer : IInputValueSerializer
     {
+        public static readonly IInputValueSerializer Instance = new InputValueSerializer();
+
+        private InputValueSerializer()
+        {
+        }
+
         public string Serialize(Key key)
         {
             return KeyMapping.TryGetValue(key, out var value) ? value : key.ToString();

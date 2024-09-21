@@ -8,10 +8,12 @@
     public class InputSpanReader : IInputSpanReader
     {
         private readonly IInputValueSerializer serializer;
+        private readonly IInputSpanFactory factory;
 
-        public InputSpanReader(IInputValueSerializer serializer)
+        public InputSpanReader(IInputValueSerializer serializer, IInputSpanFactory factory)
         {
             this.serializer = serializer;
+            this.factory = factory;
         }
 
         public bool TryRead(string value, [MaybeNullWhen(false)] out IInputSpan inputSpan)
@@ -41,7 +43,7 @@
                 spans.Add(span);
             }
 
-            inputSpan = new AllInputSpans(spans);
+            inputSpan = factory.All(spans);
             return true;
         }
 
@@ -49,25 +51,25 @@
         {
             if (this.serializer.TryDeserialize(value, out Key key))
             {
-                inputSpan = new KeyInputSpan(key);
+                inputSpan = factory.Create(key);
                 return true;
             }
 
             if (this.serializer.TryDeserialize(value, out ModifierKey modifierKey))
             {
-                inputSpan = new ModifierKeyInputSpan(modifierKey);
+                inputSpan = factory.Create(modifierKey);
                 return true;
             }
 
             if (this.serializer.TryDeserialize(value, out MouseButton button))
             {
-                inputSpan = new MouseButtonInputSpan(button);
+                inputSpan = factory.Create(button);
                 return true;
             }
 
             if (this.serializer.TryDeserialize(value, out MouseScroll direction))
             {
-                inputSpan = new MouseScrollInputSpan(direction);
+                inputSpan = factory.Create(direction);
                 return true;
             }
 

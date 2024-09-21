@@ -1,16 +1,22 @@
 ﻿namespace Shaderlens.Presentation.Input
 {
-    public delegate void InputSpanEventHandler(InputSpanEventArgs e);
-
     public interface IInputStateBindings
     {
         IDisposable PushScope();
-        void Add(IInputSpan inputSpan, InputSpanEventHandler startHandler, InputSpanEventHandler endHandler, bool requireSpanStart, bool allowRepeat);
+        void Add(IInputSpan inputSpan, Action? startHandler, Action? endHandler, Func<bool>? isEnabled, bool requireSpanStart, bool allowRepeat);
     }
 
     public interface IInputStateListener
     {
         void InputStateChanged(InputSpanEventArgs e);
+    }
+
+    public static class InputStateBindingsExtensions
+    {
+        public static void Add(this IInputStateBindings bindings, IInputSpanEvent inputSpanEvent, Action handler, Func<bool>? isEnabled = null, bool requireSpanStart = true, bool allowRepeat = false)
+        {
+            inputSpanEvent.AddTo(bindings, handler, isEnabled, requireSpanStart, allowRepeat);
+        }
     }
 
     public class InputSpanEventArgs : EventArgs
@@ -28,48 +34,10 @@
         }
     }
 
-    public static class InputStateBindingsExtensions
-    {
-        private static readonly InputSpanEventHandler EmptyAction = e => e.Handled = true;
-
-        public static void AddSpanStart(this IInputStateBindings inputStateBindings, IInputSpan? inputSpan, InputSpanEventHandler startAction, bool allowRepeat = false)
-        {
-            inputStateBindings.AddSpan(inputSpan, startAction, EmptyAction, true, allowRepeat);
-        }
-
-        public static void AddSpanStart(this IInputStateBindings inputStateBindings, IInputSpan? inputSpan, Action startAction, bool allowRepeat = false)
-        {
-            inputStateBindings.AddSpan(inputSpan, e => { startAction(); e.Handled = true; }, EmptyAction, true, allowRepeat);
-        }
-
-        public static void AddSpanEnd(this IInputStateBindings inputStateBindings, IInputSpan? inputSpan, InputSpanEventHandler endAction, bool requireSpanStart = false)
-        {
-            inputStateBindings.AddSpan(inputSpan, EmptyAction, endAction, requireSpanStart, false);
-        }
-
-        public static void AddSpanEnd(this IInputStateBindings inputStateBindings, IInputSpan? inputSpan, Action endAction, bool requireSpanStart = false)
-        {
-            inputStateBindings.AddSpan(inputSpan, EmptyAction, e => { endAction(); e.Handled = true; }, requireSpanStart, false);
-        }
-
-        public static void AddSpan(this IInputStateBindings inputStateBindings, IInputSpan? inputSpan, Action startAction, Action endAction, bool requireSpanStart = false, bool allowRepeat = false)
-        {
-            inputStateBindings.AddSpan(inputSpan, e => { startAction(); e.Handled = true; }, e => { endAction(); e.Handled = true; }, requireSpanStart, allowRepeat);
-        }
-
-        public static void AddSpan(this IInputStateBindings inputStateBindings, IInputSpan? inputSpan, InputSpanEventHandler startAction, InputSpanEventHandler endAction, bool requireSpanStart = false, bool allowRepeat = false)
-        {
-            if (inputSpan != null)
-            {
-                inputStateBindings.Add(inputSpan, startAction, endAction, requireSpanStart, allowRepeat);
-            }
-        }
-    }
-
     public class InputStateBindings : IInputStateBindings, IInputStateListener
     {
-        private record Binding(IInputSpan InputSpan, InputSpanEventHandler StartHandler, InputSpanEventHandler EndHandler, bool RequireSpanStart, bool AllowRepeat);
-        private record BindingMatch(IInputSpan InputSpan, int Length, InputSpanEventHandler Handler);
+        private record Binding(IInputSpan InputSpan, Action? StartHandler, Action? EndHandler, Func<bool>? IsEnabled, bool RequireSpanStart, bool AllowRepeat);
+        private record BindingMatch(IInputSpan InputSpan, int Length, Action? Handler);
 
         private class Scope : IDisposable
         {
@@ -103,17 +71,17 @@
 
             public void TryInvoke(InputSpanEventArgs e)
             {
-                var startMatches = new List<BindingMatch>();
-                var endMatches = new List<BindingMatch>();
-
                 if (e.Handled)
                 {
                     return;
                 }
 
+                var startMatches = new List<BindingMatch>();
+                var endMatches = new List<BindingMatch>();
+
                 foreach (var binding in this.bindings)
                 {
-                    if (e.IsRepeat && !binding.AllowRepeat)
+                    if (e.IsRepeat && !binding.AllowRepeat || binding.IsEnabled != null && !binding.IsEnabled())
                     {
                         continue;
                     }
@@ -136,30 +104,26 @@
 
                 if (startMatches.Count == 0 && endMatches.Count == 0)
                 {
-                    e.Handled = e.IsRepeat && this.startInputSpan != null;
+                    e.Handled = e.IsRepeat && this.startInputSpan?.Match(e.State) > 0;
                     return;
                 }
 
-                foreach (var bindingMatch in endMatches.OrderByDescending(match => match.InputSpan == this.startInputSpan ? 1 : 0).OrderByDescending(bindingMatch => bindingMatch.Length))
+                var bindingMatch = endMatches.OrderByDescending(match => match.InputSpan == this.startInputSpan ? 1 : 0).OrderByDescending(bindingMatch => bindingMatch.Length).FirstOrDefault();
+                if (bindingMatch != null)
                 {
-                    bindingMatch.Handler(e);
-
-                    if (e.Handled)
-                    {
-                        this.startInputSpan = null;
-                        return;
-                    }
+                    bindingMatch.Handler?.Invoke();
+                    this.startInputSpan = null;
+                    e.Handled = true;
+                    return;
                 }
 
-                foreach (var bindingMatch in startMatches.OrderByDescending(bindingMatch => bindingMatch.Length))
+                bindingMatch = startMatches.MaxBy(bindingMatch => bindingMatch.Length);
+                if (bindingMatch != null)
                 {
-                    bindingMatch.Handler(e);
-
-                    if (e.Handled)
-                    {
-                        this.startInputSpan = bindingMatch.InputSpan;
-                        return;
-                    }
+                    bindingMatch.Handler?.Invoke();
+                    this.startInputSpan = bindingMatch.InputSpan;
+                    e.Handled = true;
+                    return;
                 }
             }
 
@@ -188,9 +152,9 @@
             this.scope.TryInvoke(e);
         }
 
-        public void Add(IInputSpan inputSpan, InputSpanEventHandler startHandler, InputSpanEventHandler endHandler, bool requireSpanStart, bool allowRepeat)
+        public void Add(IInputSpan inputSpan, Action? startHandler, Action? endHandler, Func<bool>? isEnabled, bool requireSpanStart, bool allowRepeat)
         {
-            this.scope.AddBinding(new Binding(inputSpan, startHandler, endHandler, requireSpanStart, allowRepeat));
+            this.scope.AddBinding(new Binding(inputSpan, startHandler, endHandler, isEnabled, requireSpanStart, allowRepeat));
         }
 
         public IDisposable PushScope()

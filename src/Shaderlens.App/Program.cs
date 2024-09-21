@@ -73,9 +73,7 @@
         {
             var path = Path.Combine(Path.GetDirectoryName(applicationPath) ?? String.Empty, Path.GetFileNameWithoutExtension(applicationPath) + ".inputs.json");
             var jsonSettingsFile = JsonSettingsFile.Load(path);
-            var valueSerializer = new InputValueSerializer();
-            var serializer = new InputSpanJsonSerializer(valueSerializer);
-            var inputJsonSettings = new InputJsonSettings(jsonSettingsFile.Content, serializer);
+            var inputJsonSettings = new InputJsonSettings(jsonSettingsFile.Content, InputValueSerializer.Instance, InputSpanFactory.Instance);
             var applicationInputs = new ApplicationInputs(inputJsonSettings, jsonSettingsFile.Path);
 
             jsonSettingsFile.Content.ClearUnusedValues();

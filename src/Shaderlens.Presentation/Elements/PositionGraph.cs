@@ -238,16 +238,16 @@
             this.inputPositionBindings = new InputPositionBindings();
             this.mousePositionSource = MousePositionSourceWrapBehavior.Register(this, this.inputPositionBindings);
 
-            this.inputStateBindings.AddSpanStart(this.inputs.Drag, DragStart);
-            this.inputStateBindings.AddSpanStart(this.inputs.Pan, PanStart);
-            this.inputStateBindings.AddSpanStart(this.inputs.Scale, ScaleStart);
-            this.inputStateBindings.AddSpanStart(this.inputs.ScaleUp, e => SetScale(e, true), true);
-            this.inputStateBindings.AddSpanStart(this.inputs.ScaleDown, e => SetScale(e, false), true);
-            this.inputStateBindings.AddSpanStart(this.inputs.ScaleReset, ResetScale);
-            this.inputStateBindings.AddSpanStart(this.inputs.FocusView, e => { FocusView(); e.Handled = true; });
-            this.inputStateBindings.AddSpanStart(this.inputs.ResetView, e => { ResetView(); e.Handled = true; });
-            this.inputStateBindings.AddSpanEnd(this.inputs.ToggleTargetValue, ToggleTargetValue, true);
-            this.inputStateBindings.AddSpanEnd(this.inputs.ToggleSourceValue, ToggleSourceValue, true);
+            this.inputStateBindings.Add(this.inputs.Drag.CreateStartEvent(), DragStart);
+            this.inputStateBindings.Add(this.inputs.Pan.CreateStartEvent(), PanStart);
+            this.inputStateBindings.Add(this.inputs.Scale.CreateStartEvent(), ScaleStart);
+            this.inputStateBindings.Add(this.inputs.ScaleUp, () => SetScale(true), null, true, true);
+            this.inputStateBindings.Add(this.inputs.ScaleDown, () => SetScale(false), null, true, true);
+            this.inputStateBindings.Add(this.inputs.ScaleReset, ResetScale);
+            this.inputStateBindings.Add(this.inputs.FocusView, FocusView);
+            this.inputStateBindings.Add(this.inputs.ResetView, ResetView);
+            this.inputStateBindings.Add(this.inputs.ToggleTargetValue, ToggleTargetValue);
+            this.inputStateBindings.Add(this.inputs.ToggleSourceValue, ToggleSourceValue);
 
             this.cursorPen = new Pen(this.CursorStroke, CursorBorderThickness) { LineJoin = PenLineJoin.Round };
             this.sourceCursorPen = new Pen(this.SourceCursorStroke, CursorBorderThickness) { LineJoin = PenLineJoin.Round };
@@ -552,22 +552,20 @@
         protected override void OnMouseDown(MouseButtonEventArgs e)
         {
             base.OnMouseDown(e);
-            Focus();
+            //Focus();
         }
 
-        private void ToggleTargetValue(InputSpanEventArgs e)
+        private void ToggleTargetValue()
         {
-            ToggleTargetValueRequested?.Invoke(this, e);
-            e.Handled = true;
+            ToggleTargetValueRequested?.Invoke(this, EventArgs.Empty);
         }
 
-        private void ToggleSourceValue(InputSpanEventArgs e)
+        private void ToggleSourceValue()
         {
-            ToggleSourceValueRequested?.Invoke(this, e);
-            e.Handled = true;
+            ToggleSourceValueRequested?.Invoke(this, EventArgs.Empty);
         }
 
-        private void PanStart(InputSpanEventArgs e)
+        private void PanStart()
         {
             var startDragPosition = this.mousePositionSource.GetPosition();
 
@@ -583,17 +581,15 @@
                     startOffset.Y + (position.Y - startDragPosition.Y) / (this.Scale * this.drawingScale));
             });
 
-            this.inputStateBindings.AddSpanEnd(this.inputs.Pan, () =>
+            this.inputStateBindings.Add(this.inputs.Pan.CreateEndEvent(), () =>
             {
                 inputPositionScope.Dispose();
                 inputStateScope.Dispose();
                 mouseCaptureScope.Dispose();
-            });
-
-            e.Handled = true;
+            }, null, false);
         }
 
-        private void ScaleStart(InputSpanEventArgs e)
+        private void ScaleStart()
         {
             var startDragPosition = this.mousePositionSource.GetPosition();
 
@@ -615,17 +611,15 @@
                     offsetFactor * startOffset.Y + (1.0 - offsetFactor) * this.Value.Y);
             });
 
-            this.inputStateBindings.AddSpanEnd(this.inputs.Scale, () =>
+            this.inputStateBindings.Add(this.inputs.Scale.CreateEndEvent(), () =>
             {
                 inputPositionScope.Dispose();
                 inputStateScope.Dispose();
                 mouseCaptureScope.Dispose();
-            });
-
-            e.Handled = true;
+            }, null, false);
         }
 
-        private void DragStart(InputSpanEventArgs e)
+        private void DragStart()
         {
             var startValue = this.Value;
 
@@ -699,30 +693,28 @@
                 }
             });
 
-            this.inputStateBindings.AddSpanEnd(this.inputs.Drag, () =>
+            this.inputStateBindings.Add(this.inputs.Drag.CreateEndEvent(), () =>
             {
                 inputPositionScope.Dispose();
                 inputStateScope.Dispose();
                 mouseCaptureScope.Dispose();
-            });
+            }, null, false);
 
-            this.inputStateBindings.AddSpanStart(this.inputs.DragCancel, () =>
+            this.inputStateBindings.Add(this.inputs.DragCancel, () =>
             {
                 this.Value = startValue;
                 inputPositionScope.Dispose();
                 inputStateScope.Dispose();
                 mouseCaptureScope.Dispose();
-            });
+            }, null, false);
 
-            this.inputStateBindings.AddSpanStart(this.inputs.ScaleUp, e => SetScale(e, true));
-            this.inputStateBindings.AddSpanStart(this.inputs.ScaleDown, e => SetScale(e, false));
-            this.inputStateBindings.AddSpanStart(this.inputs.FocusView, e => { FocusView(); e.Handled = true; });
-            this.inputStateBindings.AddSpanStart(this.inputs.ResetView, e => { ResetView(); e.Handled = true; });
-
-            e.Handled = true;
+            this.inputStateBindings.Add(this.inputs.ScaleUp, () => SetScale(true), null, true, true);
+            this.inputStateBindings.Add(this.inputs.ScaleDown, () => SetScale(false), null, true, true);
+            this.inputStateBindings.Add(this.inputs.FocusView, FocusView);
+            this.inputStateBindings.Add(this.inputs.ResetView, ResetView);
         }
 
-        private void SetScale(InputSpanEventArgs e, bool scaleUp)
+        private void SetScale(bool scaleUp)
         {
             var scaleFactor = scaleUp ? this.ScaleFactor : 1.0 / this.ScaleFactor;
             var offsetFactor = 1.0 / scaleFactor;
@@ -732,16 +724,13 @@
             this.Offset = new Point(
                 offsetFactor * this.Offset.X + (1.0 - offsetFactor) * this.Value.X,
                 offsetFactor * this.Offset.Y + (1.0 - offsetFactor) * this.Value.Y);
-
-            e.Handled = true;
         }
 
-        private void ResetScale(InputSpanEventArgs e)
+        private void ResetScale()
         {
             var scaleFactor = Math.Max(0.0, 1.0 - (2.0 * CursorRadius + CursorBorderThickness) / Math.Min(this.RenderSize.Width, this.RenderSize.Height));
             this.Scale = scaleFactor * Math.Min(this.RenderSize.Width, this.RenderSize.Height) / Math.Max(this.RenderSize.Width, this.RenderSize.Height);
             this.Offset = new Point();
-            e.Handled = true;
         }
 
         private Point DrawingToScreenPosition(Point position)

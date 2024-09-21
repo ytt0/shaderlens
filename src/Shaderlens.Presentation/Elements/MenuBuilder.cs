@@ -4,17 +4,32 @@
     {
         void AddSeparator();
         void AddEmptyItem(Func<bool>? isVisible = null);
-        void AddItem(object header, IInputSpan? inputSpan, object? icon, object? tooltip, Action action, Action<IMenuItemState>? setState = null);
+        void AddItem(object header, IInputSpanEvent? inputSpanEvent, object? icon, object? tooltip, Action action, Action<IMenuItemState>? setState = null);
         void AddHeader(object header, object? icon);
 
-        IDisposable PushSubmenu(object header, IInputSpan? inputSpan, object? icon, string? tooltip, Action<IMenuItemState>? setState = null, Action? resetState = null, bool centerVertically = false);
+        IDisposable PushSubmenu(object header, IInputSpanEvent? inputSpanEvent, object? icon, string? tooltip, Action<IMenuItemState>? setState = null, Action? resetState = null, bool centerVertically = false);
     }
 
     public static class MenuBuilderExtensions
     {
+        public static void AddItem(this IMenuBuilder builder, object header, IInputSpan? inputSpan, object? icon, object? tooltip, Action action, Action<IMenuItemState>? setState = null)
+        {
+            builder.AddItem(header, inputSpan?.CreateStartEvent(), icon, tooltip, action, setState);
+        }
+
+        public static IDisposable PushSubmenu(this IMenuBuilder builder, object header, IInputSpan? inputSpan, object? icon, string? tooltip, Action<IMenuItemState>? setState = null, Action? resetState = null, bool centerVertically = false)
+        {
+            return builder.PushSubmenu(header, inputSpan?.CreateStartEvent(), icon, tooltip, setState, resetState, centerVertically);
+        }
+
         public static void AddSubmenu(this IMenuBuilder builder, IMenuSource source, object header, IInputSpan? inputSpan, object? icon, string? tooltip, Action<IMenuItemState>? setState = null, Action? resetState = null, bool centerVertically = false)
         {
-            using (builder.PushSubmenu(header, inputSpan, icon, tooltip, setState, resetState, centerVertically))
+            builder.AddSubmenu(source, header, inputSpan?.CreateStartEvent(), icon, tooltip, setState, resetState, centerVertically);
+        }
+
+        public static void AddSubmenu(this IMenuBuilder builder, IMenuSource source, object header, IInputSpanEvent? inputSpanEvent, object? icon, string? tooltip, Action<IMenuItemState>? setState = null, Action? resetState = null, bool centerVertically = false)
+        {
+            using (builder.PushSubmenu(header, inputSpanEvent, icon, tooltip, setState, resetState, centerVertically))
             {
                 source.AddTo(builder);
             }
@@ -262,7 +277,7 @@
             this.rootMenu = new ContextMenuAdapter(contextMenu);
             this.contextMenu.Opened += (sender, e) => this.rootMenu.SetState();
             this.menuStack = new Stack<IMenuContainer>();
-            this.inputFormatter = new InputDisplayNameFormatter(new InputValueSerializer());
+            this.inputFormatter = new InputDisplayNameFormatter(InputValueSerializer.Instance);
 
             this.menu = this.rootMenu;
         }
@@ -278,9 +293,9 @@
             this.menu.AddItem(new FrameworkElementAdapter(menuItem, isVisible));
         }
 
-        public void AddItem(object header, IInputSpan? inputSpan, object? icon, object? tooltip, Action action, Action<IMenuItemState>? setState = null)
+        public void AddItem(object header, IInputSpanEvent? inputSpanEvent, object? icon, object? tooltip, Action action, Action<IMenuItemState>? setState = null)
         {
-            var gestureText = inputSpan != null ? this.inputFormatter.GetDisplayName(inputSpan) : null;
+            var gestureText = inputSpanEvent != null ? this.inputFormatter.GetDisplayName(inputSpanEvent) : null;
 
             var menuItem = new StyledMenuItem(this.theme) { Icon = icon, ToolTip = tooltip };
 
@@ -321,9 +336,9 @@
             this.menu.AddItem(new FrameworkElementAdapter(menuHeader, null));
         }
 
-        public IDisposable PushSubmenu(object header, IInputSpan? inputSpan, object? icon, string? tooltip, Action<IMenuItemState>? setState = null, Action? resetState = null, bool centerVertically = false)
+        public IDisposable PushSubmenu(object header, IInputSpanEvent? inputSpanEvent, object? icon, string? tooltip, Action<IMenuItemState>? setState = null, Action? resetState = null, bool centerVertically = false)
         {
-            var gestureText = inputSpan != null ? this.inputFormatter.GetDisplayName(inputSpan) : null;
+            var gestureText = inputSpanEvent != null ? this.inputFormatter.GetDisplayName(inputSpanEvent) : null;
 
             var menuItem = new StyledMenuItem(this.theme) { Icon = icon, ToolTip = tooltip };
 

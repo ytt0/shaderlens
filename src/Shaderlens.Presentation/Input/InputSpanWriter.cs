@@ -110,7 +110,7 @@
             if (this.allScopeCount > 0)
             {
                 throw new Exception("Invalid input structure, \"Any\" scope should not be created inside an \"All\" scope. Input combinations should be flattened. " +
-                    "For example, an input such as \"Ctrl (A, B)\" (i.e. \"All(Ctrl, Any(A, B))\") should be structured as \"Ctrl A, Ctrl B\" (i.e. \"Any(All(Ctrl, A), All(Ctrl, B))\")");
+                    "For example, an input such as \"All(Ctrl, Any(A, B))\" should be structured as \"Any(All(Ctrl, A), All(Ctrl, B))\" (serialized as [\"Ctrl A\", \"Ctrl B\"] json array)");
             }
 
             this.anyScopeCount++;

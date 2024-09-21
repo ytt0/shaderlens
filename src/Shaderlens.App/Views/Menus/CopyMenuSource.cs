@@ -146,22 +146,22 @@
         private class RepeatCopyMenuItem : IRepeatCopyMenuItem
         {
             private readonly CopyMenuItemHeader headerElement;
-            private readonly IInputSpan? inputSpan;
+            private readonly IInputSpanEvent? inputSpanEvent;
             private readonly IApplication application;
             private readonly ICopyMenuState state;
             private string? copyValue;
 
-            public RepeatCopyMenuItem(IInputSpan? inputSpan, IApplication application, ICopyMenuState state, IMenuTheme theme)
+            public RepeatCopyMenuItem(IInputSpanEvent? inputSpanEvent, IApplication application, ICopyMenuState state, IMenuTheme theme)
             {
                 this.headerElement = new CopyMenuItemHeader(theme) { Header = "Copy" };
-                this.inputSpan = inputSpan;
+                this.inputSpanEvent = inputSpanEvent;
                 this.application = application;
                 this.state = state;
             }
 
             public void AddTo(IMenuBuilder builder)
             {
-                builder.AddItem(this.headerElement, this.inputSpan, null, null, () => this.application.CopyRepeat(this.state.GetCopySource()), SetState);
+                builder.AddItem(this.headerElement, this.inputSpanEvent, null, null, () => this.application.CopyRepeat(this.state.GetCopySource()), SetState);
             }
 
             private void SetState(IMenuItemState state)

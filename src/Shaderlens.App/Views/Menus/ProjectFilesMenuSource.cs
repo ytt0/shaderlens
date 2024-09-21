@@ -81,9 +81,9 @@
             }
         }
 
-        private void AddItem(IMenuBuilder builder, string header, string absolutePath, IInputSpan? inputSpan, object? icon)
+        private void AddItem(IMenuBuilder builder, string header, string absolutePath, IInputSpanEvent? inputSpanEvent, object? icon)
         {
-            builder.AddItem(header.Replace("_", "__"), inputSpan, icon, absolutePath, () => this.application.OpenExternalPath(absolutePath), state => state.SetIsEnabled(Path.Exists(absolutePath)));
+            builder.AddItem(header.Replace("_", "__"), inputSpanEvent, icon, absolutePath, () => this.application.OpenExternalPath(absolutePath), state => state.SetIsEnabled(Path.Exists(absolutePath)));
         }
     }
 }
