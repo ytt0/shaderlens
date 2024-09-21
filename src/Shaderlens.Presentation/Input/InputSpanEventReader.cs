@@ -16,18 +16,21 @@
 
         public bool TryRead(string value, [MaybeNullWhen(false)] out IInputSpanEvent inputSpanEvent)
         {
-            var isStartEvent = true;
+            string? type = null;
 
             var match = EventTypeRegex().Match(value);
             if (match.Success)
             {
-                isStartEvent = match.Groups["type"].Value == "Press";
+                type = match.Groups["type"].Value;
                 value = match.Groups["value"].Value;
             }
 
             if (reader.TryRead(value, out var inputSpan))
             {
-                inputSpanEvent = isStartEvent ? new StartInputSpanEvent(inputSpan) : new EndInputSpanEvent(inputSpan);
+                inputSpanEvent =
+                    type == "Global" ? new GlobalInputSpanEvent(inputSpan) :
+                    type == "Release" ? new EndInputSpanEvent(inputSpan) :
+                    new StartInputSpanEvent(inputSpan);
                 return true;
             }
 
@@ -35,7 +38,7 @@
             return false;
         }
 
-        [GeneratedRegex("^\\s*(?<type>Press|Release)\\s*\\((?<value>.*)\\)\\s*$")]
+        [GeneratedRegex("^\\s*(?<type>Press|Release|Global)\\s*\\((?<value>.*)\\)\\s*$")]
         private static partial Regex EventTypeRegex();
     }
 }

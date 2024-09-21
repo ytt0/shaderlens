@@ -232,7 +232,7 @@
         {
             this.inputs = inputs;
 
-            this.inputStateBindings = new InputStateBindings();
+            this.inputStateBindings = new InputStateBindings(GlobalInputBindings.Empty);
             this.inputStateSource = InputStateSourceBehavior.Register(this, this.inputStateBindings);
 
             this.inputPositionBindings = new InputPositionBindings();

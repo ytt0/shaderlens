@@ -1,6 +1,6 @@
 ﻿namespace Shaderlens.Presentation.Input
 {
-    public enum ModifierKey { Alt, Ctrl, Shift }
+    public enum ModifierKey { Alt, Ctrl, Shift, Win }
 
     public enum MouseScroll { ScrollUp, ScrollDown }
 
@@ -42,6 +42,11 @@
         public static IInputSpanEvent CreateEndEvent(this IInputSpan inputSpan)
         {
             return new EndInputSpanEvent(inputSpan);
+        }
+
+        public static IInputSpanEvent CreateGlobalEvent(this IInputSpan inputSpan)
+        {
+            return new GlobalInputSpanEvent(inputSpan);
         }
     }
 

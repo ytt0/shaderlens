@@ -119,6 +119,7 @@
         private readonly IApplicationSettings settings;
         private readonly IApplicationInputs inputs;
         private readonly IApplicationCommands commands;
+        private readonly GlobalInputBindings globalInputBindings;
         private readonly InputStateBindings inputStateBindings;
         private readonly InputStateSourceBehavior inputStateSource;
         private readonly InputPositionBindings inputPositionBindings;
@@ -202,7 +203,8 @@
             this.window.WindowState = settings.ViewportWindowState.Maximized ? WindowState.Maximized : WindowState.Normal;
             this.window.AllowDrop = true;
 
-            this.inputStateBindings = new InputStateBindings();
+            this.globalInputBindings = new GlobalInputBindings();
+            this.inputStateBindings = new InputStateBindings(this.globalInputBindings);
             this.inputStateSource = InputStateSourceBehavior.Register(this.window, this.inputStateBindings);
 
             this.inputPositionBindings = new InputPositionBindings();
@@ -466,6 +468,8 @@
             this.window.Width = size.X;
             this.window.Height = size.Y;
 
+            this.globalInputBindings.SetTargetWindow(this.handle);
+
             this.application.Start(this.handle);
 
             SetViewportSize();
@@ -502,6 +506,8 @@
 
             this.settings.ViewportWindowState.Scale = this.scaleBehavior.Scale;
             this.settings.ViewportWindowState.Maximized = this.window.WindowState == WindowState.Maximized;
+
+            this.globalInputBindings.Dispose();
         }
 
         private void OnPreviewDrop(object sender, DragEventArgs e)
@@ -878,6 +884,11 @@
             {
                 this.statisticsTooltipTimer.Stop();
                 this.statisticsTooltip.IsOpen = false;
+            }
+
+            if (msg == WM_HOTKEY)
+            {
+                this.globalInputBindings.GlobalInputReceived(wParam.ToInt32());
             }
 
             return IntPtr.Zero;

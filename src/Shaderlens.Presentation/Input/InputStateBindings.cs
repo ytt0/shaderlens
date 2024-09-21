@@ -4,6 +4,7 @@
     {
         IDisposable PushScope();
         void Add(IInputSpan inputSpan, Action? startHandler, Action? endHandler, Func<bool>? isEnabled, bool requireSpanStart, bool allowRepeat);
+        void AddGlobal(IInputSpan inputSpan, Action handler, Func<bool>? isEnabled, bool allowRepeat);
     }
 
     public interface IInputStateListener
@@ -139,12 +140,14 @@
         }
 
         private readonly Stack<Scope> scopesStack;
+        private readonly IGlobalInputBindings globalInputBindings;
         private Scope scope;
 
-        public InputStateBindings()
+        public InputStateBindings(IGlobalInputBindings globalInputBindings)
         {
             this.scopesStack = new Stack<Scope>();
             this.scope = new Scope(this);
+            this.globalInputBindings = globalInputBindings;
         }
 
         public void InputStateChanged(InputSpanEventArgs e)
@@ -155,6 +158,11 @@
         public void Add(IInputSpan inputSpan, Action? startHandler, Action? endHandler, Func<bool>? isEnabled, bool requireSpanStart, bool allowRepeat)
         {
             this.scope.AddBinding(new Binding(inputSpan, startHandler, endHandler, isEnabled, requireSpanStart, allowRepeat));
+        }
+
+        public void AddGlobal(IInputSpan inputSpan, Action handler, Func<bool>? isEnabled, bool allowRepeat)
+        {
+            this.globalInputBindings.Add(inputSpan, handler, isEnabled, allowRepeat);
         }
 
         public IDisposable PushScope()

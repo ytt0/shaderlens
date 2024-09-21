@@ -38,6 +38,11 @@
             {
                 inputSpan.WriteTo(this.writer);
             }
+
+            public void WriteGlobalEvent(IInputSpan inputSpan)
+            {
+                inputSpan.WriteTo(this.writer);
+            }
         }
 
         private readonly IInputValueSerializer serializer;

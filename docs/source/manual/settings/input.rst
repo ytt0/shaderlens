@@ -1,22 +1,30 @@
 Input Settings
 ==============
 
-| Inputs are defined under the application folder, at :file:`Shaderlens.inputs.json`.
-| Each setting can be a string, or an array of strings for multiple options.
-| Each input string is a combination of one or more of the following values:
+Inputs are defined under the application folder, at :file:`Shaderlens.inputs.json` (can be opened from the viewport menu: :menuselection:`Options --> Open Input File`). |br|
+Each setting can be a string, or an array of strings for multiple options.
+
+Each input string is a combination of one or more of the following values:
 
 Mouse
     | ``MouseLeft`` ``MouseMiddle`` ``MouseRight`` ``MouseX1`` ``MouseX2``
     | ``ScrollUp`` ``ScrollDown``
 
 Keyboard
-    | ``Alt`` ``Ctrl`` ``Shift``
+    | ``Alt`` ``Ctrl`` ``Shift`` ``Win``
     | ``A``-``Z`` ``0``-``9`` ``Num0``-``Num9`` ``F1``-``F12``
     | ``+`` ``-`` ``*`` ``/`` ``.`` ``<`` ``>`` ``[`` ``]`` ``/`` ``\`` ``;`` ``'`` ``~``
     | ``Enter`` ``Space`` ``Esc`` ``Tab`` ``Menu`` ``Pause`` ``Backspace``
     | ``Left`` ``Right`` ``Up`` ``Down``
     | ``Insert`` ``Delete`` ``Home`` ``End`` ``PageUp`` ``PageDown``
     | ``LAlt`` ``RAlt`` ``LCtrl`` ``RCtrl`` ``LShift`` ``RShift``
+    | (additional `Key Enum <https://learn.microsoft.com/en-us/dotnet/api/system.windows.input.key>`_ values could also be used).
+
+Each input settings can have one of the following event specifiers:
+
+    - ``Press(<input>)`` - The associated action would run on key or mouse button press event (this is the default behavior).
+    - ``Release(<input>)`` - The associated action would run on key or mouse button release event.
+    - ``Global(<input>)`` - The input would be registered as a system-wide hotkey, and the associated action would run on key press event. The expected input is a single key and an optional combination of modifier keys (``Alt`` ``Ctrl`` ``Shift`` ``Win``).
 
 Default Inputs
 --------------
@@ -24,10 +32,12 @@ Default Inputs
 - ``Shader.Play`` - Start / Resume rendering.
 
     - :kbd:`Alt` + :kbd:`Up`
+    - Global: :kbd:`Ctrl` + :kbd:`Shift` + :kbd:`Win` + :kbd:`P`.
 
 - ``Shader.Pause`` - Pause rendering.
 
     - :kbd:`Alt` + :kbd:`Up`
+    - Global: :kbd:`Ctrl` + :kbd:`Shift` + :kbd:`Win` + :kbd:`P`.
 
 - ``Shader.Step`` - Render a single frame.
 
@@ -38,6 +48,7 @@ Default Inputs
 
     - :kbd:`Alt` + :kbd:`Left`
     - :kbd:`Alt` + :kbd:`Down`
+    - Global: :kbd:`Ctrl` + :kbd:`Shift` + :kbd:`Win` + :kbd:`O`.
 
 - ``Uniforms`` - Open the :ref:`Uniforms view<features-uniforms-view>`.
 

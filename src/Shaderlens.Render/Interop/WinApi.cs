@@ -79,6 +79,7 @@
         public const int WM_EXITSIZEMOVE = 0x0232;
         public const int WM_NCMOUSEMOVE = 0x00A0;
         public const int WM_NCMOUSELEAVE = 0x02A2;
+        public const int WM_HOTKEY = 0x0312;
 
         public const uint PFD_DRAW_TO_WINDOW = 0x00000004;
         public const uint PFD_SUPPORT_OPENGL = 0x00000020;
@@ -114,6 +115,12 @@
         public const int WGL_CONTEXT_PROFILE_MASK_ARB = 0x9126;
         public const int WGL_CONTEXT_CORE_PROFILE_BIT_ARB = 0x00000001;
         public const int WGL_CONTEXT_COMPATIBILITY_PROFILE_BIT_ARB = 0x00000002;
+
+        public const int MOD_ALT = 0x0001;
+        public const int MOD_CONTROL = 0x0002;
+        public const int MOD_SHIFT = 0x0004;
+        public const int MOD_WIN = 0x0008;
+        public const int MOD_NOREPEAT = 0x4000;
 
         //[DllImport("user32.dll", CharSet = CharSet.Ansi, EntryPoint = "CreateWindowA")]
         //public static extern IntPtr CreateWindowA(string lpClassName, string lpWindowName, uint dwStyle, int x, int y, int nWidth, int nHeight, IntPtr hWndParent, IntPtr hMenu, IntPtr hInstance,  IntPtr lpParam);
@@ -223,6 +230,12 @@
 
         [DllImport("user32.dll")]
         public static extern bool GetLastInputInfo(ref LASTINPUTINFO plii);
+
+        [DllImport("user32.dll")]
+        public static extern bool RegisterHotKey(IntPtr hWnd, int id, uint fsModifiers, uint vk);
+
+        [DllImport("user32.dll")]
+        public static extern bool UnregisterHotKey(IntPtr hWnd, int id);
 
         [DllImport("dwmapi.dll")]
         public static extern uint DwmSetWindowAttribute(IntPtr hWnd, int dwAttribute, IntPtr pvAttribute, int cbAttribute);

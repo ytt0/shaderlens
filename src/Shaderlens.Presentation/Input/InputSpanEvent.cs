@@ -104,6 +104,31 @@
         }
     }
 
+    public class GlobalInputSpanEvent : IInputSpanEvent
+    {
+        private readonly IInputSpan inputSpan;
+
+        public GlobalInputSpanEvent(IInputSpan inputSpan)
+        {
+            this.inputSpan = inputSpan;
+        }
+
+        public override string ToString()
+        {
+            return $"Global({this.inputSpan})";
+        }
+
+        public void AddTo(IInputStateBindings target, Action handler, Func<bool>? isEnabled, bool requireSpanStart, bool allowRepeat)
+        {
+            target.AddGlobal(this.inputSpan, handler, isEnabled, allowRepeat);
+        }
+
+        public void WriteTo(IInputSpanEventWriter writer)
+        {
+            writer.WriteGlobalEvent(this.inputSpan);
+        }
+    }
+
     public class AnyInputSpanEvent : IInputSpanEvent
     {
         private readonly IEnumerable<IInputSpanEvent> inputSpanEvents;

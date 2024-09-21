@@ -2,7 +2,7 @@
 {
     public static class KeyMap
     {
-        private static readonly Dictionary<Key, int> Map = CreateKeyMap();
+        private static readonly Lazy<Dictionary<Key, int>> Map = new Lazy<Dictionary<Key, int>>(CreateKeyMap);
 
         private static Dictionary<Key, int> CreateKeyMap()
         {
@@ -116,7 +116,7 @@
 
         public static bool TryGetIndex(Key key, out int index)
         {
-            return Map.TryGetValue(key, out index);
+            return Map.Value.TryGetValue(key, out index);
         }
     }
 }

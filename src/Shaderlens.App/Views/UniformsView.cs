@@ -47,7 +47,7 @@
 
             this.windowContainer.SetContent(this.windowContent);
 
-            this.inputStateBindings = new InputStateBindings();
+            this.inputStateBindings = new InputStateBindings(GlobalInputBindings.Empty);
             this.inputStateSource = InputStateSourceBehavior.Register(this.window, this.inputStateBindings);
             this.commands.AddBindings(this.inputStateBindings);
         }

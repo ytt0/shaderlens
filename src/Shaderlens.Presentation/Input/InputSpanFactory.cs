@@ -37,6 +37,11 @@
             return factory.All(values.Select(factory.CreateFromObject).ToArray()).CreateEndEvent();
         }
 
+        public static IInputSpanEvent AllGlobal(this IInputSpanFactory factory, params object?[] values)
+        {
+            return factory.All(values.Select(factory.CreateFromObject).ToArray()).CreateGlobalEvent();
+        }
+
         private static IInputSpan CreateFromObject(this IInputSpanFactory factory, object? value)
         {
             return value is null ? InputSpan.None :

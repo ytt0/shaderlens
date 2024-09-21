@@ -4,6 +4,7 @@
     {
         void WriteStartEvent(IInputSpan inputSpan);
         void WriteEndEvent(IInputSpan inputSpan);
+        void WriteGlobalEvent(IInputSpan inputSpan);
     }
 
     public class InputSpanEventWriter : IInputSpanEventWriter
@@ -34,6 +35,13 @@
             var writer = new InputSpanWriter(serializer);
             inputSpan.WriteTo(writer);
             this.results.AddRange(writer.GetResults().Select(result => $"Release({result})"));
+        }
+
+        public void WriteGlobalEvent(IInputSpan inputSpan)
+        {
+            var writer = new InputSpanWriter(serializer);
+            inputSpan.WriteTo(writer);
+            this.results.AddRange(writer.GetResults().Select(result => $"Global({result})"));
         }
     }
 }
