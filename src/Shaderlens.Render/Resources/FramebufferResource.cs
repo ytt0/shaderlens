@@ -11,6 +11,7 @@
         void SetSize(int width, int height);
         void PushState();
         void PopState();
+        void ClearState();
     }
 
     public interface IReadWriteFramebufferResource : IFramebufferResource
@@ -127,6 +128,16 @@
             BindTexture();
         }
 
+        public void ClearState()
+        {
+            this.threadAccess.Verify();
+
+            glBindFramebuffer(GL_FRAMEBUFFER, this.Id);
+            glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+            glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        }
+
         private void BindTexture()
         {
             glBindFramebuffer(GL_FRAMEBUFFER, this.Id);
@@ -219,6 +230,16 @@
             for (var i = 0; i < this.framebuffersCount; i++)
             {
                 this.framebuffers[i].PopState();
+            }
+        }
+
+        public void ClearState()
+        {
+            this.threadAccess.Verify();
+
+            for (var i = 0; i < this.framebuffersCount; i++)
+            {
+                this.framebuffers[i].ClearState();
             }
         }
     }

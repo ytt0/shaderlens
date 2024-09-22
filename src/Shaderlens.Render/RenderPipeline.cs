@@ -54,6 +54,10 @@
             public void PushState()
             {
             }
+
+            public void ClearState()
+            {
+            }
         }
 
         private readonly struct State
@@ -326,10 +330,7 @@
                 {
                     for (var i = 0; i < this.framebuffers.Length; i++)
                     {
-                        glBindFramebuffer(GL_FRAMEBUFFER, this.framebuffers[i].Id);
-                        glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-                        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-                        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+                        this.framebuffers[i].ClearState();
                     }
 
                     this.mouseStateSource.ClearState();
