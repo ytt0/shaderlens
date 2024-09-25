@@ -26,7 +26,7 @@
             return this.colorEditor;
         }
 
-        public void SetValue(ISettingsValue<SrgbColor> settingsValue, bool editAlpha)
+        public void SetContext(ISettingsValue<SrgbColor> settingsValue, bool editAlpha)
         {
             this.skipChangeEvent = true;
             try

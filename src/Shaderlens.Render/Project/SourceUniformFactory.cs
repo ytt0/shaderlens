@@ -1,7 +1,4 @@
-﻿
-using Shaderlens.Serialization.Glsl;
-
-namespace Shaderlens.Render.Project
+﻿namespace Shaderlens.Render.Project
 {
     public interface ISourceUniformFactory
     {
@@ -38,9 +35,91 @@ namespace Shaderlens.Render.Project
 
             if (annotationReader.TryGetValue("type", out var conversionType))
             {
-                if (type == "vec3")
+                if (conversionType == "position")
                 {
-                    if (conversionType.ToString() == "srgb")
+                    if (type == "vec2")
+                    {
+                        GetVectorRangePropertiesValues("vec2", 2, name, value, annotationReader, sourceLine, GlslValueParser.Float, 0.0, Double.MinValue, Double.MaxValue, 0.001, out var defaultValue, out var minValue, out var maxValue, out var stepValue);
+                        var settingsValue = GetVectorSettingsValue(settings, VectorJsonSerializer.Double, name, defaultValue);
+
+                        annotationReader.ValidateEmpty();
+                        return new Vec2PositionUniform(this.renderThread, displayName, minValue, maxValue, stepValue, settingsValue);
+                    }
+
+                    if (type == "ivec2")
+                    {
+                        GetVectorRangePropertiesValues("ivec2", 2, name, value, annotationReader, sourceLine, GlslValueParser.Int, 0, Int32.MinValue, Int32.MaxValue, 1, out var defaultValue, out var minValue, out var maxValue, out var stepValue);
+                        var settingsValue = GetVectorSettingsValue(settings, VectorJsonSerializer.Int, name, defaultValue);
+
+                        annotationReader.ValidateEmpty();
+                        return new IVec2PositionUniform(this.renderThread, displayName, minValue, maxValue, stepValue, settingsValue);
+                    }
+
+                    if (type == "uvec2")
+                    {
+                        GetVectorRangePropertiesValues("uvec2", 2, name, value, annotationReader, sourceLine, GlslValueParser.UInt, 0u, UInt32.MinValue, UInt32.MaxValue, 1u, out var defaultValue, out var minValue, out var maxValue, out var stepValue);
+                        var settingsValue = GetVectorSettingsValue(settings, VectorJsonSerializer.UInt, name, defaultValue);
+
+                        annotationReader.ValidateEmpty();
+                        return new UVec2PositionUniform(this.renderThread, displayName, minValue, maxValue, stepValue, settingsValue);
+                    }
+
+                    if (type == "vec3")
+                    {
+                        GetVectorRangePropertiesValues("vec3", 3, name, value, annotationReader, sourceLine, GlslValueParser.Float, 0.0, Double.MinValue, Double.MaxValue, 0.001, out var defaultValue, out var minValue, out var maxValue, out var stepValue);
+                        var settingsValue = GetVectorSettingsValue(settings, VectorJsonSerializer.Double, name, defaultValue);
+
+                        annotationReader.ValidateEmpty();
+                        return new Vec3PositionUniform(this.renderThread, displayName, minValue, maxValue, stepValue, settingsValue);
+                    }
+
+                    if (type == "ivec3")
+                    {
+                        GetVectorRangePropertiesValues("ivec3", 3, name, value, annotationReader, sourceLine, GlslValueParser.Int, 0, Int32.MinValue, Int32.MaxValue, 1, out var defaultValue, out var minValue, out var maxValue, out var stepValue);
+                        var settingsValue = GetVectorSettingsValue(settings, VectorJsonSerializer.Int, name, defaultValue);
+
+                        annotationReader.ValidateEmpty();
+                        return new IVec3PositionUniform(this.renderThread, displayName, minValue, maxValue, stepValue, settingsValue);
+                    }
+
+                    if (type == "uvec3")
+                    {
+                        GetVectorRangePropertiesValues("uvec3", 3, name, value, annotationReader, sourceLine, GlslValueParser.UInt, 0u, UInt32.MinValue, UInt32.MaxValue, 1u, out var defaultValue, out var minValue, out var maxValue, out var stepValue);
+                        var settingsValue = GetVectorSettingsValue(settings, VectorJsonSerializer.UInt, name, defaultValue);
+
+                        annotationReader.ValidateEmpty();
+                        return new UVec3PositionUniform(this.renderThread, displayName, minValue, maxValue, stepValue, settingsValue);
+                    }
+
+                    throw new SourceLineException($"Uniform type \"{conversionType}\" is not available for {type} uniforms, and only available for vec2-3, ivec2-3, and uvec2-3 uniforms", annotationReader.SourceLine);
+                }
+
+                if (conversionType == "normal")
+                {
+                    if (type == "vec2")
+                    {
+                        var defaultValue = String.IsNullOrEmpty(value) ? new Vector<double>(1.0, 0.0) : ParseValue(VectorGlslValueParser.Vec2, sourceLine, name, "default", value);
+                        var settingsValue = GetVectorSettingsValue(settings, VectorJsonSerializer.Double, name, defaultValue);
+
+                        annotationReader.ValidateEmpty();
+                        return new Vec2NormalUniform(this.renderThread, displayName, settingsValue);
+                    }
+
+                    if (type == "vec3")
+                    {
+                        var defaultValue = String.IsNullOrEmpty(value) ? new Vector<double>(1.0, 0.0, 0.0) : ParseValue(VectorGlslValueParser.Vec3, sourceLine, name, "default", value);
+                        var settingsValue = GetVectorSettingsValue(settings, VectorJsonSerializer.Double, name, defaultValue);
+
+                        annotationReader.ValidateEmpty();
+                        return new Vec3NormalUniform(this.renderThread, displayName, settingsValue);
+                    }
+
+                    throw new SourceLineException($"Uniform type \"{conversionType}\" is not available for {type} uniforms, and only available for vec2, and vec3 uniforms", annotationReader.SourceLine);
+                }
+
+                if (conversionType == "srgb")
+                {
+                    if (type == "vec3")
                     {
                         var defaultValue = String.IsNullOrEmpty(value) ? Vector.Create(3, 0.0) : ParseValue(VectorGlslValueParser.Vec3, sourceLine, name, "default", value);
                         var settingsValue = GetVectorSettingsValue(settings, VectorJsonSerializer.Double, name, defaultValue);
@@ -49,21 +128,7 @@ namespace Shaderlens.Render.Project
                         return new SrgbColorUniform(this.renderThread, displayName, settingsValue);
                     }
 
-                    if (conversionType.ToString() == "linear-rgb")
-                    {
-                        var defaultValue = String.IsNullOrEmpty(value) ? Vector.Create(3, 0.0) : ParseValue(VectorGlslValueParser.Vec3, sourceLine, name, "default", value);
-                        var settingsValue = GetVectorSettingsValue(settings, VectorJsonSerializer.Double, name, defaultValue);
-
-                        annotationReader.ValidateEmpty();
-                        return new LinearRgbColorUniform(this.renderThread, displayName, settingsValue);
-                    }
-
-                    throw new SourceLineException($"Unexpected vec3 uniform conversion type \"{conversionType}\", supported types are \"srgb\", \"linear-rgb\"", annotationReader.SourceLine);
-                }
-
-                if (type == "vec4")
-                {
-                    if (conversionType.ToString() == "srgb")
+                    if (type == "vec4")
                     {
                         var defaultValue = String.IsNullOrEmpty(value) ? Vector.Create(4, 0.0) : ParseValue(VectorGlslValueParser.Vec4, sourceLine, name, "default", value);
                         var settingsValue = GetVectorSettingsValue(settings, VectorJsonSerializer.Double, name, defaultValue);
@@ -72,7 +137,21 @@ namespace Shaderlens.Render.Project
                         return new SrgbaColorUniform(this.renderThread, displayName, settingsValue);
                     }
 
-                    if (conversionType.ToString() == "linear-rgb")
+                    throw new SourceLineException($"Uniform type \"{conversionType}\" is not available for {type} uniforms, and only available for vec3, and vec4 uniforms", annotationReader.SourceLine);
+                }
+
+                if (conversionType == "linear-rgb")
+                {
+                    if (type == "vec3")
+                    {
+                        var defaultValue = String.IsNullOrEmpty(value) ? Vector.Create(3, 0.0) : ParseValue(VectorGlslValueParser.Vec3, sourceLine, name, "default", value);
+                        var settingsValue = GetVectorSettingsValue(settings, VectorJsonSerializer.Double, name, defaultValue);
+
+                        annotationReader.ValidateEmpty();
+                        return new LinearRgbColorUniform(this.renderThread, displayName, settingsValue);
+                    }
+
+                    if (type == "vec4")
                     {
                         var defaultValue = String.IsNullOrEmpty(value) ? Vector.Create(4, 0.0) : ParseValue(VectorGlslValueParser.Vec4, sourceLine, name, "default", value);
                         var settingsValue = GetVectorSettingsValue(settings, VectorJsonSerializer.Double, name, defaultValue);
@@ -81,8 +160,10 @@ namespace Shaderlens.Render.Project
                         return new LinearRgbaColorUniform(this.renderThread, displayName, settingsValue);
                     }
 
-                    throw new SourceLineException($"Unexpected vec4 uniform conversion type \"{conversionType}\", supported types are \"srgb\", \"linear-rgb\"", annotationReader.SourceLine);
+                    throw new SourceLineException($"Uniform type \"{conversionType}\" is not available for {type} uniforms, and only available for vec3, and vec4 uniforms", annotationReader.SourceLine);
                 }
+
+                throw new SourceLineException($"Unexpected uniform type \"{conversionType}\", expected types are: position, normal, srgb, linear-rgb", annotationReader.SourceLine);
             }
 
             if (type == "bool")

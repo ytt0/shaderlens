@@ -8,6 +8,7 @@
         void AddVectorElement(ISettingsValue<Vector<bool>> settingsValue, string displayName);
         void AddVectorElement(ISettingsValue<Vector<double>> settingsValue, string displayName, Vector<double> minValue, Vector<double> maxValue, Vector<double> step, int roundDecimals);
         void AddColorElement(ISettingsValue<SrgbColor> settingsValue, bool editAlpha, string displayName);
+        void AddPositionElement(ISettingsValue<Vector<double>> settingsValue, string displayName, Vector<double> minValue, Vector<double> maxValue, Vector<double> step, int roundDecimals, bool normalizeValue);
         void SetSettingsState();
     }
 
@@ -124,6 +125,8 @@
             }
         }
 
+        private const int DefaultRoundDecimals = 6;
+
         public static void AddIntElement(this IUniformsViewBuilder builder, ISettingsValue<int> settingsValue, string displayName, int minValue, int maxValue, int step)
         {
             builder.AddFloatElement(new IntAdapter(settingsValue), displayName, minValue, maxValue, step, 0);
@@ -136,12 +139,12 @@
 
         public static void AddFloatElement(this IUniformsViewBuilder builder, ISettingsValue<double> settingsValue, string displayName, double minValue, double maxValue, double step)
         {
-            builder.AddFloatElement(settingsValue, displayName, minValue, maxValue, step, 6);
+            builder.AddFloatElement(settingsValue, displayName, minValue, maxValue, step, DefaultRoundDecimals);
         }
 
         public static void AddVectorElement(this IUniformsViewBuilder builder, ISettingsValue<Vector<double>> settingsValue, string displayName, Vector<double> minValue, Vector<double> maxValue, Vector<double> step)
         {
-            builder.AddVectorElement(settingsValue, displayName, minValue, maxValue, step, 6);
+            builder.AddVectorElement(settingsValue, displayName, minValue, maxValue, step, DefaultRoundDecimals);
         }
 
         public static void AddVectorElement(this IUniformsViewBuilder builder, ISettingsValue<Vector<int>> settingsValue, string displayName, Vector<int> minValue, Vector<int> maxValue, Vector<int> step)
@@ -159,9 +162,29 @@
             builder.AddColorElement(new SrgbColorAdapter(settingsValue), editAlpha, displayName);
         }
 
+        public static void AddPositionElement(this IUniformsViewBuilder builder, ISettingsValue<Vector<int>> settingsValue, string displayName, Vector<int> minValue, Vector<int> maxValue, Vector<int> step)
+        {
+            builder.AddPositionElement(new IntVectorAdapter(settingsValue), displayName, ToFloatVector(minValue), ToFloatVector(maxValue), ToFloatVector(step), 0, false);
+        }
+
+        public static void AddPositionElement(this IUniformsViewBuilder builder, ISettingsValue<Vector<uint>> settingsValue, string displayName, Vector<uint> minValue, Vector<uint> maxValue, Vector<uint> step)
+        {
+            builder.AddPositionElement(new UIntVectorAdapter(settingsValue), displayName, ToFloatVector(minValue), ToFloatVector(maxValue), ToFloatVector(step), 0, false);
+        }
+
+        public static void AddPositionElement(this IUniformsViewBuilder builder, ISettingsValue<Vector<double>> settingsValue, string displayName, Vector<double> minValue, Vector<double> maxValue, Vector<double> step)
+        {
+            builder.AddPositionElement(settingsValue, displayName, minValue, maxValue, step, DefaultRoundDecimals, false);
+        }
+
+        public static void AddNormalElement(this IUniformsViewBuilder builder, ISettingsValue<Vector<double>> settingsValue, string displayName)
+        {
+            builder.AddPositionElement(settingsValue, displayName, Vector.Create(3, -1.0), Vector.Create(3, 1.0), Vector.Create(3, 0.001), DefaultRoundDecimals, true);
+        }
+
         private static Vector<double> ToFloatVector(Vector<int> vector)
         {
-            return Vector.Create(vector.Select(value => (double)value));
+            return Vector.Create(vector.Select(value => value == Int32.MinValue ? Double.MinValue : value == Int32.MaxValue ? Double.MaxValue : value).ToArray());
         }
 
         private static Vector<int> ToIntVector(Vector<double> vector)
@@ -171,7 +194,7 @@
 
         private static Vector<double> ToFloatVector(Vector<uint> vector)
         {
-            return Vector.Create(vector.Select(value => (double)value));
+            return Vector.Create(vector.Select(value => value == UInt32.MaxValue ? Double.MaxValue : value).ToArray());
         }
 
         private static Vector<uint> ToUIntVector(Vector<double> vector)
@@ -181,12 +204,12 @@
 
         private static int ToInt(double value)
         {
-            return (int)Math.Round(value);
+            return (int)Math.Clamp(Math.Round(value), Int32.MinValue, Int32.MaxValue);
         }
 
         private static uint ToUInt(double value)
         {
-            return (uint)Math.Max(0.0, Math.Round(value));
+            return (uint)Math.Clamp(Math.Round(value), UInt32.MinValue, UInt32.MaxValue);
         }
     }
 }

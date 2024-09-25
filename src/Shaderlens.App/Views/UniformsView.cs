@@ -20,6 +20,7 @@
         private readonly Window window;
         private readonly IApplication application;
         private readonly IApplicationSettings settings;
+        private readonly IApplicationInputs inputs;
         private readonly IApplicationCommands commands;
         private readonly IApplicationTheme theme;
         private readonly WindowContainer windowContainer;
@@ -29,11 +30,12 @@
         private string? projectName;
         private bool isProjectChanged;
 
-        public UniformsView(Window window, IApplication application, IApplicationSettings settings, IApplicationCommands commands, IApplicationTheme theme)
+        public UniformsView(Window window, IApplication application, IApplicationSettings settings, IApplicationInputs inputs, IApplicationCommands commands, IApplicationTheme theme)
         {
             this.window = window;
             this.application = application;
             this.settings = settings;
+            this.inputs = inputs;
             this.commands = commands;
             this.theme = theme;
             this.windowContainer = new WindowContainer(window, theme, settings.UniformsWindowState, "Uniforms");
@@ -99,7 +101,7 @@
         public void SetContent(IUniform projectUniforms, IProjectSettings projectSettings)
         {
             var dragSensitivity = this.application.GetDragSensitivity(this.window);
-            var builder = new UniformsViewBuilder(this.application, projectSettings, this.theme, this.application.Clipboard, dragSensitivity);
+            var builder = new UniformsViewBuilder(this.application, this.inputs, projectSettings, this.theme, this.application.Clipboard, dragSensitivity);
             projectUniforms.AddViewElement(builder);
             builder.SetSettingsState();
 

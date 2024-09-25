@@ -20,10 +20,15 @@
         public FrameworkElement ViewElement { get { return this.dockPanel; } }
 
         private readonly IApplication application;
+        private readonly IApplicationInputs inputs;
         private readonly IProjectSettings projectSettings;
         private readonly IApplicationTheme theme;
         private readonly IClipboard clipboard;
         private readonly double dragSensitivity;
+        private readonly ValueJsonSerializer<double> doubleSerializer;
+        private readonly FixedSizeVectorJsonSerializer<double> positionVectorSerializer;
+        private readonly EnumJsonSerializer<PositionEditMode> positionEditModeSerializer;
+
         private readonly DockContainer dockContainer;
         private readonly Grid dockContainerPanel;
         private readonly Panel uniformsPanel;
@@ -32,20 +37,27 @@
         private readonly List<FrameworkElement> headerElements;
         private readonly List<IRowHeaderContainer> rowHeaderContainers;
         private readonly StyledScrollViewer scrollViewer;
-
         private Panel targetPanel;
 
         private ColorUniformElement? colorUniformElement;
         private ColorDockUniformElement? colorDockUniformElement;
-        private ISettingsValue<SrgbColor>? colorSettingsValue;
 
-        public UniformsViewBuilder(IApplication application, IProjectSettings projectSettings, IApplicationTheme theme, IClipboard clipboard, double dragSensitivity)
+        private PositionUniformElement? positionUniformElement;
+        private PositionDockUniformElement? positionDockUniformElement;
+
+        public UniformsViewBuilder(IApplication application, IApplicationInputs inputs, IProjectSettings projectSettings, IApplicationTheme theme, IClipboard clipboard, double dragSensitivity)
         {
             this.application = application;
+            this.inputs = inputs;
             this.projectSettings = projectSettings;
             this.theme = theme;
             this.clipboard = clipboard;
             this.dragSensitivity = dragSensitivity;
+
+            this.doubleSerializer = new ValueJsonSerializer<double>();
+            this.positionVectorSerializer = new FixedSizeVectorJsonSerializer<double>(new VectorJsonSerializer<double>(this.doubleSerializer), Vector.Create(3, 0.0));
+            this.positionEditModeSerializer = new EnumJsonSerializer<PositionEditMode>();
+
             this.dockContainerPanel = new Grid();
             this.dockContainer = new DockContainer(theme)
             {
@@ -153,9 +165,9 @@
             var element = new ColorUniformElement(settingsValue, displayName, this.clipboard, this.theme) { Height = 28 };
             element.ValueChanged += (sender, e) =>
             {
-                if (this.colorDockUniformElement != null && this.colorSettingsValue == settingsValue)
+                if (this.projectSettings.UniformDockName.Value == settingsValue.Name)
                 {
-                    this.colorDockUniformElement.InvalidateValue();
+                    this.colorDockUniformElement?.InvalidateValue();
                 }
 
                 this.application.SetProjectChanged();
@@ -174,6 +186,41 @@
             if (this.projectSettings.UniformDockName.Value == settingsValue.Name)
             {
                 ToggleDockElement(settingsValue, editAlpha, element);
+            }
+        }
+
+        public void AddPositionElement(ISettingsValue<Vector<double>> settingsValue, string displayName, Vector<double> minValue, Vector<double> maxValue, Vector<double> step, int roundDecimals, bool normalizeValue)
+        {
+            var context = new PositionUniformContext(settingsValue,
+                this.projectSettings.GetViewValue(this.positionEditModeSerializer, $"{settingsValue.Name}.EditMode", PositionEditMode.XY),
+                this.projectSettings.GetViewValue(this.positionVectorSerializer, $"{settingsValue.Name}.ViewOffset", Vector.Create(3, 0.0)),
+                this.projectSettings.GetViewValue(this.doubleSerializer, $"{settingsValue.Name}.ViewScale", 0.0),
+                this.projectSettings.PositionUniformColumnRatio);
+
+            var element = new PositionUniformElement(context, displayName, minValue, maxValue, step, roundDecimals, normalizeValue, this.dragSensitivity, this.clipboard, this.theme);
+            element.ContextInvalidated += (sender, e) =>
+            {
+                if (this.projectSettings.UniformDockName.Value == settingsValue.Name)
+                {
+                    this.positionDockUniformElement?.InvalidateContext();
+                }
+
+                this.application.SetProjectChanged();
+                this.application.RenderFrame();
+            };
+
+            element.Click += (sender, e) =>
+            {
+                ToggleDockElement(context, minValue, maxValue, step, roundDecimals, normalizeValue, element);
+                e.Handled = true;
+            };
+
+            this.rowHeaderContainers.Add(element);
+            this.targetPanel.Children.Add(element);
+
+            if (this.projectSettings.UniformDockName.Value == settingsValue.Name)
+            {
+                ToggleDockElement(context, minValue, maxValue, step, roundDecimals, normalizeValue, element);
             }
         }
 
@@ -204,14 +251,12 @@
 
         public void ToggleDockElement(ISettingsValue<SrgbColor> settingsValue, bool editAlpha, ColorUniformElement element)
         {
-            if (this.colorSettingsValue == settingsValue && this.dockContainer.Visibility != Visibility.Collapsed)
+            if (this.projectSettings.UniformDockName.Value == settingsValue.Name && this.dockContainer.Visibility != Visibility.Collapsed)
             {
                 this.dockContainer.Visibility = Visibility.Collapsed;
                 this.projectSettings.UniformDockName.Value = null;
                 return;
             }
-
-            this.colorSettingsValue = settingsValue;
 
             if (this.colorDockUniformElement == null)
             {
@@ -221,10 +266,34 @@
 
             this.colorUniformElement = element;
             this.colorUniformElement.BringIntoView();
-            this.colorDockUniformElement.SetValue(settingsValue, editAlpha);
+            this.colorDockUniformElement.SetContext(settingsValue, editAlpha);
             this.projectSettings.UniformDockName.Value = settingsValue.Name;
 
             SetDockElementsVisibility(this.colorDockUniformElement);
+            this.dockContainer.Visibility = Visibility.Visible;
+        }
+
+        public void ToggleDockElement(PositionUniformContext context, Vector<double> minValue, Vector<double> maxValue, Vector<double> step, int roundDecimals, bool normalizeValue, PositionUniformElement element)
+        {
+            if (this.projectSettings.UniformDockName.Value == context.Uniform.Name && this.dockContainer.Visibility != Visibility.Collapsed)
+            {
+                this.dockContainer.Visibility = Visibility.Collapsed;
+                this.projectSettings.UniformDockName.Value = null;
+                return;
+            }
+
+            if (this.positionDockUniformElement == null)
+            {
+                this.positionDockUniformElement = CreatePositionDockUniformElement();
+                this.dockContainerPanel.Children.Add(this.positionDockUniformElement);
+            }
+
+            this.positionUniformElement = element;
+            this.positionUniformElement.BringIntoView();
+            this.positionDockUniformElement.SetContext(context, minValue, maxValue, step, roundDecimals, normalizeValue);
+            this.projectSettings.UniformDockName.Value = context.Uniform.Name;
+
+            SetDockElementsVisibility(this.positionDockUniformElement);
             this.dockContainer.Visibility = Visibility.Visible;
         }
 
@@ -240,6 +309,24 @@
                     this.application.RenderFrame();
                 }
             });
+        }
+
+        private PositionDockUniformElement CreatePositionDockUniformElement()
+        {
+            var dockElement = new PositionDockUniformElement(this.clipboard, this.inputs.PositionGraph, this.theme, this.dragSensitivity);
+
+            dockElement.ContextInvalidated += (sender, e) =>
+            {
+                if (this.positionUniformElement != null)
+                {
+                    this.positionUniformElement.BringIntoView();
+                    this.positionUniformElement.InvalidateValue();
+                    this.application.SetProjectChanged();
+                    this.application.RenderFrame();
+                }
+            };
+
+            return dockElement;
         }
 
         private void SetDockElementsVisibility(FrameworkElement visibleElement)

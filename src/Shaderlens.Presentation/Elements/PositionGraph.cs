@@ -1,4 +1,6 @@
-﻿namespace Shaderlens.Presentation.Elements
+﻿using Shaderlens.Presentation.Extensions;
+
+namespace Shaderlens.Presentation.Elements
 {
     public interface IGraphTheme : IThemeResources
     {
@@ -186,12 +188,15 @@
 
         public event EventHandler? ScaleChanged;
         private double scale;
+        private double scaleStep;
         public double Scale
         {
             get { return this.scale; }
             set
             {
                 this.scale = Math.Clamp(value, this.MinScale, this.MaxScale);
+                this.scaleStep = Math.Pow(GridBase, Math.Max(-this.RoundDecimals, -Math.Floor(Math.Log(this.Scale) / Math.Log(GridBase)) - 3));
+
                 this.ScaleChanged?.Invoke(this, EventArgs.Empty);
                 InvalidateVisual();
             }
@@ -204,6 +209,7 @@
         public double SmallStepFactor { get; set; }
         public double MediumStepFactor { get; set; }
         public double LargeStepFactor { get; set; }
+        public Point Step { get; set; }
 
         private readonly InputStateBindings inputStateBindings;
         private readonly InputStateSourceBehavior inputStateSource;
@@ -225,7 +231,6 @@
         private Size scaledRenderSize;
         private double drawingScale;
         private bool isDeviceRenderSizeValid;
-        private double step;
         private bool isResetViewPending;
 
         public PositionGraph(IPositionGraphInputs inputs, IGraphTheme theme)
@@ -282,7 +287,7 @@
             this.Scale = 1.0 / 1.1;
             this.ScaleDragFactor = 1.0;
 
-            this.step = 0.001;
+            this.Step = new Point();
             this.RoundDecimals = 6;
             this.SmallStepFactor = 0.1;
             this.MediumStepFactor = 10.0;
@@ -306,8 +311,6 @@
             theme.GridStroke.SetReference(this, GridStrokeProperty);
             theme.BoundsFill.SetReference(this, BoundsFillProperty);
             theme.BoundsStroke.SetReference(this, BoundsStrokeProperty);
-
-            ResetView();
         }
 
         public void FocusView()
@@ -405,7 +408,6 @@
             drawingContext.DrawRectangle(Brushes.Transparent, null, new Rect(this.RenderSize));
 
             var gridScale = Math.Log(this.Scale) / Math.Log(GridBase);
-            this.step = Math.Pow(GridBase, -Math.Floor(gridScale) - 3);
             var gridRatio = Fract(gridScale);
             var gridSize = Math.Pow(GridBase, gridRatio) * this.drawingScale;
 
@@ -510,7 +512,7 @@
         private void DrawGrid(DrawingContext drawingContext, double gridSize, Brush brush, int skipBase)
         {
             var center = new Point(this.scaledRenderSize.Width / 2.0, this.scaledRenderSize.Height / 2.0);
-            var gridScale = this.Scale * drawingScale / gridSize;
+            var gridScale = this.Scale * this.drawingScale / gridSize;
 
             var columnCount = (int)Math.Ceiling(this.scaledRenderSize.Width / gridSize + 1);
             var columnsOffset = Fract(this.Offset.X * gridScale - center.X / gridSize);
@@ -543,16 +545,20 @@
             }
         }
 
-        protected override void OnPreviewKeyDown(KeyEventArgs e)
-        {
-            base.OnPreviewKeyDown(e);
-            Focus();
-        }
-
         protected override void OnMouseDown(MouseButtonEventArgs e)
         {
-            base.OnMouseDown(e);
-            //Focus();
+            if (!this.IsKeyboardFocusWithin)
+            {
+                Focus();
+            }
+        }
+
+        protected override void OnPreviewKeyDown(KeyEventArgs e)
+        {
+            if (!this.IsKeyboardFocusWithin)
+            {
+                Focus();
+            }
         }
 
         private void ToggleTargetValue()
@@ -648,8 +654,6 @@
 
             var dragWithinBounds = this.MinValue.X <= this.value.X && this.value.X <= this.MaxValue.X && this.MinValue.Y <= this.value.Y && this.value.Y <= this.MaxValue.Y;
 
-            var lastStep = 0.0;
-
             this.inputStateSource.SkipLastKeyRepeat();
             var mouseCaptureScope = this.mousePositionSource.Capture(false);
             var inputStateScope = this.inputStateBindings.PushScope();
@@ -660,27 +664,22 @@
                     lastPosition = position;
 
                     var stepFactor = GetStepFactor();
-                    var step = this.step * stepFactor;
-
-                    if (lastStep != step)
-                    {
-                        lastStep = step;
-                        SetValueDisplayDecimals(step);
-                    }
+                    var step = new Point(
+                            Math.Max(this.scaleStep, this.NormalBounds ? 0.0 : this.Step.X) * stepFactor,
+                            Math.Max(this.scaleStep, this.NormalBounds ? 0.0 : this.Step.Y) * stepFactor);
 
                     var value = ScreenToDrawingPosition(position + positionOffset);
 
-                    value.X = Math.Round(Math.Round(value.X / step) * step, this.RoundDecimals);
-                    value.Y = Math.Round(Math.Round(value.Y / step) * step, this.RoundDecimals);
+                    value.X = Math.Round(Math.Round(value.X / step.X) * step.X, this.RoundDecimals);
+                    value.Y = Math.Round(Math.Round(value.Y / step.Y) * step.Y, this.RoundDecimals);
 
                     if (this.NormalBounds)
                     {
-                        var length = Math.Max(0.000001, value.Length());
-
+                        var length = value.Length();
                         if (length > 1.0 || this.NormalizeValue)
                         {
-                            value.X /= length;
-                            value.Y /= length;
+                            value.X = length > 0.0 ? value.X / length : 1.0;
+                            value.Y = length > 0.0 ? value.Y / length : 0.0;
                         }
                     }
                     else if (dragWithinBounds)
@@ -689,6 +688,7 @@
                         value.Y = Math.Clamp(value.Y, this.MinValue.Y, this.MaxValue.Y);
                     }
 
+                    SetValueDisplayDecimals(step);
                     this.Value = value;
                 }
             });
@@ -757,9 +757,9 @@
             return position;
         }
 
-        private void SetValueDisplayDecimals(double value)
+        private void SetValueDisplayDecimals(Point value)
         {
-            this.ValueDisplayDecimals = GetDecimalSize(value, this.RoundDecimals);
+            this.ValueDisplayDecimals = Math.Max(GetDecimalSize(value.X, this.RoundDecimals), GetDecimalSize(value.Y, this.RoundDecimals));
         }
 
         private double GetStepFactor()

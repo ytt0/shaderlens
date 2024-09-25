@@ -447,7 +447,7 @@ namespace Shaderlens
             };
 
             this.viewportView = new ViewportView(this.viewportWindow, this, this.settings, this.inputs, this.commands, this.theme, this.viewThread);
-            this.uniformsView = new UniformsView(this.uniformsWindow, this, this.settings, this.commands, this.theme);
+            this.uniformsView = new UniformsView(this.uniformsWindow, this, this.settings, this.inputs, this.commands, this.theme);
 
             this.counter = new FrameRateCounter(this.viewportView.FrameRateTarget, TimeSpan.FromSeconds(0.5));
 

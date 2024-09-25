@@ -7,6 +7,7 @@
         ISettingsValue<int> UniformScroll { get; }
         ISettingsValue<int> UniformDockHeight { get; }
         ISettingsValue<double> UniformColumnRatio { get; }
+        ISettingsValue<double> PositionUniformColumnRatio { get; }
         ISettingsValue<IEnumerable<ViewerPassSelection>?> ViewerPasses { get; }
 
         ISettingsValue<RenderSequenceSettings> RenderSequence { get; }
@@ -15,6 +16,7 @@
 
         ISettingsValue<bool> GetGroupExpandedValue(string name, bool defaultValue);
         ISettingsValue<T> GetUniformValue<T>(IJsonSerializer<T> serializer, string name, T defaultValue);
+        ISettingsValue<T> GetViewValue<T>(IJsonSerializer<T> serializer, string name, T defaultValue);
 
         void Save();
     }
@@ -26,6 +28,7 @@
         public ISettingsValue<int> UniformScroll { get; }
         public ISettingsValue<int> UniformDockHeight { get; }
         public ISettingsValue<double> UniformColumnRatio { get; }
+        public ISettingsValue<double> PositionUniformColumnRatio { get; }
         public ISettingsValue<IEnumerable<ViewerPassSelection>?> ViewerPasses { get; }
         public ISettingsValue<RenderSequenceSettings> RenderSequence { get; }
 
@@ -47,7 +50,7 @@
 
         private readonly IJsonSerializer<bool> boolSerializer;
         private readonly ValueJsonSerializer<int> intSerializer;
-        private readonly ValueJsonSerializer<double> doubleSerializer;
+        private readonly DoubleJsonSerializer doubleSerializer;
         private readonly IJsonSerializer<string?> stringSerializer;
         private readonly IJsonSerializer<IEnumerable<ViewerPassSelection>?> viewerPassSelectionSerializer;
         private readonly RenderSequenceSettingsSerializer renderSequenceSettingsSerializer;
@@ -79,7 +82,7 @@
 
             this.boolSerializer = new ValueJsonSerializer<bool>();
             this.intSerializer = new ValueJsonSerializer<int>();
-            this.doubleSerializer = new ValueJsonSerializer<double>();
+            this.doubleSerializer = new DoubleJsonSerializer(3);
             this.stringSerializer = new ValueJsonSerializer<string?>();
             this.viewerPassSelectionSerializer = NullableJsonSerializer.Create(new ArrayJsonSerializer<ViewerPassSelection>(new ViewerPassSelectionSerializer()!));
             this.renderSequenceSettingsSerializer = new RenderSequenceSettingsSerializer(RenderSequenceSettings.Default);
@@ -89,6 +92,7 @@
             this.UniformScroll = AddValue(this.viewJsonSettingsFile.Content, this.intSerializer, nameof(this.UniformScroll), 0, previousProjectSettings?.UniformScroll);
             this.UniformDockHeight = AddValue(this.viewJsonSettingsFile.Content, this.intSerializer, nameof(this.UniformDockHeight), 200, previousProjectSettings?.UniformDockHeight);
             this.UniformColumnRatio = AddValue(this.viewJsonSettingsFile.Content, this.doubleSerializer, nameof(this.UniformColumnRatio), 0.4, previousProjectSettings?.UniformColumnRatio);
+            this.PositionUniformColumnRatio = AddValue(this.viewJsonSettingsFile.Content, this.doubleSerializer, nameof(this.PositionUniformColumnRatio), 0.5, previousProjectSettings?.UniformColumnRatio);
             this.ViewerPasses = AddValue(this.viewJsonSettingsFile.Content, this.viewerPassSelectionSerializer, nameof(this.ViewerPasses), null, previousProjectSettings?.ViewerPasses);
 
             this.RenderSequence = AddValue(this.viewJsonSettingsFile.Content, this.renderSequenceSettingsSerializer, nameof(this.RenderSequence), RenderSequenceSettings.Default, previousProjectSettings?.RenderSequence);
@@ -124,6 +128,15 @@
 
             var settingsValue = new JsonSettingsValue<T>(this.uniformsJsonSettingsFile.Content, serializer, name, defaultValue, previousSettingValue);
             this.uniformsValues[name] = settingsValue;
+            return settingsValue.SettingsValue;
+        }
+
+        public ISettingsValue<T> GetViewValue<T>(IJsonSerializer<T> serializer, string name, T defaultValue)
+        {
+            var previousSettingValue = TryGetSettingsValue<T>(name, this.viewValues) ?? TryGetSettingsValue<T>(name, this.previousViewValues);
+
+            var settingsValue = new JsonSettingsValue<T>(this.viewJsonSettingsFile.Content, serializer, name, defaultValue, previousSettingValue);
+            this.viewValues[name] = settingsValue;
             return settingsValue.SettingsValue;
         }
 

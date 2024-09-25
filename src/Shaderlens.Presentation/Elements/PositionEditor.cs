@@ -10,9 +10,25 @@
         private static readonly Brush AxisYBrush = new SolidColorBrush(Color.FromRgb(20, 200, 20));
         private static readonly Brush AxisZBrush = new SolidColorBrush(Color.FromRgb(20, 120, 255));
         private const int ButtonsMagin = 4;
+        private const int MaxComponents = 3;
+        private const int NormalDecimals = 3;
 
         protected override int VisualChildrenCount { get { return this.visualChildren.Length; } }
 
+        private bool is2D;
+        public bool Is2D
+        {
+            get { return this.is2D; }
+            set
+            {
+                this.is2D = value;
+                this.valuesTextBox[2].Visibility = this.is2D ? Visibility.Collapsed : Visibility.Visible;
+                this.positionGraph.NormalizeValue = this.is2D && this.NormalizeValue;
+                InvalidateArrange();
+            }
+        }
+
+        public event EventHandler? EditModeChanged;
         private PositionEditMode editMode;
         public PositionEditMode EditMode
         {
@@ -22,33 +38,49 @@
                 if (this.editMode != value)
                 {
                     this.editMode = value;
-                    SetGraphEditMode();
+                    this.EditModeChanged?.Invoke(this, EventArgs.Empty);
+
+                    if (!this.skipChangeEvent)
+                    {
+                        try
+                        {
+                            this.skipChangeEvent = true;
+
+                            SetGraphEditMode();
+                        }
+                        finally
+                        {
+                            this.skipChangeEvent = false;
+                        }
+                    }
                 }
             }
         }
 
         public event EventHandler? ValueChanged;
-        private Vector<double> valueSign;
         private Vector<double> value;
         public Vector<double> Value
         {
             get { return this.value; }
             set
             {
-                this.value = value;
-                this.valueSign = new Vector<double>(
-                    this.value[0] != 0 ? Math.Sign(this.value[0]) : this.valueSign[0],
-                    this.value[1] != 0 ? Math.Sign(this.value[1]) : this.valueSign[1],
-                    this.value[2] != 0 ? Math.Sign(this.value[2]) : this.valueSign[2]);
+                if (this.value.Equals(value))
+                {
+                    return;
+                }
+
+                this.value = GetFixedSizeVector(value);
+                this.lastValueSign = new Vector<double>(this.value.Select((v, i) => v != 0.0 ? Math.Sign(v) : this.lastValueSign[i]).ToArray());
 
                 this.ValueChanged?.Invoke(this, EventArgs.Empty);
 
                 if (!this.skipChangeEvent)
                 {
-                    this.skipChangeEvent = true;
                     try
                     {
-                        SetTextBoxValues(value, 3);
+                        this.skipChangeEvent = true;
+
+                        SetTextBoxValues(this.Value);
                         SetGraphEditMode();
                     }
                     finally
@@ -65,10 +97,19 @@
             get { return this.sourceValue; }
             set
             {
-                this.sourceValue = value;
+                this.sourceValue = GetFixedSizeVector(value);
                 if (!this.skipChangeEvent)
                 {
-                    SetGraphEditMode();
+                    try
+                    {
+                        this.skipChangeEvent = true;
+
+                        SetGraphEditMode();
+                    }
+                    finally
+                    {
+                        this.skipChangeEvent = false;
+                    }
                 }
             }
         }
@@ -80,8 +121,8 @@
             get { return this.offset; }
             set
             {
-                this.offset = value;
-                this.OffsetChanged?.Invoke(this, EventArgs.Empty);
+                this.offset = GetFixedSizeVector(value);
+                this.positionGraph.Offset = ToGraphValue(this.offset, this.EditMode);
             }
         }
 
@@ -92,18 +133,6 @@
             set { this.positionGraph.Scale = value; }
         }
 
-        private bool isZAxisVisible;
-        public bool IsZAxisVisible
-        {
-            get { return this.isZAxisVisible; }
-            set
-            {
-                this.isZAxisVisible = value;
-                this.zTextBox.Visibility = value ? Visibility.Visible : Visibility.Collapsed;
-                InvalidateArrange();
-            }
-        }
-
         private bool normalizeValue;
         public bool NormalizeValue
         {
@@ -112,7 +141,8 @@
             {
                 this.normalizeValue = value;
                 this.positionGraph.NormalBounds = value;
-                this.positionGraph.NormalizeValue = value && !this.isZAxisVisible;
+                this.positionGraph.NormalizeValue = this.is2D && this.normalizeValue;
+                SetTextBoxValues(this.Value);
             }
         }
 
@@ -122,8 +152,14 @@
             get { return this.minValue; }
             set
             {
-                this.minValue = value;
-                this.positionGraph.MinValue = GetEditValue(this.minValue, this.EditMode);
+                this.minValue = GetFixedSizeVector(value);
+
+                for (var i = 0; i < MaxComponents; i++)
+                {
+                    this.valuesTextBox[i].MinValue = this.minValue[i];
+                }
+
+                this.positionGraph.MinValue = ToGraphValue(this.minValue, this.EditMode);
             }
         }
 
@@ -133,8 +169,14 @@
             get { return this.maxValue; }
             set
             {
-                this.maxValue = value;
-                this.positionGraph.MaxValue = GetEditValue(this.maxValue, this.EditMode);
+                this.maxValue = GetFixedSizeVector(value);
+
+                for (var i = 0; i < MaxComponents; i++)
+                {
+                    this.valuesTextBox[i].MaxValue = this.maxValue[i];
+                }
+
+                this.positionGraph.MaxValue = ToGraphValue(this.maxValue, this.EditMode);
             }
         }
 
@@ -142,9 +184,11 @@
         {
             var valueEditor = (PositionEditor)sender;
             var value = (Brush)e.NewValue;
-            valueEditor.xTextBox.SetValue(ImplicitButton.HoverBackgroundProperty, value);
-            valueEditor.yTextBox.SetValue(ImplicitButton.HoverBackgroundProperty, value);
-            valueEditor.zTextBox.SetValue(ImplicitButton.HoverBackgroundProperty, value);
+
+            for (var i = 0; i < MaxComponents; i++)
+            {
+                valueEditor.valuesTextBox[i].SetValue(ImplicitButton.HoverBackgroundProperty, value);
+            }
         }));
 
         public Brush HoverBackground
@@ -157,9 +201,11 @@
         {
             var valueEditor = (PositionEditor)sender;
             var value = (Brush)e.NewValue;
-            valueEditor.xTextBox.SetValue(ImplicitButton.PressedBackgroundProperty, value);
-            valueEditor.yTextBox.SetValue(ImplicitButton.PressedBackgroundProperty, value);
-            valueEditor.zTextBox.SetValue(ImplicitButton.PressedBackgroundProperty, value);
+
+            for (var i = 0; i < MaxComponents; i++)
+            {
+                valueEditor.valuesTextBox[i].SetValue(ImplicitButton.PressedBackgroundProperty, value);
+            }
         }));
 
         public Brush PressedBackground
@@ -172,9 +218,11 @@
         {
             var valueEditor = (PositionEditor)sender;
             var value = (Brush)e.NewValue;
-            valueEditor.xTextBox.SetValue(NumberTextBox.EditForegroundProperty, value);
-            valueEditor.yTextBox.SetValue(NumberTextBox.EditForegroundProperty, value);
-            valueEditor.zTextBox.SetValue(NumberTextBox.EditForegroundProperty, value);
+
+            for (var i = 0; i < MaxComponents; i++)
+            {
+                valueEditor.valuesTextBox[i].SetValue(NumberTextBox.EditForegroundProperty, value);
+            }
         }));
 
         public Brush EditForeground
@@ -187,9 +235,12 @@
         {
             var valueEditor = (PositionEditor)sender;
             var value = (Brush)e.NewValue;
-            valueEditor.xTextBox.SetValue(NumberTextBox.DragForegroundProperty, value);
-            valueEditor.yTextBox.SetValue(NumberTextBox.DragForegroundProperty, value);
-            valueEditor.zTextBox.SetValue(NumberTextBox.DragForegroundProperty, value);
+
+            for (var i = 0; i < MaxComponents; i++)
+            {
+                valueEditor.valuesTextBox[i].SetValue(NumberTextBox.DragForegroundProperty, value);
+            }
+
         }));
 
         public Brush DragForeground
@@ -204,9 +255,11 @@
             {
                 var valueEditor = (PositionEditor)sender;
                 var value = (FontFamily)e.NewValue;
-                valueEditor.xTextBox.SetValue(TextElement.FontFamilyProperty, value);
-                valueEditor.yTextBox.SetValue(TextElement.FontFamilyProperty, value);
-                valueEditor.zTextBox.SetValue(TextElement.FontFamilyProperty, value);
+
+                for (var i = 0; i < MaxComponents; i++)
+                {
+                    valueEditor.valuesTextBox[i].SetValue(TextElement.FontFamilyProperty, value);
+                }
             }
         }));
 
@@ -223,10 +276,53 @@
             set
             {
                 this.dragSensitivity = value;
-                this.xTextBox.DragSensitivity = value;
-                this.yTextBox.DragSensitivity = value;
-                this.zTextBox.DragSensitivity = value;
+
+                for (var i = 0; i < MaxComponents; i++)
+                {
+                    this.valuesTextBox[i].DragSensitivity = this.dragSensitivity;
+                }
             }
+        }
+
+        public Vector<double> step;
+        public Vector<double> Step
+        {
+            get { return this.step; }
+            set
+            {
+                this.step = GetFixedSizeVector(value);
+
+                for (var i = 0; i < MaxComponents; i++)
+                {
+                    this.valuesTextBox[i].Step = this.step[i];
+                }
+
+                this.positionGraph.Step = ToGraphValue(this.step, this.EditMode);
+            }
+        }
+
+        public int roundDecimals;
+        public int RoundDecimals
+        {
+            get { return this.roundDecimals; }
+            set
+            {
+                this.roundDecimals = value;
+
+                for (var i = 0; i < MaxComponents; i++)
+                {
+                    this.valuesTextBox[i].RoundDecimals = this.roundDecimals;
+                }
+
+                this.positionGraph.RoundDecimals = this.roundDecimals;
+            }
+        }
+
+        public event EventHandler? ColumnRatioChanged;
+        public double ColumnRatio
+        {
+            get { return this.splitterHandle.Ratio; }
+            set { this.splitterHandle.Ratio = value; }
         }
 
         private readonly GeometryButton focusViewButton;
@@ -239,18 +335,13 @@
         private readonly SplitterHandle splitterHandle;
         private readonly FrameworkElement[] visualChildren;
         private readonly TextBlock modeTextBlock;
-        private readonly NumberTextBox xTextBox;
-        private readonly NumberTextBox yTextBox;
-        private readonly NumberTextBox zTextBox;
+        private readonly NumberTextBox[] valuesTextBox;
         private bool skipChangeEvent;
         private Vector<double>? lastSourceValue;
         private Vector<double>? lastTargetValue;
-        private double xEditStartValue;
-        private double yEditStartValue;
-        private double zEditStartValue;
-        private int xEditStartValueDecimals;
-        private int yEditStartValueDecimals;
-        private int zEditStartValueDecimals;
+        private Vector<double> lastValueSign;
+        private double[]? editStartValue;
+        private int[]? editStartValueDisplayDecimals;
 
         public PositionEditor(IClipboard clipboard, IPositionGraphInputs inputs, IApplicationTheme theme)
         {
@@ -262,12 +353,20 @@
                 WithReference(TextElement.FontFamilyProperty, theme.CodeFontFamily).
                 WithReference(TextElement.FontSizeProperty, theme.CodeFontSize);
 
-            this.xTextBox = new NumberTextBox(theme) { Step = 0.001, MinValue = -1.0, MaxValue = 1.0, ProgressBrush = AxisXBrush };
-            this.yTextBox = new NumberTextBox(theme) { Step = 0.001, MinValue = -1.0, MaxValue = 1.0, ProgressBrush = AxisYBrush };
-            this.zTextBox = new NumberTextBox(theme) { Step = 0.001, MinValue = -1.0, MaxValue = 1.0, ProgressBrush = AxisZBrush };
-            this.dragSensitivity = this.xTextBox.DragSensitivity;
-            this.isZAxisVisible = true;
-            this.valueSign = new Vector<double>(1.0, 1.0, 1.0);
+            var axisBrush = new[] { AxisXBrush, AxisYBrush, AxisZBrush };
+            this.valuesTextBox = Enumerable.Range(0, MaxComponents).Select(i => new NumberTextBox(theme)
+            {
+                MinValue = Double.MinValue,
+                MaxValue = Double.MaxValue,
+                ProgressBrush = axisBrush[i]
+            }.
+            WithHandler(NumberTextBox.RawValueEditStartedEvent, OnValueEditStarted).
+            WithHandler(NumberTextBox.RawTextEditStartedEvent, OnValueEditStarted).
+            WithHandler(NumberTextBox.ValueEditCommittedEvent, OnValueEditCommitted).
+            WithHandler(NumberTextBox.ValueEditCanceledEvent, OnValueEditCanceled).
+            WithHandler(NumberTextBox.ValueChangedEvent, OnValueChanged)).ToArray();
+
+            this.dragSensitivity = this.valuesTextBox[0].DragSensitivity;
 
             this.focusViewButton = new GeometryButton(FocusViewGeometry, theme) { BorderThickness = new Thickness(1) }.
                 WithReference(Control.BackgroundProperty, theme.WindowBackground).
@@ -288,15 +387,19 @@
 
             modeButton.Click += (sender, e) =>
             {
-                this.EditMode = (PositionEditMode)(((int)this.EditMode + 1) % Enum.GetValues<PositionEditMode>().Length);
+                this.EditMode = this.Is2D ? PositionEditMode.XY : ((PositionEditMode)(((int)this.EditMode + 1) % Enum.GetValues<PositionEditMode>().Length));
                 e.Handled = true;
             };
 
-            this.valuesPanel = CreateStackPanel(Orientation.Vertical, modeButton, this.xTextBox, this.yTextBox, this.zTextBox, new FrameworkElement { Height = 1 });
+            this.valuesPanel = CreateStackPanel(Orientation.Vertical, modeButton, this.valuesTextBox[0], this.valuesTextBox[1], this.valuesTextBox[2], new FrameworkElement { Height = 1 });
             MultiNumberTextBoxEditBehavior.Register(this.valuesPanel);
 
             this.splitterHandle = new SplitterHandle { Ratio = 0.5 };
-            this.splitterHandle.RatioChanged += (sender, e) => InvalidateMeasure();
+            this.splitterHandle.RatioChanged += (sender, e) =>
+            {
+                this.ColumnRatioChanged?.Invoke(this, EventArgs.Empty);
+                InvalidateMeasure();
+            };
 
             this.visualChildren = new[]
             {
@@ -318,21 +421,6 @@
             this.positionGraph.ValueChanged += OnPositionGraphValueChanged;
             this.positionGraph.ToggleTargetValueRequested += OnPositionGraphToggleTargetValueRequested;
             this.positionGraph.ToggleSourceValueRequested += OnPositionGraphToggleSourceValueRequested;
-            this.xTextBox.ValueChanged += OnValueTextBoxValueChanged;
-            this.yTextBox.ValueChanged += OnValueTextBoxValueChanged;
-            this.zTextBox.ValueChanged += OnValueTextBoxValueChanged;
-            this.xTextBox.RawValueEditStarted += OnValueEditStarted;
-            this.yTextBox.RawValueEditStarted += OnValueEditStarted;
-            this.zTextBox.RawValueEditStarted += OnValueEditStarted;
-            this.xTextBox.RawTextEditStarted += OnValueEditStarted;
-            this.yTextBox.RawTextEditStarted += OnValueEditStarted;
-            this.zTextBox.RawTextEditStarted += OnValueEditStarted;
-            this.yTextBox.ValueEditCommitted += OnValueEditCommitted;
-            this.xTextBox.ValueEditCommitted += OnValueEditCommitted;
-            this.zTextBox.ValueEditCommitted += OnValueEditCommitted;
-            this.yTextBox.ValueEditCanceled += OnValueEditCanceled;
-            this.xTextBox.ValueEditCanceled += OnValueEditCanceled;
-            this.zTextBox.ValueEditCanceled += OnValueEditCanceled;
 
             this.Focusable = true;
             this.FocusVisualStyle = null;
@@ -343,26 +431,28 @@
             theme.ControlHoveredBackground.SetReference(this, ImplicitButton.HoverBackgroundProperty);
             theme.CodeFontFamily.SetReference(this, TextFontFamilyProperty);
 
-            this.minValue = new Vector<double>(Double.MinValue, Double.MinValue, Double.MinValue);
-            this.maxValue = new Vector<double>(Double.MaxValue, Double.MaxValue, Double.MaxValue);
-            this.offset = new Vector<double>(0.0, 0.0, 0.0);
-            this.value = new Vector<double>(0.0, 0.0, 0.0);
-            this.sourceValue = new Vector<double>(0.0, 0.0, 0.0);
-
-            //this.minValue = new Vector<double>(-100.0, -100.0, -100.0);
-            //this.maxValue = new Vector<double>(100.0, 100.0, 100.0);
+            this.minValue = Vector.Create(MaxComponents, Double.MinValue);
+            this.maxValue = Vector.Create(MaxComponents, Double.MaxValue);
+            this.offset = Vector.Create(MaxComponents, 0.0);
+            this.value = Vector.Create(MaxComponents, 0.0);
+            this.sourceValue = Vector.Create(MaxComponents, 0.0);
+            this.step = Vector.Create(MaxComponents, 0.001);
+            this.lastValueSign = Vector.Create(MaxComponents, 1.0);
 
             OnPositionGraphScaleChanged();
-            SetTextBoxValues(this.value, 3);
             SetGraphEditMode();
-
-            //this.NormalizeValue = true;
         }
 
         public void ResetLastValues()
         {
             this.lastTargetValue = null;
             this.lastSourceValue = null;
+            this.lastValueSign = Vector.Create(MaxComponents, 1.0);
+        }
+
+        public void ResetView()
+        {
+            this.positionGraph.ResetView();
         }
 
         private void SetGraphEditMode()
@@ -371,27 +461,27 @@
             {
                 case PositionEditMode.XY:
                     this.modeTextBlock.Text = "XY";
-                    this.xTextBox.Opacity = 1.0;
-                    this.yTextBox.Opacity = 1.0;
-                    this.zTextBox.Opacity = 0.3;
+                    this.valuesTextBox[0].Opacity = 1.0;
+                    this.valuesTextBox[1].Opacity = 1.0;
+                    this.valuesTextBox[2].Opacity = 0.3;
                     this.positionGraph.AxisXStroke = AxisXBrush;
                     this.positionGraph.AxisYStroke = AxisYBrush;
                     break;
 
                 case PositionEditMode.XZ:
                     this.modeTextBlock.Text = "XZ";
-                    this.xTextBox.Opacity = 1.0;
-                    this.yTextBox.Opacity = 0.3;
-                    this.zTextBox.Opacity = 1.0;
+                    this.valuesTextBox[0].Opacity = 1.0;
+                    this.valuesTextBox[1].Opacity = 0.3;
+                    this.valuesTextBox[2].Opacity = 1.0;
                     this.positionGraph.AxisXStroke = AxisXBrush;
                     this.positionGraph.AxisYStroke = AxisZBrush;
                     break;
 
                 case PositionEditMode.YZ:
                     this.modeTextBlock.Text = "YZ";
-                    this.xTextBox.Opacity = 0.3;
-                    this.yTextBox.Opacity = 1.0;
-                    this.zTextBox.Opacity = 1.0;
+                    this.valuesTextBox[0].Opacity = 0.3;
+                    this.valuesTextBox[1].Opacity = 1.0;
+                    this.valuesTextBox[2].Opacity = 1.0;
                     this.positionGraph.AxisXStroke = AxisZBrush;
                     this.positionGraph.AxisYStroke = AxisYBrush;
                     break;
@@ -400,11 +490,12 @@
                     throw new NotSupportedException($"Unexpected {nameof(PositionEditMode)} \"{this.EditMode}\"");
             }
 
-            this.positionGraph.Value = GetEditValue(this.Value, this.EditMode);
-            this.positionGraph.SourceValue = GetEditValue(this.SourceValue, this.EditMode);
-            this.positionGraph.MinValue = GetEditValue(this.minValue, this.EditMode);
-            this.positionGraph.MaxValue = GetEditValue(this.maxValue, this.EditMode);
-            this.positionGraph.Offset = GetEditValue(this.offset, this.EditMode);
+            this.positionGraph.Value = ToGraphValue(this.Value, this.EditMode);
+            this.positionGraph.SourceValue = ToGraphValue(this.SourceValue, this.EditMode);
+            this.positionGraph.MinValue = ToGraphValue(this.minValue, this.EditMode);
+            this.positionGraph.MaxValue = ToGraphValue(this.maxValue, this.EditMode);
+            this.positionGraph.Offset = ToGraphValue(this.offset, this.EditMode);
+            this.positionGraph.Step = ToGraphValue(this.step, this.EditMode);
         }
 
         private void OnPositionGraphScaleChanged()
@@ -416,14 +507,16 @@
 
         private void OnPositionGraphOffsetChanged()
         {
-            this.offset = GetEditedValue(this.positionGraph.Offset, this.offset, this.EditMode);
+            this.offset = FromGraphValue(this.positionGraph.Offset, this.offset, this.EditMode);
+            this.OffsetChanged?.Invoke(this, EventArgs.Empty);
         }
 
         private void OnPositionGraphToggleTargetValueRequested(object? sender, EventArgs e)
         {
-            this.skipChangeEvent = true;
             try
             {
+                this.skipChangeEvent = true;
+
                 if (this.lastTargetValue != null)
                 {
                     this.Value = this.lastTargetValue;
@@ -435,8 +528,8 @@
                     this.Value = this.SourceValue;
                 }
 
-                SetTextBoxValues(this.value, 3);
-                this.positionGraph.Value = GetEditValue(this.Value, this.EditMode);
+                SetTextBoxValues(this.value);
+                this.positionGraph.Value = ToGraphValue(this.Value, this.EditMode);
             }
             finally
             {
@@ -446,9 +539,10 @@
 
         private void OnPositionGraphToggleSourceValueRequested(object? sender, EventArgs e)
         {
-            this.skipChangeEvent = true;
             try
             {
+                this.skipChangeEvent = true;
+
                 if (this.lastSourceValue != null)
                 {
                     this.SourceValue = this.lastSourceValue;
@@ -460,7 +554,7 @@
                     this.SourceValue = this.Value;
                 }
 
-                this.positionGraph.SourceValue = GetEditValue(this.SourceValue, this.EditMode);
+                this.positionGraph.SourceValue = ToGraphValue(this.SourceValue, this.EditMode);
             }
             finally
             {
@@ -475,33 +569,35 @@
                 return;
             }
 
-            this.skipChangeEvent = true;
             try
             {
+                this.skipChangeEvent = true;
+
                 this.lastSourceValue = null;
                 this.lastTargetValue = null;
 
-                Normalize(this.positionGraph.Value.X, this.positionGraph.Value.Y, out var normalizedComponent);
+                var x = this.positionGraph.Value.X;
+                var y = this.positionGraph.Value.Y;
 
                 switch (this.EditMode)
                 {
                     case PositionEditMode.XY:
                         this.Value = new Vector<double>(
-                            this.positionGraph.Value.X,
-                            this.positionGraph.Value.Y,
-                            this.NormalizeValue ? this.valueSign[2] * normalizedComponent : this.value[2]);
+                            x,
+                            y,
+                            !this.Is2D && this.NormalizeValue ? this.lastValueSign[2] * GetNormalComponent(x, y) : this.Value[2]);
                         break;
                     case PositionEditMode.XZ:
                         this.Value = new Vector<double>(
-                            this.positionGraph.Value.X,
-                            this.NormalizeValue ? this.valueSign[1] * normalizedComponent : this.value[1],
-                            this.positionGraph.Value.Y);
+                            x,
+                            !this.Is2D && this.NormalizeValue ? this.lastValueSign[1] * GetNormalComponent(x, y) : this.Value[1],
+                            y);
                         break;
                     case PositionEditMode.YZ:
                         this.Value = new Vector<double>(
-                            this.NormalizeValue ? this.valueSign[0] * normalizedComponent : this.value[0],
-                            this.positionGraph.Value.Y,
-                            this.positionGraph.Value.X);
+                            !this.Is2D && this.NormalizeValue ? this.lastValueSign[0] * GetNormalComponent(x, y) : this.Value[0],
+                            y,
+                            x);
                         break;
                     default: throw new NotSupportedException($"Unexpected {nameof(PositionEditMode)} \"{this.EditMode}\"");
                 }
@@ -516,19 +612,16 @@
 
         private void OnValueEditStarted(object sender, RoutedEventArgs e)
         {
-            this.xEditStartValue = this.xTextBox.Value;
-            this.yEditStartValue = this.yTextBox.Value;
-            this.zEditStartValue = this.zTextBox.Value;
-            this.xEditStartValueDecimals = this.xTextBox.ValueDisplayDecimals;
-            this.yEditStartValueDecimals = this.yTextBox.ValueDisplayDecimals;
-            this.zEditStartValueDecimals = this.zTextBox.ValueDisplayDecimals;
+            this.editStartValue = this.valuesTextBox.Select(textBox => textBox.Value).ToArray();
+            this.editStartValueDisplayDecimals = this.valuesTextBox.Select(textBox => textBox.ValueDisplayDecimals).ToArray();
         }
 
         private void OnValueEditCanceled(object sender, RoutedEventArgs e)
         {
-            this.xTextBox.EditValue(this.xEditStartValue, this.xEditStartValueDecimals);
-            this.yTextBox.EditValue(this.yEditStartValue, this.yEditStartValueDecimals);
-            this.zTextBox.EditValue(this.zEditStartValue, this.zEditStartValueDecimals);
+            for (var i = 0; i < MaxComponents; i++)
+            {
+                this.valuesTextBox[i].EditValue(this.editStartValue![i], this.editStartValueDisplayDecimals![i]);
+            }
         }
 
         private void OnValueEditCommitted(object sender, RoutedEventArgs e)
@@ -538,16 +631,9 @@
                 return;
             }
 
-            this.skipChangeEvent = true;
             try
             {
-                var xValue = this.xTextBox.Value;
-                var yValue = this.yTextBox.Value;
-                var zValue = this.zTextBox.Value;
-                Normalize(xValue, yValue, zValue, out xValue, out yValue, out zValue);
-
-                this.Value = new Vector<double>(xValue, yValue, zValue);
-                this.positionGraph.Value = GetEditValue(this.Value, this.EditMode);
+                this.skipChangeEvent = true;
                 SetTextBoxValues(this.Value, ((NumberTextBox)sender).ValueDisplayDecimals);
             }
             finally
@@ -556,82 +642,66 @@
             }
         }
 
-        private void OnValueTextBoxValueChanged(object sender, EventArgs e)
+        private void OnValueChanged(object sender, EventArgs e)
         {
             if (this.skipChangeEvent)
             {
                 return;
             }
 
-            this.skipChangeEvent = true;
             try
             {
-                var xValue = this.xTextBox.Value;
-                var yValue = this.yTextBox.Value;
-                var zValue = this.zTextBox.Value;
+                this.skipChangeEvent = true;
 
-                var xChanged = sender == this.xTextBox;
-                var yChanged = sender == this.yTextBox;
-                var zChanged = sender == this.zTextBox;
-
+                var values = this.valuesTextBox.Select(textBox => textBox.Value).ToArray();
                 var valueDisplayDecimals = ((NumberTextBox)sender).ValueDisplayDecimals;
+
+                if (this.editStartValue == null)
+                {
+                    this.editStartValue = this.value.ToArray();
+                }
 
                 if (this.NormalizeValue)
                 {
-                    switch (this.editMode)
+                    values = values.Select(value => Math.Clamp(value, -1.0, 1.0)).ToArray();
+
+                    if (this.Is2D)
                     {
-                        case PositionEditMode.XY:
-                            if (zChanged)
-                            {
-                                Normalize(zValue, this.xEditStartValue, this.yEditStartValue, out xValue, out yValue);
-                            }
-                            else
-                            {
-                                Normalize(xValue, yValue, out zValue);
-                            }
-                            break;
-                        case PositionEditMode.XZ:
-                            if (yChanged)
-                            {
-                                Normalize(yValue, this.xEditStartValue, this.zEditStartValue, out xValue, out zValue);
-                            }
-                            else
-                            {
-                                Normalize(xValue, zValue, out yValue);
-                            }
-                            break;
-                        case PositionEditMode.YZ:
-                            if (xChanged)
-                            {
-                                Normalize(xValue, this.yEditStartValue, this.zEditStartValue, out yValue, out zValue);
-                            }
-                            else
-                            {
-                                Normalize(yValue, zValue, out xValue);
-                            }
-                            break;
+                        var editIndex = sender == this.valuesTextBox[0] ? 0 : 1;
+                        var nonEditIndex = (editIndex + 1) % 2;
+
+                        values[nonEditIndex] = this.lastValueSign[nonEditIndex] * GetNormalComponent(values[editIndex]);
+                        this.valuesTextBox[nonEditIndex].EditValue(values[nonEditIndex], valueDisplayDecimals);
                     }
+                    else
+                    {
+                        var nonEditIndex = this.editMode == PositionEditMode.XY ? 2 : this.editMode == PositionEditMode.XZ ? 1 : 0;
+                        var editIndex0 = (nonEditIndex + 1) % 3;
+                        var editIndex1 = (nonEditIndex + 2) % 3;
 
-                    Normalize(xValue, yValue, zValue, out xValue, out yValue, out zValue);
+                        if (this.valuesTextBox[nonEditIndex] == sender)
+                        {
+                            Normalize(values[nonEditIndex], this.editStartValue[editIndex0], this.editStartValue[editIndex1], out values[editIndex0], out values[editIndex1]);
+                        }
+                        else
+                        {
+                            values[nonEditIndex] = this.lastValueSign[nonEditIndex] * GetNormalComponent(values[editIndex0], values[editIndex1]);
+                        }
+
+                        Normalize(values[0], values[1], values[2], out values[0], out values[1], out values[2]);
+
+                        for (var i = 0; i < MaxComponents; i++)
+                        {
+                            if (this.valuesTextBox[i] != sender)
+                            {
+                                this.valuesTextBox[i].EditValue(values[i], valueDisplayDecimals);
+                            }
+                        }
+                    }
                 }
 
-                if (!xChanged)
-                {
-                    this.xTextBox.EditValue(xValue, valueDisplayDecimals);
-                }
-
-                if (!yChanged)
-                {
-                    this.yTextBox.EditValue(yValue, valueDisplayDecimals);
-                }
-
-                if (!zChanged)
-                {
-                    this.zTextBox.EditValue(zValue, valueDisplayDecimals);
-                }
-
-                this.Value = new Vector<double>(xValue, yValue, zValue);
-                this.positionGraph.Value = GetEditValue(this.Value, this.EditMode);
+                this.Value = new Vector<double>(values);
+                this.positionGraph.Value = ToGraphValue(this.Value, this.EditMode);
             }
             finally
             {
@@ -639,11 +709,17 @@
             }
         }
 
-        private void SetTextBoxValues(Vector<double> value, int decimals)
+        private void SetTextBoxValues(Vector<double> value, int decimals = -1)
         {
-            this.xTextBox.EditValue(value[0], decimals);
-            this.yTextBox.EditValue(value[1], decimals);
-            this.zTextBox.EditValue(value[2], decimals);
+            if (decimals < 0 && this.NormalizeValue)
+            {
+                decimals = NormalDecimals;
+            }
+
+            for (var i = 0; i < MaxComponents; i++)
+            {
+                this.valuesTextBox[i].EditValue(value[i], decimals);
+            }
         }
 
         protected override Visual GetVisualChild(int index)
@@ -667,7 +743,6 @@
         {
             var pickerWidth = finalSize.Width * this.splitterHandle.Ratio;
 
-            //this.positionGraph.Arrange(new Rect(30, 30, Math.Max(0, pickerWidth - 30), Math.Max(0, finalSize.Height - 60)));
             this.positionGraph.Arrange(new Rect(0, 0, pickerWidth, finalSize.Height));
             this.scaleTextBlock.Arrange(new Rect(4, finalSize.Height - this.scaleTextBlock.DesiredSize.Height, Math.Min(this.scaleTextBlock.DesiredSize.Width, Math.Max(0, pickerWidth - 4)), this.scaleTextBlock.DesiredSize.Height));
             this.valuesPanel.Arrange(new Rect(pickerWidth, 0, finalSize.Width - pickerWidth, this.valuesPanel.DesiredSize.Height));
@@ -709,7 +784,7 @@
             Focus();
         }
 
-        private static Point GetEditValue(Vector<double> value, PositionEditMode mode)
+        private static Point ToGraphValue(Vector<double> value, PositionEditMode mode)
         {
             switch (mode)
             {
@@ -720,7 +795,7 @@
             }
         }
 
-        private static Vector<double> GetEditedValue(Point editedValue, Vector<double> source, PositionEditMode mode)
+        private static Vector<double> FromGraphValue(Point editedValue, Vector<double> source, PositionEditMode mode)
         {
             switch (mode)
             {
@@ -731,9 +806,25 @@
             }
         }
 
-        private static void Normalize(double sourceX, double sourceY, out double targetZ)
+        private static Vector<int> FromGraphValue(Point editedValue, Vector<int> source, PositionEditMode mode)
         {
-            targetZ = Math.Sqrt(Math.Max(0.0, 1.0 - sourceX * sourceX - sourceY * sourceY));
+            switch (mode)
+            {
+                case PositionEditMode.XY: return new Vector<int>((int)editedValue.X, (int)editedValue.Y, source[2]);
+                case PositionEditMode.XZ: return new Vector<int>((int)editedValue.X, source[1], (int)editedValue.Y);
+                case PositionEditMode.YZ: return new Vector<int>(source[0], (int)editedValue.Y, (int)editedValue.X);
+                default: throw new NotSupportedException($"Unexpected {nameof(PositionEditMode)} \"{mode}\"");
+            }
+        }
+
+        private static double GetNormalComponent(double sourceX)
+        {
+            return Math.Sqrt(Math.Max(0.0, 1.0 - sourceX * sourceX));
+        }
+
+        private static double GetNormalComponent(double sourceX, double sourceY)
+        {
+            return Math.Sqrt(Math.Max(0.0, 1.0 - sourceX * sourceX - sourceY * sourceY));
         }
 
         private static void Normalize(double sourceX, double sourceY, double sourceZ, out double targetY, out double targetZ)
@@ -741,16 +832,16 @@
             if (Math.Abs(sourceY) < Math.Abs(sourceZ))
             {
                 var a = sourceY / sourceZ;
-                targetZ = Math.Sqrt((1.0 - sourceX * sourceX) / (1.0 + a * a));
-                Normalize(sourceX, targetZ, out targetY);
+                targetZ = Math.Sqrt(Math.Max(0.0, (1.0 - sourceX * sourceX) / (1.0 + a * a)));
+                targetY = GetNormalComponent(sourceX, targetZ);
                 targetY *= Math.Sign(sourceY);
                 targetZ *= Math.Sign(sourceZ);
             }
             else if (Math.Abs(sourceZ) < Math.Abs(sourceY))
             {
                 var a = sourceZ / sourceY;
-                targetY = Math.Sqrt((1.0 - sourceX * sourceX) / (1.0 + a * a));
-                Normalize(sourceX, targetY, out targetZ);
+                targetY = Math.Sqrt(Math.Max(0.0, (1.0 - sourceX * sourceX) / (1.0 + a * a)));
+                targetZ = GetNormalComponent(sourceX, targetY);
                 targetY *= Math.Sign(sourceY);
                 targetZ *= Math.Sign(sourceZ);
             }
@@ -763,12 +854,12 @@
 
         private static void Normalize(double sourceX, double sourceY, double sourceZ, out double targetX, out double targetY, out double targetZ)
         {
-            var length2 = sourceX * sourceX + sourceY * sourceY + sourceZ * sourceZ;
-            if (length2 > 0.0)
+            var length = Math.Sqrt(sourceX * sourceX + sourceY * sourceY + sourceZ * sourceZ);
+            if (length > 0.0)
             {
-                targetX = sourceX / length2;
-                targetY = sourceY / length2;
-                targetZ = sourceZ / length2;
+                targetX = sourceX / length;
+                targetY = sourceY / length;
+                targetZ = sourceZ / length;
             }
             else
             {
@@ -776,6 +867,11 @@
                 targetY = 0.0;
                 targetZ = 0.0;
             }
+        }
+
+        private static Vector<double> GetFixedSizeVector(Vector<double> value)
+        {
+            return value.Count == MaxComponents ? value : Vector.Create(value.ToArray().Take(MaxComponents).Concat(Enumerable.Range(0, MaxComponents - value.Count).Select(i => 0.0)).ToArray());
         }
 
         private static Grid CreateColumnPanel(params FrameworkElement[] children)

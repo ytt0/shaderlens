@@ -28,16 +28,21 @@ Common properties:
     :index: Uniform :ref:`order<uniforms-ordering>` priority (*integer*).
 
 Additional properties:
-    For :glsl:`vec3`, :glsl:`vec4`:
-
-    :type: Uniform underlying type, can be one of ``srgb``, or ``linear-rgb``. |br|
-        When provided, a color picker is used for editing the value, with an alpha channel for :glsl:`vec4` uniforms. The type does not change the uniform value itself, only the way the color picker interprets it.
-        Note that if ``linear-rgb`` type is used, the color has to be converted back to ``srgb`` by the shader, before it could be displayed, see an example below.
-
-    For :glsl:`int`, :glsl:`float`, :glsl:`vec#`, :glsl:`ivec#`, :glsl:`uvec#`:
+    For :glsl:`int`, :glsl:`float`, ``vec#``, ``ivec#``, ``uvec#`` (without an underlying type specified): |br|
 
     :min / max: Value bounds (should be compatible with the uniform type).
     :step: Value increment size (should be compatible with the uniform type).
+
+Underlying types:
+    An underlying type can be specified with a ``type`` property (or with an annotation value), and can have one of the following values:
+
+    :srgb / linear-rgb: Available for ``vec3-4`` uniforms. |br|
+        When provided, a color picker is used for editing the value, with an alpha channel for :glsl:`vec4` uniforms. The type does not change the uniform value itself, only the way the color picker interprets it. |br|
+        Note that if ``linear-rgb`` type is used, the color has to be converted back to ``srgb`` color space by the shader, before it could be displayed (see an example below).
+    :position: Available for ``vec2-3``, ``ivec2-3``, ``uvec2-3`` uniforms, with optional ``min``, ``max``, ``step`` properties. |br|
+        When provided, a graph is used for editing the position value, with the specified boundaries and step size.
+    :normal: Available for ``vec2-3``. |br|
+        When provided, a graph is used for editing the normal value.
 
 Example
     .. code-block:: glsl
@@ -45,7 +50,7 @@ Example
         //@uniform, min: 0.0, max: vec2(5.0, 10.0), step: 0.1
         uniform vec2 boxBlurSize = vec2(1.0, 2.0);
 
-        //@uniform, type: linear-rgb
+        //@uniform: linear-rgb
         uniform vec4 backgroundColor = vec4(1.0, 0.5, 0.0, 1.0);
 
         void mainImage(out vec4 fragColor, in vec2 fragCoord)
@@ -67,7 +72,8 @@ Uniforms groups could be declared using the :glsl:`//@uniform-group` line annota
 
 :name:
     **(required)** Uniform group name (*string*). |br|
-    When the same group name is declared in multiple sources, uniforms are merged to a single group in the :ref:`Uniforms view<features-uniforms-view>`.
+    When the same group name is declared in multiple sources, uniforms are merged to a single group in the :ref:`Uniforms view<features-uniforms-view>`. |br|
+    The name can also be defined as an annotation value: |br| :glsl:`//@uniform-group: group-name`.
 :display-name: The name that is displayed in the :ref:`Uniforms view<features-uniforms-view>` (*string*), if not provided, the **name** property value is displayed with a default formatting (for example, "blurSettings1", would be displayed as "Blur Settings 1").
 :parent: Name of a containing group (*string*), if not provided, the group is added to the root.
 :index: Group :ref:`order<uniforms-ordering>` priority (*integer*).
@@ -77,10 +83,10 @@ However, uniform groups are only nested if the **parent** property is specified.
 
 .. _uniforms-ordering:
 
-Ordering
---------
+Order
+-----
 
-Uniforms are always placed before groups, both are ordered according to their index, and order of appearance in the code, where common sources comes first, then Buffers, Image, and Viewers sources. |br|
+Uniforms are always placed before groups, both are ordered according to their index, and order of appearance in the code, where common sources come first, then Buffers, Image, and Viewers sources. |br|
 Negative indexes are relative to the end of the list, where ``-1`` is last, ``-2`` is second before last, and so on.
 
 Storage
