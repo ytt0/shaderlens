@@ -33,7 +33,7 @@
         {
             var displayName = GetDisplayName(name, annotationReader);
 
-            if (annotationReader.TryGetValue("type", out var conversionType))
+            if (annotationReader.TryGetValue("type", out var conversionType) || annotationReader.TryGetValue(out conversionType))
             {
                 if (conversionType == "position")
                 {
