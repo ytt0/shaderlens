@@ -62,7 +62,7 @@ namespace Shaderlens.Views
         }
 
         private static readonly Thickness Spacing = new Thickness(10, 5, 10, 5);
-        private static readonly Thickness RowSpacing = new Thickness(0, 0, 0, 20);
+        private static readonly Thickness RowSpacing = new Thickness(0, 0, 0, 5);
         private const int ColumnWidth = 100;
 
         public event EventHandler? RenderClicked;
