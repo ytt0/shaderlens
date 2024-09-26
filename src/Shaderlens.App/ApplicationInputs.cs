@@ -233,7 +233,7 @@
 
             this.Play = settings.GetOrSetDefault("Shader.Play", factory.AllStart(ModifierKey.Alt, Key.Up), factory.AllGlobal(ModifierKey.Ctrl, ModifierKey.Shift, ModifierKey.Win, Key.P));
             this.Pause = settings.GetOrSetDefault("Shader.Pause", factory.AllStart(ModifierKey.Alt, Key.Up), factory.AllGlobal(ModifierKey.Ctrl, ModifierKey.Shift, ModifierKey.Win, Key.P));
-            this.Step = settings.GetOrSetDefault("Shader.Step", factory.AllStart(ModifierKey.Alt, Key.Right), factory.CreateStart(Key.OemPlus));
+            this.Step = settings.GetOrSetDefault("Shader.Step", factory.AllStart(ModifierKey.Alt, Key.Right), factory.CreateStart(Key.OemTilde));
             this.Restart = settings.GetOrSetDefault("Shader.Restart", factory.AllStart(ModifierKey.Alt, Key.Left), factory.AllStart(ModifierKey.Alt, Key.Down), factory.AllGlobal(ModifierKey.Ctrl, ModifierKey.Shift, ModifierKey.Win, Key.O));
             this.Uniforms = settings.GetOrSetDefault("Uniforms", factory.AllEnd(ModifierKey.Ctrl, Key.U));
             this.StartPage = settings.GetOrSetDefault("StartPage", InputSpanEvent.None);

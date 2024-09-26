@@ -42,7 +42,7 @@ Default Inputs
 - ``Shader.Step`` - Render a single frame.
 
     - :kbd:`Alt` + :kbd:`Right`
-    - :kbd:`+`
+    - :kbd:`~`
 
 - ``Shader.Restart`` - Restart rendering
 
