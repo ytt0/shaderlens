@@ -147,16 +147,19 @@ Default Inputs
     - :kbd:`Ctrl` + :kbd:`Mouse Scroll Up`
     - :kbd:`Mouse Right Button` + :kbd:`Mouse Scroll Up`
     - :kbd:`Ctrl` + :kbd:`+`
+    - :kbd:`Ctrl` + :kbd:`Num+`
 
 - ``Viewer.ScaleDown`` - Scale down.
 
     - :kbd:`Ctrl` + :kbd:`Mouse Scroll Down`
     - :kbd:`Mouse Right Button` + :kbd:`Mouse Scroll Down`
     - :kbd:`Ctrl` + :kbd:`-`
+    - :kbd:`Ctrl` + :kbd:`Num-`
 
 - ``Viewer.ScaleReset`` - Reset viewer scale.
 
     - :kbd:`Ctrl` + :kbd:`0`
+    - :kbd:`Ctrl` + :kbd:`Num0`
 
 .. _input-viewer-scale-speed:
 

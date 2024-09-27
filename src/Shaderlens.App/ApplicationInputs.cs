@@ -265,9 +265,9 @@
             this.ViewerPanSpeed = settings.GetOrSetDefault("Viewer.PanSpeed", factory.Create(ModifierKey.Shift));
             this.ViewerPanSnap = settings.GetOrSetDefault("Viewer.PanSnap", factory.Create(ModifierKey.Alt));
             this.ViewerScale = settings.GetOrSetDefault("Viewer.Scale", factory.All(ModifierKey.Ctrl, MouseButton.Middle), factory.All(MouseButton.Right, MouseButton.Middle));
-            this.ViewerScaleUp = settings.GetOrSetDefault("Viewer.ScaleUp", factory.AllStart(ModifierKey.Ctrl, MouseScroll.ScrollUp), factory.AllStart(MouseButton.Right, MouseScroll.ScrollUp), factory.AllStart(ModifierKey.Ctrl, Key.OemPlus));
-            this.ViewerScaleDown = settings.GetOrSetDefault("Viewer.ScaleDown", factory.AllStart(ModifierKey.Ctrl, MouseScroll.ScrollDown), factory.AllStart(MouseButton.Right, MouseScroll.ScrollDown), factory.AllStart(ModifierKey.Ctrl, Key.OemMinus));
-            this.ViewerScaleReset = settings.GetOrSetDefault("Viewer.ScaleReset", factory.AllStart(ModifierKey.Ctrl, Key.D0));
+            this.ViewerScaleUp = settings.GetOrSetDefault("Viewer.ScaleUp", factory.AllStart(ModifierKey.Ctrl, MouseScroll.ScrollUp), factory.AllStart(MouseButton.Right, MouseScroll.ScrollUp), factory.AllStart(ModifierKey.Ctrl, Key.OemPlus), factory.AllStart(ModifierKey.Ctrl, Key.Add));
+            this.ViewerScaleDown = settings.GetOrSetDefault("Viewer.ScaleDown", factory.AllStart(ModifierKey.Ctrl, MouseScroll.ScrollDown), factory.AllStart(MouseButton.Right, MouseScroll.ScrollDown), factory.AllStart(ModifierKey.Ctrl, Key.OemMinus), factory.AllStart(ModifierKey.Ctrl, Key.Subtract));
+            this.ViewerScaleReset = settings.GetOrSetDefault("Viewer.ScaleReset", factory.AllStart(ModifierKey.Ctrl, Key.D0), factory.AllStart(ModifierKey.Ctrl, Key.NumPad0));
             this.ViewerScaleSpeed = settings.GetOrSetDefault("Viewer.ScaleSpeed", factory.Create(ModifierKey.Shift));
 
             this.CopyRepeat = settings.GetOrSetDefault("Copy.Repeat", factory.AllStart(ModifierKey.Ctrl, Key.C));
