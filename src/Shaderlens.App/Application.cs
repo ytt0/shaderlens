@@ -1024,7 +1024,11 @@ namespace Shaderlens
             }
 
             this.ViewerBuffersCount = project.Source.Passes.Count;
-            this.viewerBufferIndex = this.ViewerBuffersCount - 1;
+            if (this.viewerBufferIndex == -1 || this.viewerBufferIndex > this.ViewerBuffersCount - 1)
+            {
+                this.viewerBufferIndex = this.ViewerBuffersCount - 1;
+            }
+
             this.viewerPasses = GetProjectViewerPasses(project.Source, this.projectSettings, this.settings.DefaultViewerPass);
 
             if (this.pipeline != null)
