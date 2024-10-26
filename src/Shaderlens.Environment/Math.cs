@@ -18,12 +18,12 @@
         public static int int_(uint v) { return default; }
         public static int int_(Float v) { return default; }
 
-        public static int _uint(bool v) { return default; }
-        public static int _uint(int v) { return default; }
-        public static int _uint(Float v) { return default; }
-        public static int uint_(bool v) { return default; }
-        public static int uint_(int v) { return default; }
-        public static int uint_(Float v) { return default; }
+        public static uint _uint(bool v) { return default; }
+        public static uint _uint(int v) { return default; }
+        public static uint _uint(Float v) { return default; }
+        public static uint uint_(bool v) { return default; }
+        public static uint uint_(int v) { return default; }
+        public static uint uint_(Float v) { return default; }
 
         public static Float _float(bool v) { return default; }
         public static Float _float(int v) { return default; }
