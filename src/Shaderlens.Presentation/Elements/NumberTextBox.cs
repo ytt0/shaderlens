@@ -248,6 +248,7 @@
         private double dragValue;
         private bool rawValueChanged;
         private bool valueChanged;
+        private bool handleMouseUp;
 
         public NumberTextBox(IApplicationTheme theme)
         {
@@ -479,6 +480,7 @@
                 EndDrag();
                 CancelValueEdit();
                 e.Handled = true;
+                this.handleMouseUp = true;
                 return;
             }
 
@@ -486,6 +488,7 @@
             {
                 this.textBox.SelectAll();
                 e.Handled = true;
+                this.handleMouseUp = true;
                 return;
             }
 
@@ -500,6 +503,7 @@
                 this.mouseDownPosition = e.GetPosition(this);
                 e.MouseDevice.Capture(this);
                 e.Handled = true;
+                this.handleMouseUp = true;
                 return;
             }
 
@@ -508,6 +512,7 @@
                 this.textBox.Focus();
                 this.textBox.RaiseEvent(new MouseButtonEventArgs(e.MouseDevice, e.Timestamp, e.ChangedButton) { RoutedEvent = MouseDownEvent });
                 e.Handled = true;
+                this.handleMouseUp = true;
                 return;
             }
 
@@ -522,6 +527,12 @@
 
         protected override void OnMouseUp(MouseButtonEventArgs e)
         {
+            if (this.handleMouseUp)
+            {
+                e.Handled = true;
+                this.handleMouseUp = false;
+            }
+
             if (e.MouseDevice.Captured != this)
             {
                 return;
