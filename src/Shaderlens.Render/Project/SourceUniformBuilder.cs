@@ -296,15 +296,19 @@
                 try
                 {
                     var annotation = this.annotationParser.Parse(annotationSourceLine.Value);
-                    var annotationReader = new SourceLineAnnotationReader(annotation);
 
-                    int? index = null;
-                    if (annotationReader.TryGetValue("index", out var indexRawValue))
+                    if (!String.IsNullOrEmpty(value) && (annotation.Properties.Any() || !String.IsNullOrEmpty(annotation.Value)))
                     {
-                        index = Int32.TryParse(indexRawValue, out var indexValue) ? indexValue : throw new SourceLineException($"Uniform \"{name}\" index property \"{indexRawValue}\" is invalid", annotationSourceLine.Value);
-                    }
+                        var annotationReader = new SourceLineAnnotationReader(annotation);
 
-                    uniform.Initialize(uniformSourceLine, this.sourceIndex, this.targetGroup, index, type, value, annotationReader);
+                        int? index = null;
+                        if (annotationReader.TryGetValue("index", out var indexRawValue))
+                        {
+                            index = Int32.TryParse(indexRawValue, out var indexValue) ? indexValue : throw new SourceLineException($"Uniform \"{name}\" index property \"{indexRawValue}\" is invalid", annotationSourceLine.Value);
+                        }
+
+                        uniform.Initialize(uniformSourceLine, this.sourceIndex, this.targetGroup, index, type, value, annotationReader);
+                    }
                 }
                 catch (ParseException e)
                 {
