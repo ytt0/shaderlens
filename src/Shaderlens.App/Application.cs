@@ -916,20 +916,17 @@ namespace Shaderlens
 
         public ITextureBuffer? GetViewportBufferTexture()
         {
-            this.viewThread.VerifyAccess();
-
-            if (this.pipeline == null)
-            {
-                return null;
-            }
+            var pipeline = this.pipeline;
 
             var width = this.viewportWidth;
             var height = this.viewportHeight;
-            var buffer = new float[width * height * 4];
 
-            this.renderThread.Dispatch(() => this.pipeline.GetViewerTexture(buffer));
-
-            return new TextureBuffer(buffer, width, height);
+            return pipeline == null ? null : this.renderThread.Dispatch(() =>
+            {
+                var buffer = new float[width * height * 4];
+                pipeline.GetViewerTexture(buffer);
+                return new TextureBuffer(buffer, width, height);
+            });
         }
 
         public IEnumerable<IProjectTemplate> GetProjectTemplates()

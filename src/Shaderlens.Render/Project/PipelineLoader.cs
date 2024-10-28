@@ -56,7 +56,12 @@
             var valuesOverlayViewerPass = CreateProgram("Values Overlay Viewer", this.programSourceFactory.Create(this.viewerSourceLines.ValuesOverlay), framebuffers, ChannelBindingSource.Empty, Uniform.Empty, shaderCache, resources, logger);
             var viewerPassCollection = new ViewerPassCollection(clearViewerPass, valuesOverlayViewerPass, viewerPrograms);
 
-            var viewerCopyFramebuffer = CreateFramebuffer(resources, "ViewerCopy");
+            var resourceKey = new TypedResourceKey(typeof(IFramebufferResource), "ViewerCopy");
+            if (!resources.TryGetResource<IFramebufferResource>(resourceKey, out var viewerCopyFramebuffer))
+            {
+                viewerCopyFramebuffer = new FramebufferResource(this.threadAccess);
+                resources.AddResource(resourceKey, viewerCopyFramebuffer);
+            }
 
             return new RenderPipeline(this.threadAccess, passProgramsOrdered, framebuffers.ToArray(), renderSizes.ToArray(), viewerPassCollection, viewerCopyFramebuffer, this.keyboardTextureResource, this.mouseStateSource);
         }
