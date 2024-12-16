@@ -484,6 +484,16 @@ namespace Shaderlens
         public void Start(IntPtr viewportViewHandle)
         {
             this.renderThread = new RenderThread(viewportViewHandle, this.frameIndexSource, this.counter, "render");
+
+            this.renderThread.OnException += (sender, e) =>
+            {
+                application.Dispatcher.InvokeAsync(() =>
+                {
+                    this.UnhandledException = e;
+                    application.Shutdown();
+                });
+            };
+
             this.renderThread.Start();
 
             this.RenderInformation = this.renderThread.RenderInformation;

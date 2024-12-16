@@ -51,6 +51,8 @@
 
         private const int QueriesCount = 20;
 
+        public event EventHandler<Exception>? OnException;
+
         public IThreadAccess Access { get { return this.threadAccess; } }
 
         public string? RenderInformation { get; private set; }
@@ -384,9 +386,9 @@
 
                 this.stoppedEvent.Set();
             }
-            catch
+            catch (Exception e)
             {
-                //this.OnException?.Invoke(e);
+                this.OnException?.Invoke(this, e);
                 this.startedEvent.Set();
                 this.waitingEvent.Set();
                 this.stoppedEvent.Set();
