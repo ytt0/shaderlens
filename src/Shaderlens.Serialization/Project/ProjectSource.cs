@@ -104,8 +104,9 @@
 
             var passValidator = new ProjectPassValidator(GetPassesKeys(source));
 
-            var image = source["Image"] != null ? ReadProjectPass("Image", source["Image"]!, passValidator) : throw new JsonSourceException("Failed to deserialize project, Image pass definition is missing", source);
-            var passes = new PassCollection<IProjectPass>(image, ReadProjectPasses(source.AsObject(), passValidator));
+            ReadProjectPasses(source.AsObject(), passValidator, out var imagePass, out var bufferPasses);
+
+            var passes = new PassCollection<IProjectPass>(imagePass, bufferPasses);
             var viewers = ReadViewersPasses(source, passValidator);
 
             var paused = source["Paused"] != null && this.boolSerializer.Deserialize(source["Paused"]);
@@ -132,16 +133,17 @@
             throw new NotImplementedException();
         }
 
-        private IReadOnlyDictionary<string, IProjectPass> ReadProjectPasses(JsonObject projectObject, IProjectPassValidator validator)
+        private void ReadProjectPasses(JsonObject source, IProjectPassValidator validator, out IProjectPass imagePass, out IReadOnlyDictionary<string, IProjectPass> bufferPasses)
         {
             var serializer = JsonSerializerContext.Create(new ProjectPassCollectionJsonSerializer(PassKeyRegex(), validator, this.fileSystem));
-            return serializer.Deserialize(projectObject);
-        }
+            var dictionary = serializer.Deserialize(source);
 
-        private IProjectPass ReadProjectPass(string key, JsonNode jsonNode, IProjectPassValidator validator)
-        {
-            var serializer = JsonSerializerContext.Create(new ProjectPassJsonSerializer(key, validator, this.fileSystem));
-            return serializer.Deserialize(jsonNode);
+            if (!dictionary.TryGetValue("Image", out imagePass!))
+            {
+                throw new JsonSourceException("Failed to deserialize project, Image pass definition is missing", source);
+            }
+
+            bufferPasses = dictionary.Where(pair => pair.Key != "Image").ToDictionary();
         }
 
         private IEnumerable<IProjectViewerPass> ReadViewersPasses(JsonNode source, ProjectPassValidator passValidator)
@@ -233,7 +235,7 @@
             return jsonNode.AsObject().Where(property => PassKeyRegex().IsMatch(property.Key)).Select(property => property.Key).ToArray();
         }
 
-        [GeneratedRegex("^Buffer(?<key>([0-9]+|[A-Z]))$")]
+        [GeneratedRegex("^(?<key>Image|(Buffer([0-9]+|[A-Z])))$")]
         private static partial Regex PassKeyRegex();
     }
 }
