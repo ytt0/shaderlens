@@ -135,13 +135,15 @@
     {
         private readonly IThreadAccess threadAccess;
         private readonly IFramebufferResource framebuffer;
+        private readonly int framebufferTextureIndex;
         private readonly IBindingParameters bindingParameters;
         private readonly int textureUnit;
 
-        private FramebufferUniformBinding(IThreadAccess threadAccess, IFramebufferResource framebuffer, IBindingParameters bindingParameters, int textureUnit)
+        private FramebufferUniformBinding(IThreadAccess threadAccess, IFramebufferResource framebuffer, int framebufferTextureIndex, IBindingParameters bindingParameters, int textureUnit)
         {
             this.threadAccess = threadAccess;
             this.framebuffer = framebuffer;
+            this.framebufferTextureIndex = framebufferTextureIndex;
             this.bindingParameters = bindingParameters;
             this.textureUnit = textureUnit;
         }
@@ -150,12 +152,12 @@
         {
             this.threadAccess.Verify();
             glActiveTexture(this.textureUnit);
-            glBindTexture(GL_TEXTURE_2D, this.framebuffer.TextureId);
+            glBindTexture(GL_TEXTURE_2D, this.framebuffer.GetTextureId(this.framebufferTextureIndex));
 
             this.bindingParameters.SetParameters();
         }
 
-        public static bool TryCreate(IThreadAccess threadAccess, IFramebufferResource framebuffer, IBindingParameters bindingParameters, uint programId, string name, int textureUnit, [MaybeNullWhen(false)] out IUniformBinding uniformBinding)
+        public static bool TryCreate(IThreadAccess threadAccess, IFramebufferResource framebuffer, int framebufferTextureIndex, IBindingParameters bindingParameters, uint programId, string name, int textureUnit, [MaybeNullWhen(false)] out IUniformBinding uniformBinding)
         {
             threadAccess.Verify();
 
@@ -176,7 +178,7 @@
             glUniform1i(location, textureUnit - GL_TEXTURE0);
             glUseProgram(0);
 
-            uniformBinding = new FramebufferUniformBinding(threadAccess, framebuffer, bindingParameters, textureUnit);
+            uniformBinding = new FramebufferUniformBinding(threadAccess, framebuffer, framebufferTextureIndex, bindingParameters, textureUnit);
             return true;
         }
     }
@@ -244,7 +246,7 @@
 
         public void BindValue(IRenderContext context, IFramebufferResource framebuffer)
         {
-            this.texture.SetViewerBufferIndex(context.ViewerBufferIndex);
+            this.texture.SetIndex(context.ViewerBufferIndex, 0);
             this.uniformBinding.BindValue(context, framebuffer);
         }
 

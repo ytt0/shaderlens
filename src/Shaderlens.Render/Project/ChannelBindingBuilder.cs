@@ -319,7 +319,7 @@
         {
             this.channelBinding.AddFramebuffer(channelIndex, framebuffer);
 
-            if (FramebufferUniformBinding.TryCreate(this.threadAccess, framebuffer, bindingParameters, this.programId, GetChannelUniformName(channelIndex), this.textureUnit, out var binding))
+            if (FramebufferUniformBinding.TryCreate(this.threadAccess, framebuffer, 0, bindingParameters, this.programId, GetChannelUniformName(channelIndex), this.textureUnit, out var binding))
             {
                 this.channelBinding.AddBinding(channelIndex, binding);
                 this.textureUnit++;

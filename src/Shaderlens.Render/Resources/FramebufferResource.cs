@@ -4,10 +4,12 @@
 
     public interface IFramebufferResource : IRenderResource
     {
-        uint TextureId { get; }
+        int TexturesCount { get; }
+
         int Width { get; }
         int Height { get; }
 
+        uint GetTextureId(int index);
         void SetSize(int width, int height);
         void PushState();
         void PopState();
@@ -61,24 +63,27 @@
 
         public uint Id { get; }
 
-        public uint TextureId { get { return this.texture.Id; } }
-        public int Width { get { return this.texture.Width; } }
-        public int Height { get { return this.texture.Height; } }
+        public int TexturesCount { get; }
+
+        public int Width { get; private set; }
+        public int Height { get; private set; }
 
         private readonly IThreadAccess threadAccess;
-        private readonly Queue<ITextureResource> states;
-        private ITextureResource texture;
+        private readonly Queue<ITextureResource[]> states;
+        private ITextureResource[] textures;
         private bool isDisposed;
 
-        public FramebufferResource(IThreadAccess threadAccess)
+        public FramebufferResource(IThreadAccess threadAccess, int texturesCount)
         {
             this.threadAccess = threadAccess;
             this.threadAccess.Verify();
 
-            this.states = new Queue<ITextureResource>();
+            this.states = new Queue<ITextureResource[]>();
 
             this.Id = glGenFramebuffer();
-            this.texture = TextureResource.Default;
+            this.TexturesCount = texturesCount;
+
+            this.textures = new ITextureResource[this.TexturesCount];
         }
 
         public void Dispose()
@@ -87,23 +92,38 @@
 
             if (!this.isDisposed)
             {
-                this.texture.Dispose();
+                foreach (var texture in this.textures)
+                {
+                    texture?.Dispose();
+                }
+
                 glDeleteFramebuffer(this.Id);
                 this.isDisposed = true;
             }
+        }
+
+        public uint GetTextureId(int index)
+        {
+            return this.textures[index].Id;
         }
 
         public void SetSize(int width, int height)
         {
             this.threadAccess.Verify();
 
-            if (this.texture.Width == width && this.texture.Height == height)
+            if (this.Width == width && this.Height == height)
             {
                 return;
             }
 
-            this.texture.Dispose();
-            this.texture = new FramebufferTexture(this.threadAccess, width, height);
+            this.Width = width;
+            this.Height = height;
+
+            for (var i = 0; i < this.textures.Length; i++)
+            {
+                this.textures[i]?.Dispose();
+                this.textures[i] = new FramebufferTexture(this.threadAccess, width, height);
+            }
 
             BindTexture();
         }
@@ -112,8 +132,14 @@
         {
             this.threadAccess.Verify();
 
-            this.states.Enqueue(this.texture);
-            this.texture = new FramebufferTexture(this.threadAccess, this.texture.Width, this.texture.Height);
+            this.states.Enqueue(this.textures);
+
+            this.textures = new ITextureResource[this.TexturesCount];
+
+            for (var i = 0; i < this.TexturesCount; i++)
+            {
+                this.textures[i] = new FramebufferTexture(this.threadAccess, this.Width, this.Height);
+            }
 
             BindTexture();
         }
@@ -122,8 +148,12 @@
         {
             this.threadAccess.Verify();
 
-            this.texture.Dispose();
-            this.texture = this.states.Dequeue();
+            for (var i = 0; i < this.TexturesCount; i++)
+            {
+                this.textures[i].Dispose();
+            }
+
+            this.textures = this.states.Dequeue();
 
             BindTexture();
         }
@@ -141,8 +171,14 @@
         private void BindTexture()
         {
             glBindFramebuffer(GL_FRAMEBUFFER, this.Id);
-            glBindTexture(GL_TEXTURE_2D, this.texture.Id);
-            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, this.texture.Id, 0);
+
+            for (var i = 0; i < this.TexturesCount; i++)
+            {
+                glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, this.textures[i].Id, 0);
+            }
+
+            glDrawBuffers(Enumerable.Range(0, this.TexturesCount).Select(i => GL_COLOR_ATTACHMENT0 + i).ToArray());
+
             var status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
             glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
@@ -156,27 +192,22 @@
     public class ReadWriteFramebufferResource : IReadWriteFramebufferResource
     {
         public uint Id { get { return this.framebuffers[this.writeIndex].Id; } }
-        public uint TextureId { get { return this.framebuffers[this.readIndex].TextureId; } }
+
+        public int TexturesCount { get; }
 
         public int Width { get; private set; }
         public int Height { get; private set; }
 
         private readonly IThreadAccess threadAccess;
         private readonly IFramebufferResource[] framebuffers;
-        private readonly int framebuffersCount;
         private int writeIndex;
         private int readIndex;
 
-        public ReadWriteFramebufferResource(IThreadAccess threadAccess, int framebuffersCount)
+        public ReadWriteFramebufferResource(IThreadAccess threadAccess, int texturesCount)
         {
-            if (framebuffersCount < 2)
-            {
-                throw new ArgumentException("Count should be at least 2", nameof(framebuffersCount));
-            }
-
             this.threadAccess = threadAccess;
-            this.framebuffers = Enumerable.Range(0, framebuffersCount).Select(index => new FramebufferResource(threadAccess)).ToArray();
-            this.framebuffersCount = framebuffersCount;
+            this.TexturesCount = texturesCount;
+            this.framebuffers = new[] { new FramebufferResource(threadAccess, texturesCount), new FramebufferResource(threadAccess, texturesCount) };
 
             this.readIndex = 0;
             this.writeIndex = 1;
@@ -186,7 +217,7 @@
         {
             this.threadAccess.Verify();
 
-            for (var i = 0; i < this.framebuffersCount; i++)
+            for (var i = 0; i < 2; i++)
             {
                 this.framebuffers[i].Dispose();
             }
@@ -197,7 +228,12 @@
             this.threadAccess.Verify();
 
             this.readIndex = this.writeIndex;
-            this.writeIndex = (this.writeIndex + 1) % this.framebuffersCount;
+            this.writeIndex = (this.writeIndex + 1) % 2;
+        }
+
+        public uint GetTextureId(int index)
+        {
+            return this.framebuffers[this.readIndex].GetTextureId(index);
         }
 
         public void SetSize(int width, int height)
@@ -207,7 +243,7 @@
             this.Width = width;
             this.Height = height;
 
-            for (var i = 0; i < this.framebuffersCount; i++)
+            for (var i = 0; i < 2; i++)
             {
                 this.framebuffers[i].SetSize(width, height);
             }
@@ -217,7 +253,7 @@
         {
             this.threadAccess.Verify();
 
-            for (var i = 0; i < this.framebuffersCount; i++)
+            for (var i = 0; i < 2; i++)
             {
                 this.framebuffers[i].PushState();
             }
@@ -227,7 +263,7 @@
         {
             this.threadAccess.Verify();
 
-            for (var i = 0; i < this.framebuffersCount; i++)
+            for (var i = 0; i < 2; i++)
             {
                 this.framebuffers[i].PopState();
             }
@@ -237,7 +273,7 @@
         {
             this.threadAccess.Verify();
 
-            for (var i = 0; i < this.framebuffersCount; i++)
+            for (var i = 0; i < 2; i++)
             {
                 this.framebuffers[i].ClearState();
             }

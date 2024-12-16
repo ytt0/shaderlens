@@ -33,12 +33,18 @@
         {
             public uint Id { get; }
 
-            public uint TextureId { get; }
+            public int TexturesCount { get { return 1; } }
+
             public int Width { get; private set; }
             public int Height { get; private set; }
 
             public void Dispose()
             {
+            }
+
+            public uint GetTextureId(int index)
+            {
+                return 0;
             }
 
             public void SetSize(int width, int height)
@@ -276,7 +282,7 @@
 
             var source = this.framebuffers[bufferIndex];
 
-            glBindTexture(GL_TEXTURE_2D, source.TextureId);
+            glBindTexture(GL_TEXTURE_2D, source.GetTextureId(0));
             glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_FLOAT, target);
             glBindTexture(GL_TEXTURE_2D, 0);
         }
@@ -291,7 +297,7 @@
                 this.viewerPass.Render(this.renderContext, this.viewerCopyFramebuffer);
             }
 
-            glBindTexture(GL_TEXTURE_2D, this.viewerCopyFramebuffer.TextureId);
+            glBindTexture(GL_TEXTURE_2D, this.viewerCopyFramebuffer.GetTextureId(0));
             glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_FLOAT, target);
             glBindTexture(GL_TEXTURE_2D, 0);
         }

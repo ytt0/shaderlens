@@ -2,26 +2,28 @@
 {
     public interface IViewerBufferTexture : ITextureResource
     {
-        void SetViewerBufferIndex(int index);
+        void SetIndex(int bufferIndex, int bufferTextureIndex);
     }
 
     public class ViewerBufferTexture : IViewerBufferTexture
     {
-        public uint Id { get { return this.framebuffers[this.index].TextureId; } }
-        public int Width { get { return this.framebuffers[this.index].Width; } }
-        public int Height { get { return this.framebuffers[this.index].Height; } }
+        public uint Id { get { return this.framebuffers[this.bufferIndex].GetTextureId(this.bufferTextureIndex); } }
+        public int Width { get { return this.framebuffers[this.bufferIndex].Width; } }
+        public int Height { get { return this.framebuffers[this.bufferIndex].Height; } }
 
         private readonly IFramebufferResource[] framebuffers;
-        private int index;
+        private int bufferIndex;
+        private int bufferTextureIndex;
 
         public ViewerBufferTexture(IFramebufferResource[] framebuffers)
         {
             this.framebuffers = framebuffers;
         }
 
-        public void SetViewerBufferIndex(int index)
+        public void SetIndex(int bufferIndex, int bufferTextureIndex)
         {
-            this.index = index;
+            this.bufferIndex = bufferIndex;
+            this.bufferTextureIndex = bufferTextureIndex;
         }
 
         public void Dispose()

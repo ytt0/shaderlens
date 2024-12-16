@@ -59,7 +59,7 @@
             var resourceKey = new TypedResourceKey(typeof(IFramebufferResource), "ViewerCopy");
             if (!resources.TryGetResource<IFramebufferResource>(resourceKey, out var viewerCopyFramebuffer))
             {
-                viewerCopyFramebuffer = new FramebufferResource(this.threadAccess);
+                viewerCopyFramebuffer = new FramebufferResource(this.threadAccess, 1);
                 resources.AddResource(resourceKey, viewerCopyFramebuffer);
             }
 
@@ -84,7 +84,7 @@
 
             if (!resources.TryGetResource<IReadWriteFramebufferResource>(resourceKey, out var framebuffer))
             {
-                framebuffer = new ReadWriteFramebufferResource(this.threadAccess, 2);
+                framebuffer = new ReadWriteFramebufferResource(this.threadAccess, 1);
                 resources.AddResource(resourceKey, framebuffer);
             }
 

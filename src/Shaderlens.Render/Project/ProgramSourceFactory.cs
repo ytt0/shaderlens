@@ -65,14 +65,17 @@ void main()
     gl_Position = vec4(position.x, position.y, 0.0, 1.0);
 }");
 
-        private static readonly SourceLines FragmentDeclarationLines = CreateSourceLines("Fragment (auto)",
-@"out vec4 FragColor;
+        private static readonly SourceLines FragmentDeclarationLines = CreateSourceLines("Fragment Declaration (auto)",
+@"layout(location = 0) out vec4 FragColor0;
+layout(location = 1) out vec4 FragColor1;
+layout(location = 2) out vec4 FragColor2;
+layout(location = 3) out vec4 FragColor3;
+layout(location = 4) out vec4 FragColor4;
+layout(location = 5) out vec4 FragColor5;
+layout(location = 6) out vec4 FragColor6;
+layout(location = 7) out vec4 FragColor7;
 
-void mainImage(out vec4 fragColor, in vec2 fragCoord);
-");
-
-        private static readonly SourceLines FragmentUniformsLines = CreateSourceLines("Fragment Uniforms (auto)",
-@"uniform sampler2D iChannel0;
+uniform sampler2D iChannel0;
 uniform sampler2D iChannel1;
 uniform sampler2D iChannel2;
 uniform sampler2D iChannel3;
@@ -98,6 +101,8 @@ uniform vec3 iChannelResolution[8];
 uniform vec3 iViewerChannelResolution;
 uniform float iViewerScale;
 uniform vec2 iViewerOffset;
+
+void mainImage(out vec4 fragColor, in vec2 fragCoord);
 ");
 
         private static readonly SourceLines FragmentEntryLines = CreateSourceLines("Fragment Entry (auto)",
@@ -106,7 +111,7 @@ void main()
 {
     vec4 fragColor;
     mainImage(fragColor, gl_FragCoord.xy);
-    FragColor = fragColor;
+    FragColor0 = fragColor;
 }");
 
         private readonly IHashSource hashSource;
@@ -126,7 +131,7 @@ void main()
 
         public IProgramSource Create(SourceLines common, SourceLines source)
         {
-            var fragmentSourceLines = new SourceLines(new[] { this.fragmentHeaderLines, FragmentDeclarationLines, FragmentUniformsLines, common, source, FragmentEntryLines });
+            var fragmentSourceLines = new SourceLines(new[] { this.fragmentHeaderLines, FragmentDeclarationLines, common, source, FragmentEntryLines });
             var fragmentStageSource = CreateProgramStageSource(fragmentSourceLines);
 
             var resourceKey = this.hashSource.GetHash(new[] { this.vertexStageSource.ResourceKey, fragmentStageSource.ResourceKey }.JoinLines());
