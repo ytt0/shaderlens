@@ -1,22 +1,35 @@
 ﻿namespace Shaderlens.Serialization.Project
 {
-    public interface IProjectPassValidator
+    public interface IChannelBindingValidator
     {
-        bool PassDefined(string key);
+        void Validate(string key, int textureIndex, JsonNode sourceNode);
     }
 
-    public class ProjectPassValidator : IProjectPassValidator
+    public class ChannelBindingValidator : IChannelBindingValidator
     {
-        private readonly HashSet<string> definedPasses;
+        private readonly Dictionary<string, int> definitions;
 
-        public ProjectPassValidator(IEnumerable<string> definedPasses)
+        public ChannelBindingValidator()
         {
-            this.definedPasses = new HashSet<string>(definedPasses);
+            this.definitions = new Dictionary<string, int>();
         }
 
-        public bool PassDefined(string key)
+        public void AddFramebufferDefinition(string key, int outputs)
         {
-            return this.definedPasses.Contains(key);
+            this.definitions.Add(key, outputs);
+        }
+
+        public void Validate(string key, int textureIndex, JsonNode sourceNode)
+        {
+            if (!this.definitions.TryGetValue(key, out var outputs))
+            {
+                throw new JsonSourceException($"{key} pass definition is missing", sourceNode);
+            }
+
+            if (textureIndex >= outputs)
+            {
+                throw new JsonSourceException($"Index {textureIndex} is invalid, {key} pass has {outputs} {(outputs == 1 ? "output" : "outputs")} (expected index is between 0 and {outputs - 1})", sourceNode);
+            }
         }
     }
 }

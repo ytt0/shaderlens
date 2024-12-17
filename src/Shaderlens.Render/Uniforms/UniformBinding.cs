@@ -246,7 +246,7 @@
 
         public void BindValue(IRenderContext context, IFramebufferResource framebuffer)
         {
-            this.texture.SetIndex(context.ViewerBufferIndex, 0);
+            this.texture.SetIndex(context.ViewerBufferIndex, context.ViewerBufferTextureIndex);
             this.uniformBinding.BindValue(context, framebuffer);
         }
 

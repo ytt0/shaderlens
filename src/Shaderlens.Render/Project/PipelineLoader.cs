@@ -32,7 +32,7 @@
 
         public IRenderPipeline LoadPipeline(IProjectSource source, IUniform uniforms, IProjectResources resources, IShaderCache shaderCache, IFileSystem fileSystem, IProjectLoadLogger logger)
         {
-            var framebuffers = new PassCollection<IReadWriteFramebufferResource>(CreateFramebuffer(resources, "Image"), CreatePassFramebuffers(source, resources));
+            var framebuffers = new PassCollection<IReadWriteFramebufferResource>(CreateFramebuffer(resources, "Image", source.Passes.Image!.Outputs), CreatePassFramebuffers(source, resources));
             var renderSizes = new PassCollection<IRenderSizeSource>(CreateRenderSizeSource(source, source.Passes.Image!), CreateBuffersRenderSizeSource(source));
 
             var passPrograms = new Dictionary<string, IRenderProgram>();
@@ -72,19 +72,19 @@
 
             foreach (var buffer in project.Passes.Buffers)
             {
-                framebuffers[buffer.Key] = CreateFramebuffer(resources, buffer.Key);
+                framebuffers[buffer.Key] = CreateFramebuffer(resources, buffer.Key, buffer.Outputs);
             }
 
             return framebuffers;
         }
 
-        private IReadWriteFramebufferResource CreateFramebuffer(IProjectResources resources, string name)
+        private IReadWriteFramebufferResource CreateFramebuffer(IProjectResources resources, string name, int texturesCount)
         {
-            var resourceKey = new TypedResourceKey(typeof(IReadWriteFramebufferResource), name);
+            var resourceKey = new TypedResourceKey(typeof(IReadWriteFramebufferResource), $"{name},{texturesCount}");
 
             if (!resources.TryGetResource<IReadWriteFramebufferResource>(resourceKey, out var framebuffer))
             {
-                framebuffer = new ReadWriteFramebufferResource(this.threadAccess, 1);
+                framebuffer = new ReadWriteFramebufferResource(this.threadAccess, texturesCount);
                 resources.AddResource(resourceKey, framebuffer);
             }
 

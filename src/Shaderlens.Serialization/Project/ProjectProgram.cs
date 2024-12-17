@@ -28,11 +28,11 @@
     {
         private readonly string passName;
         private readonly bool includeCommonSource;
-        private readonly IProjectPassValidator validator;
+        private readonly IChannelBindingValidator validator;
         private readonly IFileSystem fileSystem;
         private readonly DisplayNameFormatter displayNameFormatter;
 
-        public ProjectProgramJsonSerializer(string passName, bool includeCommonSource, IProjectPassValidator validator, IFileSystem fileSystem)
+        public ProjectProgramJsonSerializer(string passName, bool includeCommonSource, IChannelBindingValidator validator, IFileSystem fileSystem)
         {
             this.passName = passName;
             this.includeCommonSource = includeCommonSource;

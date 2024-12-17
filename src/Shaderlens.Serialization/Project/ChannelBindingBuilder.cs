@@ -2,11 +2,11 @@
 {
     public interface IChannelBindingBuilder
     {
-        void SetImageFramebufferBinding(int channelIndex, BindingParametersSource bindingParameters);
         void SetImageDefaultFramebufferBinding();
-        void SetPassFramebufferBinding(int channelIndex, string key, BindingParametersSource bindingParameters);
+        void SetImageFramebufferBinding(int channelIndex, int bufferTextureIndex, BindingParametersSource bindingParameters);
+        void SetPassFramebufferBinding(int channelIndex, string key, int bufferTextureIndex, BindingParametersSource bindingParameters);
         void SetPassDefaultFramebufferBinding(string key);
-        void SetViewerFramebufferBinding(int channelIndex);
+        void SetViewerBufferBinding(int channelIndex);
         void SetViewerDefaultFramebufferBinding();
         void SetTextureBinding(int channelIndex, IFileResource<byte[]> resource, BindingParametersSource bindingParameters);
         void SetTextureSequenceBinding(int channelIndex, IEnumerable<IFileResource<byte[]>> resources, int frameRate, BindingParametersSource bindingParameters);

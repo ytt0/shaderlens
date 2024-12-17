@@ -13,7 +13,7 @@
 
         void SetViewportSize(int viewportWidth, int viewportHeight);
         void SetRenderDownscale(int renderDownscale);
-        void SetViewerBufferIndex(int index);
+        void SetViewerBufferIndex(int index, int textureIndex);
         void SetViewerPass(ViewerPassSelection selection);
 
         void SetMouseState(bool isDown);
@@ -23,7 +23,7 @@
         void RenderViewerFrame();
 
         void GetTextureSize(int bufferIndex, out int width, out int height);
-        void GetTexture(int bufferIndex, float[] target);
+        void GetTexture(int bufferIndex, int bufferTextureIndex, float[] target);
         void GetViewerTexture(float[] target);
     }
 
@@ -72,17 +72,19 @@
             public readonly int ViewportHeight;
             public readonly int RenderDownscale;
             public readonly int ViewerBufferIndex;
+            public readonly int ViewerBufferTextureIndex;
             public readonly double ViewerScale;
             public readonly double ViewerOffsetX;
             public readonly double ViewerOffsetY;
             public readonly ViewerPassSelection ViewerPassSelection;
 
-            public State(int viewportWidth, int viewportHeight, int renderDownscale, int viewerBufferIndex, double viewerScale, double viewerOffsetX, double viewerOffsetY, ViewerPassSelection viewerPassSelection)
+            public State(int viewportWidth, int viewportHeight, int renderDownscale, int viewerBufferIndex, int viewerBufferTextureIndex, double viewerScale, double viewerOffsetX, double viewerOffsetY, ViewerPassSelection viewerPassSelection)
             {
                 this.ViewportWidth = viewportWidth;
                 this.ViewportHeight = viewportHeight;
                 this.RenderDownscale = renderDownscale;
                 this.ViewerBufferIndex = viewerBufferIndex;
+                this.ViewerBufferTextureIndex = viewerBufferTextureIndex;
                 this.ViewerScale = viewerScale;
                 this.ViewerOffsetX = viewerOffsetX;
                 this.ViewerOffsetY = viewerOffsetY;
@@ -118,6 +120,7 @@
         private bool isMouseDown;
         private bool viewerBufferIndexChanged;
         private int viewerBufferIndex;
+        private int viewerBufferTextureIndex;
         private bool viewerPassSelectionChanged;
         private ViewerPassSelection viewerPassSelection;
         private int framebuffersStateDepth;
@@ -153,7 +156,7 @@
         {
             lock (this.locker)
             {
-                this.states.Enqueue(new State(this.viewportWidth, this.viewportHeight, this.renderDownscale, this.viewerBufferIndex, this.viewerScale, this.viewerOffsetX, this.viewerOffsetY, this.viewerPassSelection));
+                this.states.Enqueue(new State(this.viewportWidth, this.viewportHeight, this.renderDownscale, this.viewerBufferIndex, this.viewerBufferTextureIndex, this.viewerScale, this.viewerOffsetX, this.viewerOffsetY, this.viewerPassSelection));
             }
         }
 
@@ -165,7 +168,7 @@
 
                 SetViewportSize(state.ViewportWidth, state.ViewportHeight);
                 SetRenderDownscale(state.RenderDownscale);
-                SetViewerBufferIndex(state.ViewerBufferIndex);
+                SetViewerBufferIndex(state.ViewerBufferIndex, state.ViewerBufferTextureIndex);
                 SetViewerTransform(state.ViewerScale, state.ViewerOffsetX, state.ViewerOffsetY);
                 SetViewerPass(state.ViewerPassSelection);
             }
@@ -195,12 +198,13 @@
             }
         }
 
-        public void SetViewerBufferIndex(int index)
+        public void SetViewerBufferIndex(int index, int textureIndex)
         {
             lock (this.locker)
             {
                 this.viewerBufferIndexChanged = true;
                 this.viewerBufferIndex = index;
+                this.viewerBufferTextureIndex = textureIndex;
                 SetSize();
             }
         }
@@ -276,13 +280,13 @@
             }
         }
 
-        public void GetTexture(int bufferIndex, float[] target)
+        public void GetTexture(int bufferIndex, int bufferTextureIndex, float[] target)
         {
             this.threadAccess.Verify();
 
             var source = this.framebuffers[bufferIndex];
 
-            glBindTexture(GL_TEXTURE_2D, source.GetTextureId(0));
+            glBindTexture(GL_TEXTURE_2D, source.GetTextureId(bufferTextureIndex));
             glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_FLOAT, target);
             glBindTexture(GL_TEXTURE_2D, 0);
         }
@@ -372,6 +376,7 @@
                 if (this.viewerBufferIndexChanged)
                 {
                     this.renderContext.ViewerBufferIndex = this.viewerBufferIndex;
+                    this.renderContext.ViewerBufferTextureIndex = this.viewerBufferTextureIndex;
                 }
 
                 if (this.viewerPassSelectionChanged)

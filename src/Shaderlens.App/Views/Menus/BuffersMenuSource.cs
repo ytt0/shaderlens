@@ -4,33 +4,82 @@
     {
         private readonly IApplication application;
         private readonly IApplicationInputs inputs;
-        private readonly string? imageName;
-        private readonly string[]? buffersNames;
+        private readonly IProjectSource? project;
+        private readonly IMenuTheme theme;
 
-        public BuffersMenuSource(IApplication application, IApplicationInputs inputs, IProjectSource? project)
+        public BuffersMenuSource(IApplication application, IApplicationInputs inputs, IProjectSource? project, IMenuTheme theme)
         {
             this.application = application;
             this.inputs = inputs;
-            this.imageName = project?.Passes.Image?.Program.DisplayName;
-            this.buffersNames = project?.Passes.Buffers.Select(buffer => buffer.Program.DisplayName).ToArray();
+            this.project = project;
+            this.theme = theme;
         }
 
         public void AddTo(IMenuBuilder builder)
         {
-            if (this.imageName == null)
+            if (this.project == null)
             {
                 builder.AddEmptyItem();
                 return;
             }
 
-            builder.AddItem(this.imageName, this.inputs.BufferImage, null, null, () => this.application.ViewerBufferIndex = this.application.ViewerBuffersCount - 1, state => state.IsChecked = this.application.ViewerBufferIndex == this.application.ViewerBuffersCount - 1);
+            AddItem(builder, project.Passes.Image, this.inputs.BufferImage, project.Passes.Count - 1);
+
             builder.AddSeparator();
 
-            for (var i = this.buffersNames!.Length - 1; i >= 0; i--)
+            var buffers = project.Passes.Buffers.ToArray();
+
+            for (var i = buffers.Length - 1; i >= 0; i--)
             {
-                var bufferIndex = i;
-                builder.AddItem(this.buffersNames[bufferIndex], this.inputs.Buffer.ElementAtOrDefault(bufferIndex), null, null, () => this.application.ViewerBufferIndex = bufferIndex, state => state.IsChecked = this.application.ViewerBufferIndex == bufferIndex);
+                AddItem(builder, buffers[i], this.inputs.Buffer.ElementAtOrDefault(i), i);
             }
+        }
+
+        private void AddItem(IMenuBuilder builder, IProjectPass? pass, IInputSpanEvent? inputSpanEvent, int index)
+        {
+            if (pass == null)
+            {
+                return;
+            }
+
+            if (pass.Outputs == 1)
+            {
+                builder.AddItem(pass.Program.DisplayName, inputSpanEvent, null, null, () => this.application.SetViewerBufferIndex(index, 0), state => state.IsChecked = this.application.ViewerBufferIndex == index);
+                return;
+            }
+
+            for (var i = 0; i < pass.Outputs; i++)
+            {
+                var textureIndex = i;
+                builder.AddItem(CreateHeader(pass.Program.DisplayName, textureIndex, this.theme), inputSpanEvent, null, null, () => this.application.SetViewerBufferIndex(index, textureIndex), state => state.IsChecked = this.application.ViewerBufferIndex == index && this.application.ViewerBufferTextureIndex == textureIndex);
+            }
+        }
+
+        private static FrameworkElement CreateHeader(string name, int index, IMenuTheme theme)
+        {
+            return new StackPanel { Orientation = Orientation.Horizontal }.WithChildren
+            (
+                new TextBlock
+                {
+                    Text = name,
+                    VerticalAlignment = VerticalAlignment.Center
+                },
+                new Border
+                {
+                    BorderThickness = new Thickness(1),
+                    CornerRadius = new CornerRadius(4),
+                    Margin = new Thickness(8, 0, 0, 0),
+                    Padding = new Thickness(4, 2, 4, 2),
+                    VerticalAlignment = VerticalAlignment.Center,
+                    Child = new TextBlock
+                    {
+                        Text = index.ToString(),
+                        VerticalAlignment = VerticalAlignment.Center
+                    }.
+                    WithReference(TextBlock.FontFamilyProperty, theme.CodeFontFamily).
+                    WithReference(TextBlock.FontSizeProperty, theme.CodeFontSize)
+                }.WithReference(Border.BorderBrushProperty, theme.ValueBorder)
+            );
         }
     }
 }

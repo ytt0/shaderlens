@@ -63,3 +63,13 @@ Viewer Uniforms
 
 - :glsl:`vec2 iViewerOffset`
     Viewer transformation offset.
+
+.. _built-in-uniforms-outputs:
+
+Output Variables
+----------------
+
+:glsl:`out vec4 FragColor#` (where **#** is a number between 0 and 7)
+    :glsl:`FragColor0` is set automatically to the :glsl:`mainImage` output variable :glsl:`fragColor`.
+
+By default only one texture is assigned, for additional textures the :ref:`Pass Outputs<definition-pass>` property can be set.

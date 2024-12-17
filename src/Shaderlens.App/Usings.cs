@@ -34,7 +34,6 @@ global using Shaderlens.Render.Project;
 global using Shaderlens.Render.Resources;
 global using Shaderlens.Render.Uniforms;
 global using Shaderlens.Resources;
-global using Shaderlens.Serialization;
 global using Shaderlens.Serialization.Json;
 global using Shaderlens.Serialization.Project;
 global using Shaderlens.Serialization.Text;

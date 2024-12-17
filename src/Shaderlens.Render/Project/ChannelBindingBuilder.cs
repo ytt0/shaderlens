@@ -185,24 +185,24 @@
             this.Binding = this.channelBinding;
         }
 
-        public void SetImageFramebufferBinding(int channelIndex, BindingParametersSource bindingParameters)
-        {
-            AddFramebufferBinding(channelIndex, this.framebuffers.Image!, new BindingParameters(bindingParameters));
-        }
-
         public void SetImageDefaultFramebufferBinding()
         {
             if (this.framebuffers.Buffers.Any())
             {
-                AddFramebufferBinding(0, this.framebuffers.Buffers.Last(), BindingParameters.Empty);
+                AddFramebufferBinding(0, this.framebuffers.Buffers.Last(), 0, BindingParameters.Empty);
             }
         }
 
-        public void SetPassFramebufferBinding(int channelIndex, string key, BindingParametersSource bindingParameters)
+        public void SetImageFramebufferBinding(int channelIndex, int bufferTextureIndex, BindingParametersSource bindingParameters)
+        {
+            AddFramebufferBinding(channelIndex, this.framebuffers.Image!, bufferTextureIndex, new BindingParameters(bindingParameters));
+        }
+
+        public void SetPassFramebufferBinding(int channelIndex, string key, int bufferTextureIndex, BindingParametersSource bindingParameters)
         {
             var framebuffer = this.framebuffers.TryGetBuffer(key) ?? throw new Exception($"Channel {channelIndex} binding cannot be resolved, pass {key} is missing");
 
-            AddFramebufferBinding(channelIndex, framebuffer, new BindingParameters(bindingParameters));
+            AddFramebufferBinding(channelIndex, framebuffer, bufferTextureIndex, new BindingParameters(bindingParameters));
         }
 
         public void SetPassDefaultFramebufferBinding(string key)
@@ -210,11 +210,11 @@
             var previousKey = this.framebuffers.BuffersKeys.ElementAtOrDefault(this.framebuffers.BuffersKeys.IndexOf(key) - 1);
             if (previousKey != null)
             {
-                AddFramebufferBinding(0, this.framebuffers[previousKey], BindingParameters.Empty);
+                AddFramebufferBinding(0, this.framebuffers[previousKey], 0, BindingParameters.Empty);
             }
         }
 
-        public void SetViewerFramebufferBinding(int channelIndex)
+        public void SetViewerBufferBinding(int channelIndex)
         {
             var texture = new ViewerBufferTexture(this.framebuffers.ToArray());
 
@@ -315,11 +315,11 @@
             }
         }
 
-        private void AddFramebufferBinding(int channelIndex, IFramebufferResource framebuffer, IBindingParameters bindingParameters)
+        private void AddFramebufferBinding(int channelIndex, IFramebufferResource framebuffer, int framebufferTextureIndex, IBindingParameters bindingParameters)
         {
             this.channelBinding.AddFramebuffer(channelIndex, framebuffer);
 
-            if (FramebufferUniformBinding.TryCreate(this.threadAccess, framebuffer, 0, bindingParameters, this.programId, GetChannelUniformName(channelIndex), this.textureUnit, out var binding))
+            if (FramebufferUniformBinding.TryCreate(this.threadAccess, framebuffer, framebufferTextureIndex, bindingParameters, this.programId, GetChannelUniformName(channelIndex), this.textureUnit, out var binding))
             {
                 this.channelBinding.AddBinding(channelIndex, binding);
                 this.textureUnit++;

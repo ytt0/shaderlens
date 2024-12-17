@@ -72,6 +72,7 @@
         private readonly string projectPath;
         private readonly IFileSystem fileSystem;
         private readonly IJsonSerializer<RenderSize> renderSizeSerializer;
+        private readonly IJsonSerializer<int> intSerializer;
         private readonly IJsonSerializer<bool> boolSerializer;
 
         public ProjectSourceJsonSerializer(string projectPath, IFileSystem fileSystem)
@@ -79,6 +80,7 @@
             this.projectPath = projectPath;
             this.fileSystem = fileSystem;
             this.renderSizeSerializer = JsonSerializerContext.Create(new RenderSizeJsonSerializer());
+            this.intSerializer = JsonSerializerContext.Create(new ValueJsonSerializer<int>());
             this.boolSerializer = JsonSerializerContext.Create(new ValueJsonSerializer<bool>());
         }
 
@@ -102,12 +104,12 @@
             var serializer = JsonSerializerContext.Create(new ProjectProgramSourceJsonSerializer("Common", this.fileSystem));
             var commonSourceLocation = serializer.Deserialize(source["Common"]);
 
-            var passValidator = new ProjectPassValidator(GetPassesKeys(source));
+            var validator = GetChannelBindingValidator(source);
 
-            ReadProjectPasses(source.AsObject(), passValidator, out var imagePass, out var bufferPasses);
+            ReadProjectPasses(source.AsObject(), validator, out var imagePass, out var bufferPasses);
 
             var passes = new PassCollection<IProjectPass>(imagePass, bufferPasses);
-            var viewers = ReadViewersPasses(source, passValidator);
+            var viewers = ReadViewersPasses(source, validator);
 
             var paused = source["Paused"] != null && this.boolSerializer.Deserialize(source["Paused"]);
             var size = source["RenderSize"] != null ? (RenderSize?)this.renderSizeSerializer.Deserialize(source["RenderSize"]) : null;
@@ -133,7 +135,7 @@
             throw new NotImplementedException();
         }
 
-        private void ReadProjectPasses(JsonObject source, IProjectPassValidator validator, out IProjectPass imagePass, out IReadOnlyDictionary<string, IProjectPass> bufferPasses)
+        private void ReadProjectPasses(JsonObject source, IChannelBindingValidator validator, out IProjectPass imagePass, out IReadOnlyDictionary<string, IProjectPass> bufferPasses)
         {
             var serializer = JsonSerializerContext.Create(new ProjectPassCollectionJsonSerializer(PassKeyRegex(), validator, this.fileSystem));
             var dictionary = serializer.Deserialize(source);
@@ -146,7 +148,7 @@
             bufferPasses = dictionary.Where(pair => pair.Key != "Image").ToDictionary();
         }
 
-        private IEnumerable<IProjectViewerPass> ReadViewersPasses(JsonNode source, ProjectPassValidator passValidator)
+        private IEnumerable<IProjectViewerPass> ReadViewersPasses(JsonNode source, IChannelBindingValidator validator)
         {
             var viewerElement = source["Viewer"];
             var viewersListElement = source["Viewers"];
@@ -158,7 +160,7 @@
 
             if (viewerElement != null)
             {
-                return new[] { new ProjectViewerPass("Viewer", ReadViewerProgram("Viewer", viewerElement, passValidator)) };
+                return new[] { new ProjectViewerPass("Viewer", ReadViewerProgram("Viewer", viewerElement, validator)) };
             }
 
             if (viewersListElement != null)
@@ -176,7 +178,7 @@
                         }
 
                         var key = $"Viewer{index}";
-                        viewers.Add(new ProjectViewerPass(key, ReadViewerProgram(key, value, passValidator)));
+                        viewers.Add(new ProjectViewerPass(key, ReadViewerProgram(key, value, validator)));
                         index++;
                     }
                 }
@@ -189,7 +191,7 @@
                             throw new JsonSourceException($"A viewer program is expected at {property.Key}", viewersListElement);
                         }
 
-                        viewers.Add(new ProjectViewerPass(property.Key, ReadViewerProgram(property.Key, property.Value, passValidator)));
+                        viewers.Add(new ProjectViewerPass(property.Key, ReadViewerProgram(property.Key, property.Value, validator)));
                     }
                 }
                 else
@@ -203,7 +205,7 @@
             return Array.Empty<IProjectViewerPass>();
         }
 
-        private IProjectProgram ReadViewerProgram(string name, JsonNode jsonNode, IProjectPassValidator validator)
+        private IProjectProgram ReadViewerProgram(string name, JsonNode jsonNode, IChannelBindingValidator validator)
         {
             var serializer = JsonSerializerContext.Create(new ProjectProgramJsonSerializer(name, false, validator, this.fileSystem));
             return serializer.Deserialize(jsonNode);
@@ -230,9 +232,22 @@
                 this.fileSystem.TryReadText(Path.GetFileNameWithoutExtension(this.projectPath) + ".uniforms.json");
         }
 
-        private static string[] GetPassesKeys(JsonNode jsonNode)
+        private IChannelBindingValidator GetChannelBindingValidator(JsonNode jsonNode)
         {
-            return jsonNode.AsObject().Where(property => PassKeyRegex().IsMatch(property.Key)).Select(property => property.Key).ToArray();
+            var validator = new ChannelBindingValidator();
+            foreach (var property in jsonNode.AsObject().Where(property => PassKeyRegex().IsMatch(property.Key)))
+            {
+                var outputsSource = property.Value?.GetValueKind() == JsonValueKind.Object ? property.Value["Outputs"] : null;
+                var outputs = outputsSource != null ? this.intSerializer.Deserialize(outputsSource) : 1;
+                if (outputs < 1 || outputs > 8)
+                {
+                    throw new JsonSourceException($"Output textures count should be between 1 and 8", outputsSource!);
+                }
+
+                validator.AddFramebufferDefinition(property.Key, outputs);
+            }
+
+            return validator;
         }
 
         [GeneratedRegex("^(?<key>Image|(Buffer([0-9]+|[A-Z])))$")]

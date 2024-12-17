@@ -5,6 +5,7 @@
         private readonly IApplication application;
         private readonly IApplicationInputs inputs;
         private readonly IMenuResourcesFactory resources;
+        private readonly IProjectSource? project;
 
         private readonly RecentProjectsMenuSource recentProjectsMenuSource;
         private readonly ProjectFilesMenuSource projectFilesMenuSource;
@@ -22,12 +23,13 @@
             this.application = application;
             this.inputs = inputs;
             this.resources = resources;
+            this.project = project;
 
             this.recentProjectsMenuSource = new RecentProjectsMenuSource(application, inputs, resources);
             this.projectFilesMenuSource = new ProjectFilesMenuSource(application, inputs, resources, project);
             this.exportMenuSource = new ExportMenuSource(application, commands, theme);
             this.copyMenuSource = new CopyMenuSource(application, inputs, selectionSource, theme);
-            this.buffersMenuSource = new BuffersMenuSource(application, inputs, project);
+            this.buffersMenuSource = new BuffersMenuSource(application, inputs, project, theme);
             this.resolutionMenuSource = new ResolutionMenuSource(application, commands);
             this.frameRateMenuSource = new FrameRateMenuSource(application, commands);
             this.speedMenuSource = new SpeedMenuSource(application, commands);
@@ -44,7 +46,7 @@
             builder.AddSeparator();
             builder.AddItem("Uniforms", this.inputs.Uniforms, this.resources.CreateUniformsIcon(), null, this.application.ToggleUniformsView, state => state.IsVisible = this.application.IsFullyLoaded);
             builder.AddSeparator();
-            builder.AddSubmenu(this.buffersMenuSource, "Buffer", this.inputs.MenuBuffers, this.resources.CreateBuffersIcon(), null, state => state.SetIsChanged(this.application.ViewerBuffersCount > 0 && this.application.ViewerBufferIndex != this.application.ViewerBuffersCount - 1).SetIsVisible(this.application.IsFullyLoaded), () => this.application.ViewerBufferIndex = this.application.ViewerBuffersCount - 1);
+            builder.AddSubmenu(this.buffersMenuSource, "Buffer", this.inputs.MenuBuffers, this.resources.CreateBuffersIcon(), null, state => state.SetIsChanged(this.project?.Passes.Count > 0 && this.application.ViewerBufferIndex != project?.Passes.Count - 1).SetIsVisible(this.application.IsFullyLoaded), () => this.application.SetViewerBufferIndex(project?.Passes.Count - 1 ?? 0, 0));
             builder.AddSubmenu(this.resolutionMenuSource, "Resolution", this.inputs.MenuResolution, this.resources.CreateResolutionIcon(), null, state => state.SetIsChanged(this.application.RenderDownscale != 1).SetIsVisible(this.application.IsFullyLoaded), () => this.application.RenderDownscale = 1);
             builder.AddSubmenu(this.frameRateMenuSource, "Frame Rate", this.inputs.MenuFrameRate, this.resources.CreateFrameRateIcon(), null, state => state.SetIsChanged(state.IsChanged = this.application.FrameRate != 1).SetIsVisible(this.application.IsFullyLoaded), () => this.application.FrameRate = 1);
             builder.AddSubmenu(this.speedMenuSource, "Speed", this.inputs.MenuSpeed, this.resources.CreateSpeedIcon(), null, state => state.SetIsChanged(this.application.Speed != 1).SetIsVisible(this.application.IsFullyLoaded), () => this.application.Speed = 1, true);

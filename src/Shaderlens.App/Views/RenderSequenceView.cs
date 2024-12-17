@@ -43,13 +43,13 @@ namespace Shaderlens.Views
         private readonly RenderSequenceProgressView progressView;
         private readonly RenderSequenceSettingsView settingsView;
         private string? projectPath;
+        private IProjectSource? projectSource;
         private IProjectSettings? projectSettings;
         private IRenderPipeline? pipeline;
         private RenderSequenceTask? renderTask;
         private bool reopenOnDialogClose;
         private bool resumePipelineOnComplete;
         private bool setAutoReloadOnComplete;
-        private string[]? buffersDisplayNames;
 
         public RenderSequenceView(Window window, IRenderThread renderThread, IDispatcherThread viewThread, IApplication application, IApplicationSettings settings, IApplicationTheme theme, SaveFileDialog saveFileDialog)
         {
@@ -96,14 +96,13 @@ namespace Shaderlens.Views
         public void SetProject(string? projectPath, IProjectSource? projectSource, IProjectSettings? projectSettings, IRenderPipeline? pipeline)
         {
             this.projectPath = projectPath;
+            this.projectSource = projectSource;
             this.projectSettings = projectSettings;
             this.pipeline = pipeline;
 
             if (projectSettings != null)
             {
-                this.buffersDisplayNames = projectSource?.Passes.Select(pass => pass.Program.DisplayName).ToArray() ?? Array.Empty<string>();
-
-                this.settingsView.SetProject(projectPath, this.buffersDisplayNames, projectSettings.RenderSequence.Value);
+                this.settingsView.SetProject(projectPath, projectSource, projectSettings.RenderSequence.Value);
             }
         }
 
@@ -157,7 +156,7 @@ namespace Shaderlens.Views
             this.settingsViewContainer.Visibility = Visibility.Visible;
             this.progressViewContainer.Visibility = Visibility.Collapsed;
 
-            this.settingsView.SetProject(this.projectPath, this.buffersDisplayNames!, this.projectSettings!.RenderSequence.Value);
+            this.settingsView.SetProject(this.projectPath, this.projectSource, this.projectSettings!.RenderSequence.Value);
         }
 
         private void OnPauseClicked(object? sender, EventArgs e)

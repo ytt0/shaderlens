@@ -12,6 +12,7 @@
         bool IsMousePressed { get; }
 
         int ViewerBufferIndex { get; }
+        int ViewerBufferTextureIndex { get; }
         float ViewerScale { get; }
         float ViewerOffsetX { get; }
         float ViewerOffsetY { get; }
@@ -29,6 +30,7 @@
         public bool IsMousePressed { get; set; }
 
         public int ViewerBufferIndex { get; set; }
+        public int ViewerBufferTextureIndex { get; set; }
         public float ViewerScale { get; set; }
         public float ViewerOffsetX { get; set; }
         public float ViewerOffsetY { get; set; }

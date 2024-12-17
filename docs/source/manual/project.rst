@@ -54,6 +54,8 @@ Pass Definition
 
     :Source: :ref:`Source definition<definition-source>` **(required)**.
     :Channel#: :ref:`Binding definition<definition-binding>` (where **#** is a number between 0 and 7).
+    :Outputs: Number of output textures (*integer*), default value is 1. |br|
+        Output textures can be accessed using :ref:`output variables<built-in-uniforms-outputs>`.
     :DisplayName: Pass display name (*string*).
     :DefaultViewer: A key (*string*) of a :ref:`Viewer Pass<definition-viewer-pass>` that should be selected by default. Viewers keys should match the :ref:`Project<definition-project>`'s **Viewers** object properties name.
     :IncludeCommon: Include common sources (*boolean*), the default value is :json:`true`.
@@ -94,8 +96,11 @@ Binding Definition
 ------------------
 - Can be a *string value*, one of:
 
-    - ``Image``, ``Buffer#`` - A defined pass framebuffer.
-    - ``Viewer`` - Current selected pass framebuffer (from the viewport menu: :menuselection:`Buffers --> ...`).
+    - ``Image``, ``Buffer#`` - A defined pass default output texture.
+
+        - For passes with multiple **Outputs**, a texture index can be added with square brackets (``Image[0-7]``, ``Buffer#[0-7]``).
+
+    - ``Viewer`` - Current selected pass texture (from the viewport menu: :menuselection:`Buffers --> ...`).
     - ``Keyboard`` - :doc:`A Keyboard Texture</appendix/keyboard-texture>`.
     - A path to an image file (with a supported extension).
 

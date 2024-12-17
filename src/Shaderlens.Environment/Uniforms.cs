@@ -39,5 +39,23 @@
         public static vec3 iViewerChannelResolution = default;
         public static Float iViewerScale = default;
         public static vec2 iViewerOffset = default;
+        // fragment outputs
+        public static vec4 FragColor0 =  default;
+        public static vec4 FragColor1 =  default;
+        public static vec4 FragColor2 =  default;
+        public static vec4 FragColor3 =  default;
+        public static vec4 FragColor4 =  default;
+        public static vec4 FragColor5 =  default;
+        public static vec4 FragColor6 =  default;
+        public static vec4 FragColor7 =  default;
+
+        public static image2D OutputTexture0 = default;
+        public static image2D OutputTexture1 = default;
+        public static image2D OutputTexture2 = default;
+        public static image2D OutputTexture3 = default;
+        public static image2D OutputTexture4 = default;
+        public static image2D OutputTexture5 = default;
+        public static image2D OutputTexture6 = default;
+        public static image2D OutputTexture7 = default;
     }
 }

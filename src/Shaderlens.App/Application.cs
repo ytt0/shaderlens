@@ -6,6 +6,7 @@ namespace Shaderlens
 
     public interface IApplication
     {
+        IProject? Project { get; }
         string? ProjectPath { get; }
         bool IsPartiallyLoaded { get; }
         bool IsFullyLoaded { get; }
@@ -14,8 +15,8 @@ namespace Shaderlens
         int FrameRate { get; set; }
         double Speed { get; set; }
         int RenderDownscale { get; set; }
-        int ViewerBufferIndex { get; set; }
-        int ViewerBuffersCount { get; }
+        int ViewerBufferIndex { get; }
+        int ViewerBufferTextureIndex { get; }
         ViewerPassSelection ViewerPass { get; set; }
 
         bool AlwaysOnTop { get; set; }
@@ -68,6 +69,7 @@ namespace Shaderlens
         void ExportSequence();
         void SetProjectChanged();
         void SetViewerTransform(double scale, double offsetX, double offsetY);
+        void SetViewerBufferIndex(int index, int textureIndex);
         void Help();
         bool ShowProjectCloseDialog();
         void OpenExternalPath(string filePath);
@@ -109,6 +111,7 @@ namespace Shaderlens
         private const string ProjectFolderDialogGuid = "6b90ccd2-ab5c-4e1e-a426-5e3519148d51";
         private const string FrameDialogGuid = "eedc5601-3586-4a68-b792-109ff237082f";
 
+        public IProject? Project { get { return this.project; } }
         public string? ProjectPath { get { return this.project?.Source.Path; } }
         public bool IsPartiallyLoaded { get { return this.project != null; } }
         public bool IsFullyLoaded { get { return this.project?.IsFullyLoaded == true; } }
@@ -158,24 +161,9 @@ namespace Shaderlens
             }
         }
 
-        private int viewerBufferIndex;
-        public int ViewerBufferIndex
-        {
-            get { return this.viewerBufferIndex; }
-            set
-            {
-                if (this.viewerBufferIndex != value)
-                {
-                    this.viewerBufferIndex = Math.Clamp(value, 0, this.ViewerBuffersCount - 1);
-                    this.pipeline?.SetViewerBufferIndex(this.viewerBufferIndex);
-                    this.pipeline?.SetViewerPass(this.viewerPasses![this.ViewerBufferIndex]);
-                    this.viewportView.SetViewerBufferSize(this.pipeline?.ViewerBufferWidth ?? 0, this.pipeline?.ViewerBufferHeight ?? 0);
-                    this.renderThread.RenderViewerFrame();
-                }
-            }
-        }
+        public int ViewerBufferIndex { get; private set; }
 
-        public int ViewerBuffersCount { get; private set; }
+        public int ViewerBufferTextureIndex { get; private set; }
 
         private ViewerPassSelection[]? viewerPasses;
         public ViewerPassSelection ViewerPass
@@ -183,7 +171,7 @@ namespace Shaderlens
             get { return this.viewerPasses != null ? this.viewerPasses[this.ViewerBufferIndex] : this.settings.DefaultViewerPass; }
             set
             {
-                if (this.viewerPasses != null && !Equals(this.viewerPasses[this.viewerBufferIndex], value))
+                if (this.viewerPasses != null && !Equals(this.viewerPasses[this.ViewerBufferIndex], value))
                 {
                     this.viewerPasses[this.ViewerBufferIndex] = value;
 
@@ -459,7 +447,7 @@ namespace Shaderlens
             this.renderDownscale = 1;
             this.frameRate = 1;
             this.speed = 1;
-            this.viewerBufferIndex = -1;
+            this.ViewerBufferIndex = -1;
             this.viewerPasses = Array.Empty<ViewerPassSelection>();
 
             this.SettingsPath = settings.Path!;
@@ -487,10 +475,10 @@ namespace Shaderlens
 
             this.renderThread.OnException += (sender, e) =>
             {
-                application.Dispatcher.InvokeAsync(() =>
+                this.application.Dispatcher.InvokeAsync(() =>
                 {
                     this.UnhandledException = e;
-                    application.Shutdown();
+                    this.application.Shutdown();
                 });
             };
 
@@ -546,6 +534,16 @@ namespace Shaderlens
         {
             this.pipeline?.SetViewerTransform(scale, offsetX, offsetY);
             this.renderThread?.RenderViewerFrame();
+        }
+
+        public void SetViewerBufferIndex(int index, int textureIndex)
+        {
+            this.ViewerBufferIndex = Math.Clamp(index, 0, this.project?.Source.Passes.Count - 1 ?? 0);
+            this.ViewerBufferTextureIndex = Math.Clamp(textureIndex, 0, this.project?.Source.Passes[index].Outputs - 1 ?? 0);
+            this.pipeline?.SetViewerBufferIndex(this.ViewerBufferIndex, this.ViewerBufferTextureIndex);
+            this.pipeline?.SetViewerPass(this.viewerPasses![this.ViewerBufferIndex]);
+            this.viewportView.SetViewerBufferSize(this.pipeline?.ViewerBufferWidth ?? 0, this.pipeline?.ViewerBufferHeight ?? 0);
+            this.renderThread.RenderViewerFrame();
         }
 
         public void SetMouseState(bool isDown)
@@ -912,14 +910,15 @@ namespace Shaderlens
         public ITextureBuffer? GetSelectedBufferTexture()
         {
             var pipeline = this.pipeline;
-            var bufferIndex = this.viewerBufferIndex;
+            var bufferIndex = this.ViewerBufferIndex;
+            var bufferTextureIndex = this.ViewerBufferTextureIndex;
 
             return pipeline == null ? null : this.renderThread.Dispatch(() =>
             {
                 pipeline.GetTextureSize(bufferIndex, out var width, out var height);
                 var buffer = new float[width * height * 4];
 
-                pipeline.GetTexture(bufferIndex, buffer);
+                pipeline.GetTexture(bufferIndex, bufferTextureIndex, buffer);
                 return new TextureBuffer(buffer, width, height);
             });
         }
@@ -1030,10 +1029,14 @@ namespace Shaderlens
                 this.uniformsView.SetContent(this.projectUniforms.Uniforms, project.Settings);
             }
 
-            this.ViewerBuffersCount = project.Source.Passes.Count;
-            if (this.viewerBufferIndex == -1 || this.viewerBufferIndex > this.ViewerBuffersCount - 1)
+            if (this.ViewerBufferIndex == -1 || this.ViewerBufferIndex > this.project.Source.Passes.Count - 1)
             {
-                this.viewerBufferIndex = this.ViewerBuffersCount - 1;
+                this.ViewerBufferIndex = this.project.Source.Passes.Count - 1;
+            }
+
+            if (this.ViewerBufferIndex == -1 || this.ViewerBufferTextureIndex >= this.project.Source.Passes[this.ViewerBufferIndex].Outputs)
+            {
+                this.ViewerBufferTextureIndex = 0;
             }
 
             this.viewerPasses = GetProjectViewerPasses(project.Source, this.projectSettings, this.settings.DefaultViewerPass);
@@ -1042,7 +1045,7 @@ namespace Shaderlens
             {
                 this.pipeline.SetViewportSize(this.viewportWidth, this.viewportHeight);
                 this.pipeline.SetRenderDownscale(this.renderDownscale);
-                this.pipeline.SetViewerBufferIndex(this.ViewerBufferIndex);
+                this.pipeline.SetViewerBufferIndex(this.ViewerBufferIndex, this.ViewerBufferTextureIndex);
                 this.pipeline.SetViewerPass(this.ViewerPass);
                 this.viewportView.SetViewerBufferSize(this.pipeline.ViewerBufferWidth, this.pipeline.ViewerBufferHeight);
 
@@ -1136,8 +1139,19 @@ namespace Shaderlens
             this.renderDownscale = 1;
             this.frameRate = 1;
             this.speed = 1;
-            this.viewerBufferIndex = this.ViewerBuffersCount - 1;
-            this.viewportView.ResetViewerTransform();
+            this.ViewerBufferIndex = (this.project?.Source.Passes.Count ?? 0) - 1;
+            this.ViewerBufferTextureIndex = 0;
+
+            if (this.IsFullyLoaded)
+            {
+                this.frameIndexSource.SetSpeed(this.speed);
+                this.renderThread.SetFrameRate(this.frameRate);
+                this.pipeline?.SetRenderDownscale(this.renderDownscale);
+                this.pipeline?.SetViewerBufferIndex(this.ViewerBufferIndex, this.ViewerBufferTextureIndex);
+                this.pipeline?.SetViewerPass(this.viewerPasses![this.ViewerBufferIndex]);
+                this.viewportView.SetViewerBufferSize(this.pipeline?.ViewerBufferWidth ?? 0, this.pipeline?.ViewerBufferHeight ?? 0);
+                this.viewportView.ResetViewerTransform();
+            }
         }
 
         private static ViewerPassSelection[] GetProjectViewerPasses(IProjectSource projectSource, IProjectSettings? projectSettings, ViewerPassSelection defaultViewerPass)

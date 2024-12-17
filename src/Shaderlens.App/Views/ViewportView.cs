@@ -1,8 +1,5 @@
 ﻿namespace Shaderlens.Views
 {
-    using System.Windows;
-    using Shaderlens.Presentation.Input;
-    using System.Windows.Data;
     using static WinApi;
 
     public interface IViewportView
@@ -299,7 +296,7 @@
             this.contextMenu = new MenuContainer(this, new ViewportMenuSource(this.application, this.inputs, this.commands, menuResources, this.menuCopyState, null, this.theme.Menu), this.theme.Menu);
             this.recentProjectsMenu = new MenuContainer(this, new HeaderedMenuSource(new RecentProjectsMenuSource(this.application, this.inputs, menuResources), "Open Recent", menuResources.CreateRecentIcon()), this.theme.Menu);
             this.projectFilesMenu = new MenuContainer(this, new HeaderedMenuSource(new ProjectFilesMenuSource(this.application, this.inputs, menuResources, null), "Project Files", menuResources.CreateFilesIcon()), this.theme.Menu);
-            this.buffersMenu = new MenuContainer(this, new HeaderedMenuSource(new BuffersMenuSource(this.application, inputs, null), "Buffers", menuResources.CreateBuffersIcon()), this.theme.Menu);
+            this.buffersMenu = new MenuContainer(this, new HeaderedMenuSource(new BuffersMenuSource(this.application, inputs, null, this.theme.Menu), "Buffers", menuResources.CreateBuffersIcon()), this.theme.Menu);
             this.exportMenu = new MenuContainer(this, new HeaderedMenuSource(new ExportMenuSource(this.application, this.commands, this.theme.Menu), "Export", menuResources.CreateExportIcon()), this.theme.Menu);
             this.copyMenu = new MenuContainer(this, new HeaderedMenuSource(new CopyMenuSource(this.application, this.inputs, this.menuCopyState, this.theme.Menu), "Copy", menuResources.CreateCopyIcon()), this.theme.Menu);
             this.resolutionMenu = new MenuContainer(this, new HeaderedMenuSource(new ResolutionMenuSource(this.application, this.commands), "Resolution", menuResources.CreateResolutionIcon()), this.theme.Menu);
@@ -372,7 +369,7 @@
             this.contextMenu = new MenuContainer(this, new ViewportMenuSource(this.application, this.inputs, this.commands, menuResources, this.menuCopyState, this.project.Source, this.theme.Menu), this.theme.Menu);
             this.recentProjectsMenu = new MenuContainer(this, new HeaderedMenuSource(new RecentProjectsMenuSource(this.application, this.inputs, menuResources), "Open Recent", menuResources.CreateRecentIcon()), this.theme.Menu);
             this.projectFilesMenu = new MenuContainer(this, new HeaderedMenuSource(new ProjectFilesMenuSource(this.application, this.inputs, menuResources, this.project.Source), "Project Files", menuResources.CreateFilesIcon()), this.theme.Menu);
-            this.buffersMenu = new MenuContainer(this, new HeaderedMenuSource(new BuffersMenuSource(this.application, this.inputs, this.project.Source), "Buffers", menuResources.CreateBuffersIcon()), this.theme.Menu);
+            this.buffersMenu = new MenuContainer(this, new HeaderedMenuSource(new BuffersMenuSource(this.application, this.inputs, this.project.Source, this.theme.Menu), "Buffers", menuResources.CreateBuffersIcon()), this.theme.Menu);
             this.viewerMenu = new MenuContainer(this, new HeaderedMenuSource(new ViewerMenuSource(this.application, this.commands, this.project.Source), "Viewer", menuResources.CreateBuffersIcon()), this.theme.Menu);
             this.copyMenu = new MenuContainer(this, new HeaderedMenuSource(new CopyMenuSource(this.application, this.inputs, this.menuCopyState, this.theme.Menu), "Copy", menuResources.CreateCopyIcon()), this.theme.Menu);
 

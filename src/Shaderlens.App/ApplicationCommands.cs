@@ -247,10 +247,10 @@
             this.SpeedIncrease = Add(commands, new Command(inputs.SpeedIncrease, () => application.Speed = Math.Min(1024, application.Speed * 2), null, IsFullyLoaded, true));
             this.SpeedDecrease = Add(commands, new Command(inputs.SpeedDecrease, () => application.Speed = Math.Max(1.0 / 1024, application.Speed / 2), null, IsFullyLoaded, true));
 
-            this.Buffer = Add(commands, inputs.Buffer.Select((inputSpan, index) => new Command(inputSpan, () => application.ViewerBufferIndex = index, () => application.ViewerBufferIndex == index, IsFullyLoaded)).ToArray());
-            this.BufferImage = Add(commands, new Command(inputs.BufferImage, () => application.ViewerBufferIndex = application.ViewerBuffersCount - 1, null, null));
-            this.BufferNext = Add(commands, new Command(inputs.BufferNext, () => application.ViewerBufferIndex++, null, IsFullyLoaded));
-            this.BufferPrevious = Add(commands, new Command(inputs.BufferPrevious, () => application.ViewerBufferIndex--, null, IsFullyLoaded));
+            this.Buffer = Add(commands, inputs.Buffer.Select((inputSpan, index) => new Command(inputSpan, () => ToggleViewerBufferTexureIndex(index), null, IsFullyLoaded)).ToArray());
+            this.BufferImage = Add(commands, new Command(inputs.BufferImage, () => ToggleViewerBufferTexureIndex(application.Project?.Source.Passes.Count - 1 ?? 0), null, null));
+            this.BufferNext = Add(commands, new Command(inputs.BufferNext, IncrementViewerBufferTextureIndex, null, IsFullyLoaded));
+            this.BufferPrevious = Add(commands, new Command(inputs.BufferPrevious, DecrementViewerBufferTextureIndex, null, IsFullyLoaded));
 
             this.ExportFrame = Add(commands, new Command(inputs.ExportFrame, application.ExportFrame, null, IsFullyLoaded));
             this.ExportFrameRepeat = Add(commands, new Command(inputs.ExportFrameRepeat, application.ExportFrameRepeat, null, () => application.IsFullyLoaded && application.SaveFramePath != null));
@@ -299,6 +299,63 @@
             if (path != null)
             {
                 this.application.OpenProject(path);
+            }
+        }
+
+        private void DecrementViewerBufferTextureIndex()
+        {
+            if (this.application.Project != null)
+            {
+                var textureIndex = this.application.ViewerBufferTextureIndex - 1;
+                var index = this.application.ViewerBufferIndex;
+
+                if (textureIndex < 0)
+                {
+                    if (index > 0)
+                    {
+                        index--;
+                        textureIndex = this.application.Project.Source.Passes[index].Outputs - 1;
+                    }
+                    else
+                    {
+                        textureIndex = 0;
+                    }
+                }
+
+                this.application.SetViewerBufferIndex(index, textureIndex);
+            }
+        }
+
+        private void IncrementViewerBufferTextureIndex()
+        {
+            if (this.application.Project != null)
+            {
+                var textureIndex = this.application.ViewerBufferTextureIndex + 1;
+                var index = this.application.ViewerBufferIndex;
+
+                if (textureIndex > this.application.Project.Source.Passes[index].Outputs - 1)
+                {
+                    if (index < this.application.Project.Source.Passes.Count - 1)
+                    {
+                        index++;
+                        textureIndex = 0;
+                    }
+                    else
+                    {
+                        textureIndex = this.application.Project.Source.Passes[index].Outputs - 1;
+                    }
+                }
+
+                this.application.SetViewerBufferIndex(index, textureIndex);
+            }
+        }
+
+        private void ToggleViewerBufferTexureIndex(int index)
+        {
+            if (index < this.application.Project?.Source.Passes.Count)
+            {
+                var textureIndex = this.application.ViewerBufferIndex == index ? (this.application.ViewerBufferTextureIndex + 1) % this.application.Project.Source.Passes[index].Outputs : 0;
+                this.application.SetViewerBufferIndex(index, textureIndex);
             }
         }
 

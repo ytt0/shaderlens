@@ -101,17 +101,19 @@
             public bool IsEmpty { get { return false; } }
 
             private readonly int channelIndex;
+            private readonly int bufferTextureIndex;
             private readonly BindingParametersSource bindingParameters;
 
-            public ImageFramebufferBindingSource(int channelIndex, BindingParametersSource bindingParameters)
+            public ImageFramebufferBindingSource(int channelIndex, int bufferTextureIndex, BindingParametersSource bindingParameters)
             {
                 this.channelIndex = channelIndex;
+                this.bufferTextureIndex = bufferTextureIndex;
                 this.bindingParameters = bindingParameters;
             }
 
             public void AddBinding(IChannelBindingBuilder builder)
             {
-                builder.SetImageFramebufferBinding(this.channelIndex, this.bindingParameters);
+                builder.SetImageFramebufferBinding(this.channelIndex, this.bufferTextureIndex, this.bindingParameters);
             }
         }
 
@@ -121,35 +123,37 @@
 
             private readonly int channelIndex;
             private readonly string key;
+            private readonly int bufferTextureIndex;
             private readonly BindingParametersSource bindingParameters;
 
-            public PassFramebufferBindingSource(int channelIndex, string key, BindingParametersSource bindingParameters)
+            public PassFramebufferBindingSource(int channelIndex, string key, int bufferTextureIndex, BindingParametersSource bindingParameters)
             {
                 this.channelIndex = channelIndex;
                 this.key = key;
+                this.bufferTextureIndex = bufferTextureIndex;
                 this.bindingParameters = bindingParameters;
             }
 
             public void AddBinding(IChannelBindingBuilder builder)
             {
-                builder.SetPassFramebufferBinding(this.channelIndex, this.key, this.bindingParameters);
+                builder.SetPassFramebufferBinding(this.channelIndex, this.key, this.bufferTextureIndex, this.bindingParameters);
             }
         }
 
-        private class ViewerFramebufferBindingSource : IChannelBindingSource
+        private class ViewerBufferBindingSource : IChannelBindingSource
         {
             public bool IsEmpty { get { return false; } }
 
             private readonly int channelIndex;
 
-            public ViewerFramebufferBindingSource(int channelIndex)
+            public ViewerBufferBindingSource(int channelIndex)
             {
                 this.channelIndex = channelIndex;
             }
 
             public void AddBinding(IChannelBindingBuilder builder)
             {
-                builder.SetViewerFramebufferBinding(this.channelIndex);
+                builder.SetViewerBufferBinding(this.channelIndex);
             }
         }
 
@@ -199,10 +203,10 @@
 
 
         private readonly int channelIndex;
-        private readonly IProjectPassValidator validator;
+        private readonly IChannelBindingValidator validator;
         private readonly IFileSystem fileSystem;
 
-        public ChannelBindingSourceJsonSerializer(int channelIndex, IProjectPassValidator validator, IFileSystem fileSystem)
+        public ChannelBindingSourceJsonSerializer(int channelIndex, IChannelBindingValidator validator, IFileSystem fileSystem)
         {
             this.channelIndex = channelIndex;
             this.validator = validator;
@@ -223,25 +227,25 @@
                     return new KeyboardBindingSource(this.channelIndex);
                 }
 
-                if (value == "Image")
-                {
-                    return new ImageFramebufferBindingSource(this.channelIndex, default);
-                }
-
                 if (value == "Viewer")
                 {
-                    return new ViewerFramebufferBindingSource(this.channelIndex);
+                    return new ViewerBufferBindingSource(this.channelIndex);
                 }
 
                 var match = PassKeyRegex().Match(value);
                 if (match.Success)
                 {
-                    if (!this.validator.PassDefined(value))
+                    var key = match.Groups["key"].Value;
+                    var index = match.Groups["index"].Success ? Int32.Parse(match.Groups["index"].Value) : 0;
+
+                    this.validator.Validate(key, index, sourceNode);
+
+                    if (key == "Image")
                     {
-                        throw new JsonSourceException($"{value} pass definition is missing", sourceNode);
+                        return new ImageFramebufferBindingSource(this.channelIndex, index, default);
                     }
 
-                    return new PassFramebufferBindingSource(this.channelIndex, value, default);
+                    return new PassFramebufferBindingSource(this.channelIndex, key, index, default);
                 }
 
                 return new TextureBindingSource(this.channelIndex, this.fileSystem.ReadBytes(value), default);
@@ -289,25 +293,25 @@
 
                 if (type == "Framebuffer" || type == null)
                 {
-                    if (source == "Image")
-                    {
-                        return new ImageFramebufferBindingSource(this.channelIndex, bindingParameters);
-                    }
-
                     if (source == "Viewer")
                     {
-                        return new ViewerFramebufferBindingSource(this.channelIndex);
+                        return new ViewerBufferBindingSource(this.channelIndex);
                     }
 
                     var match = PassKeyRegex().Match(source);
                     if (match.Success)
                     {
-                        if (!this.validator.PassDefined(source))
+                        var key = match.Groups["key"].Value;
+                        var index = match.Groups["index"].Success ? Int32.Parse(match.Groups["index"].Value) : 0;
+
+                        this.validator.Validate(key, index, sourceNode["Source"]!);
+
+                        if (key == "Image")
                         {
-                            throw new JsonSourceException($"{source} pass definition is missing", sourceNode["Source"]!);
+                            return new ImageFramebufferBindingSource(this.channelIndex, index, bindingParameters);
                         }
 
-                        return new PassFramebufferBindingSource(this.channelIndex, source, bindingParameters);
+                        return new PassFramebufferBindingSource(this.channelIndex, key, index, bindingParameters);
                     }
 
                     throw new JsonSourceException($"Framebuffer binding source value \"{source}\" is invalid, expected values are: Image, Buffer#, set Type to \"Texture\" to bind to a texture file", sourceNode["Source"]!);
@@ -357,16 +361,16 @@
                     throw new JsonSourceException($"Binding \"{name}\" {kind} value \"{sourceNode!.ToJsonString()}\" is invalid, a string value is expected", sourceNode);
         }
 
-        [GeneratedRegex("^Buffer(?<key>([0-9]+|[A-Z]))$")]
+        [GeneratedRegex("^(?<key>Image|(Buffer([0-9]+|[A-Z])))(\\[(?<index>[0-9]+)\\])?$")]
         private static partial Regex PassKeyRegex();
     }
 
     public partial class ChannelBindingSourceCollectionJsonSerializer : IJsonSerializer<IChannelBindingSource>
     {
-        private readonly IProjectPassValidator validator;
+        private readonly IChannelBindingValidator validator;
         private readonly IFileSystem fileSystem;
 
-        public ChannelBindingSourceCollectionJsonSerializer(IProjectPassValidator validator, IFileSystem fileSystem)
+        public ChannelBindingSourceCollectionJsonSerializer(IChannelBindingValidator validator, IFileSystem fileSystem)
         {
             this.validator = validator;
             this.fileSystem = fileSystem;

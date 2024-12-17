@@ -133,7 +133,7 @@
                 this.pipeline.PushState();
                 this.pipeline.ClearState();
                 this.pipeline.SetViewportSize(this.settings.RenderSize.Width, this.settings.RenderSize.Height);
-                this.pipeline.SetViewerBufferIndex(this.settings.BufferIndex);
+                this.pipeline.SetViewerBufferIndex(this.settings.BufferIndex, this.settings.BufferTextureIndex);
                 this.pipeline.SetViewerPass(ViewerPassSelection.None);
                 this.pipeline.SetRenderDownscale(1);
 
@@ -202,7 +202,7 @@
 
                     if (readFrame)
                     {
-                        this.pipeline.GetTexture(this.settings.BufferIndex, buffer);
+                        this.pipeline.GetTexture(this.settings.BufferIndex, this.settings.BufferTextureIndex, buffer);
                     }
 
                     if (writeFrame)

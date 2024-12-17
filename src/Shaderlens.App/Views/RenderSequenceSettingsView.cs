@@ -8,7 +8,7 @@ namespace Shaderlens.Views
 
         FrameworkElement Content { get; }
 
-        void SetProject(string? projectPath, IEnumerable<string> buffersDisplayNames, RenderSequenceSettings settings);
+        void SetProject(string? projectPath, IProjectSource? projectSource, RenderSequenceSettings settings);
         void SetDragSensitivity(double dragSensitivity);
         RenderSequenceSettings GetSettings();
     }
@@ -61,6 +61,20 @@ namespace Shaderlens.Views
             }
         }
 
+        private class BufferItem
+        {
+            public string DisplayName { get; }
+            public int BufferIndex { get; }
+            public int BufferTextureIndex { get; }
+
+            public BufferItem(string displayName, int bufferIndex, int bufferTextureIndex)
+            {
+                this.DisplayName = displayName;
+                this.BufferIndex = bufferIndex;
+                this.BufferTextureIndex = bufferTextureIndex;
+            }
+        }
+
         private static readonly Thickness Spacing = new Thickness(10, 5, 10, 5);
         private static readonly Thickness RowSpacing = new Thickness(0, 0, 0, 5);
         private const int ColumnWidth = 100;
@@ -99,7 +113,6 @@ namespace Shaderlens.Views
         private bool pathsValidated;
         private bool isValid;
         private bool pathsExist;
-        private int buffersCount;
 
         public RenderSequenceSettingsView(Window window, IApplicationTheme theme, IEnumerable<string> supportedExtensions, SaveFileDialog saveFileDialog)
         {
@@ -224,14 +237,7 @@ namespace Shaderlens.Views
             }.
             WithHandler(ButtonBase.ClickEvent, (sender, e) => ValidateValues());
 
-            this.bufferComboBox = new StyledComboBox(theme) { Margin = Spacing, SelectedIndex = 0 }.WithItems
-            (
-                new StyledComboBoxItem(theme) { Content = "Image" },
-                new StyledComboBoxItem(theme) { Content = "Buffer4" },
-                new StyledComboBoxItem(theme) { Content = "Buffer3" },
-                new StyledComboBoxItem(theme) { Content = "Buffer2" },
-                new StyledComboBoxItem(theme) { Content = "Buffer1" }
-            );
+            this.bufferComboBox = new StyledComboBox(theme) { Margin = Spacing, DisplayMemberPath = nameof(BufferItem.DisplayName) };
 
             this.startPathRun = new Run();
             this.endPathRun = new Run();
@@ -328,7 +334,7 @@ namespace Shaderlens.Views
             this.isInitialized = true;
         }
 
-        public void SetProject(string? projectPath, IEnumerable<string> buffersDisplayNames, RenderSequenceSettings settings)
+        public void SetProject(string? projectPath, IProjectSource? projectSource, RenderSequenceSettings settings)
         {
             var projectChanged = this.projectPath == projectPath;
 
@@ -344,15 +350,31 @@ namespace Shaderlens.Views
             this.overridePathCheckBox.IsChecked = this.overridePathCheckBox.IsChecked == true && !projectChanged;
             this.relativeIndexCheckBox.IsChecked = settings.RelativeIndex;
 
-            this.buffersCount = buffersDisplayNames.Count();
-            this.bufferComboBox.Items.Clear();
+            this.bufferComboBox.ItemsSource = null;
 
-            foreach (var bufferName in buffersDisplayNames.Reverse())
+            if (projectSource != null)
             {
-                this.bufferComboBox.Items.Add(new StyledComboBoxItem(this.theme) { Content = bufferName });
-            }
+                var items = new List<BufferItem>();
 
-            this.bufferComboBox.SelectedIndex = 0;
+                for (var i = projectSource.Passes.Count - 1; i >= 0; i--)
+                {
+                    var pass = projectSource.Passes[i];
+                    if (pass.Outputs == 1)
+                    {
+                        items.Add(new BufferItem(pass.Program.DisplayName, i, 0));
+                    }
+                    else
+                    {
+                        for (var j = 0; j < pass.Outputs; j++)
+                        {
+                            items.Add(new BufferItem($"{pass.Program.DisplayName} - Output {j}", i, j));
+                        }
+                    }
+                }
+
+                this.bufferComboBox.ItemsSource = items;
+                this.bufferComboBox.SelectedIndex = items.IndexOf(item => item.BufferIndex == settings.BufferIndex && item.BufferTextureIndex == settings.BufferTextureIndex);
+            }
 
             ValidatePaths();
             this.window.Dispatcher.InvokeAsync(ValidateValues, DispatcherPriority.Render);
@@ -362,7 +384,7 @@ namespace Shaderlens.Views
         {
             var targetPath = this.locationTextBox.Text;
             var overridePath = this.overridePathCheckBox.IsChecked == true;
-            var bufferIndex = this.buffersCount - this.bufferComboBox.SelectedIndex - 1;
+            var selection = this.bufferComboBox.SelectedValue as BufferItem;
             var size = new RenderSize((int)this.widthTextBox.Value, (int)this.heightTextBox.Value);
             var frameRate = (int)this.frameRateTextBox.Value;
             var startFrame = (int)this.startFrameTextBox.Value;
@@ -370,7 +392,7 @@ namespace Shaderlens.Views
             var prerender = this.prerenderCheckBox.IsChecked == true;
             var relativeIndex = this.relativeIndexCheckBox.IsChecked == true;
 
-            return new RenderSequenceSettings(targetPath, bufferIndex, frameRate, frameCount, startFrame, size, prerender, overridePath, relativeIndex);
+            return new RenderSequenceSettings(targetPath, selection?.BufferIndex ?? 0, selection?.BufferTextureIndex ?? 0, frameRate, frameCount, startFrame, size, prerender, overridePath, relativeIndex);
         }
 
         private void OnRenderClicked(object sender, RoutedEventArgs e)
@@ -380,7 +402,7 @@ namespace Shaderlens.Views
 
             if (this.isValid)
             {
-                var bufferIndex = this.buffersCount - this.bufferComboBox.SelectedIndex - 1;
+                var selection = (BufferItem)this.bufferComboBox.SelectedValue;
 
                 RenderClicked?.Invoke(this, EventArgs.Empty);
 
