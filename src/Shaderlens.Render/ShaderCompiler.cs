@@ -51,28 +51,22 @@
                 }
                 else
                 {
-                    if (!resources.TryGetResource<IRenderResource>(source.Vertex.ResourceKey, out var vertexStage))
-                    {
-                        vertexStage = CompileProgramStage(GL_VERTEX_SHADER, source.Vertex, logger);
-                        resources.AddResource(source.Vertex.ResourceKey, vertexStage);
-                    }
-
-                    if (!resources.TryGetResource<IRenderResource>(source.Fragment.ResourceKey, out var fragmentStage))
-                    {
-                        fragmentStage = CompileProgramStage(GL_FRAGMENT_SHADER, source.Fragment, logger);
-                        resources.AddResource(source.Fragment.ResourceKey, fragmentStage);
-                    }
+                    var vertexStage = CreateStageShader(source.Vertex, GL_VERTEX_SHADER, resources, logger);
+                    var fragmentStage = CreateStageShader(source.Fragment, GL_FRAGMENT_SHADER, resources, logger);
+                    var computeStage = CreateStageShader(source.Compute, GL_COMPUTE_SHADER, resources, logger);
 
                     logger.SetState("Link", displayName);
 
-                    glAttachShader(programId, vertexStage.Id);
-                    glAttachShader(programId, fragmentStage.Id);
+                    AttachShader(programId, vertexStage);
+                    AttachShader(programId, fragmentStage);
+                    AttachShader(programId, computeStage);
 
                     glLinkProgram(programId);
                     var linkStatus = GetProgramLinkStatus(programId);
 
-                    glDetachShader(programId, vertexStage.Id);
-                    glDetachShader(programId, fragmentStage.Id);
+                    DetachShader(programId, vertexStage);
+                    DetachShader(programId, fragmentStage);
+                    DetachShader(programId, computeStage);
 
                     if (linkStatus != null)
                     {
@@ -95,9 +89,26 @@
                 }
 
                 program = new ProgramResource(this.threadAccess, programId);
+
                 buildScope.SetResource(program);
                 return program;
             }
+        }
+
+        private IRenderResource? CreateStageShader(IProgramStageSource? stageSource, int shaderType, IProjectResources resources, IProjectLoadLogger logger)
+        {
+            if (stageSource == null)
+            {
+                return null;
+            }
+
+            if (!resources.TryGetResource<IRenderResource>(stageSource.ResourceKey, out var stageShader))
+            {
+                stageShader = CompileProgramStage(shaderType, stageSource, logger);
+                resources.AddResource(stageSource.ResourceKey, stageShader);
+            }
+
+            return stageShader;
         }
 
         private ShaderResource CompileProgramStage(int shaderType, IProgramStageSource stageSource, IProjectLoadLogger logger)
@@ -117,6 +128,22 @@
             }
 
             return new ShaderResource(this.threadAccess, shaderId);
+        }
+
+        private static void AttachShader(uint programId, IRenderResource? shader)
+        {
+            if (shader != null)
+            {
+                glAttachShader(programId, shader.Id);
+            }
+        }
+
+        private static void DetachShader(uint programId, IRenderResource? shader)
+        {
+            if (shader != null)
+            {
+                glDetachShader(programId, shader.Id);
+            }
         }
 
         private static string? GetShaderCompileStatus(uint shader)

@@ -9,3 +9,4 @@ Appendix
     built-in-uniforms
     project-templates
     viewer-template
+    compute-shader-template

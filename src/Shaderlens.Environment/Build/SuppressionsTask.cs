@@ -10,7 +10,8 @@ namespace Shaderlens
     {
         private static readonly Regex NamespaceRegex = new Regex("\\bnamespace\\s+(?<name>[\\w.]+)");
         private static readonly Regex ClassRegex = new Regex("\\bclass\\s+(?<name>[\\w]+)");
-        private static readonly Regex MainMethodRegex = new Regex("\\bvoid\\s+mainImage\\b");
+        private static readonly Regex MainMethodRegex = new Regex("\\bvoid\\s+main\\b");
+        private static readonly Regex MainImageMethodRegex = new Regex("\\bvoid\\s+mainImage\\b");
         private static readonly Regex UniformLineAnnotationRegex = new Regex("^\\s*//@\\s*uniform(\\s|,|$)");
         private static readonly Regex FieldDeclarationRegex = new Regex("^\\s*((public|private|internal|static|readonly|const)\\s+)*(?<type>\\w+)\\s+(?<name>\\w+)");
 
@@ -48,6 +49,12 @@ namespace Shaderlens
                     }
 
                     if (MainMethodRegex.IsMatch(line))
+                    {
+                        suppressionContent.AppendLine($"[assembly: SuppressMessage(\"CodeQuality\", \"IDE0051:Remove unused private members\", Scope = \"member\", Target = \"~M:{containingNamespace}.{containingClass}.main()\")]");
+                        suppressionContent.AppendLine($"[assembly: SuppressMessage(\"Style\", \"IDE0060:Remove unused parameter\", Scope = \"member\", Target = \"~M:{containingNamespace}.{containingClass}.main()\")]");
+                    }
+
+                    if (MainImageMethodRegex.IsMatch(line))
                     {
                         suppressionContent.AppendLine($"[assembly: SuppressMessage(\"CodeQuality\", \"IDE0051:Remove unused private members\", Scope = \"member\", Target = \"~M:{containingNamespace}.{containingClass}.mainImage(Shaderlens.vec4@,Shaderlens.vec2@)\")]");
                         suppressionContent.AppendLine($"[assembly: SuppressMessage(\"Style\", \"IDE0060:Remove unused parameter\", Scope = \"member\", Target = \"~M:{containingNamespace}.{containingClass}.mainImage(Shaderlens.vec4@,Shaderlens.vec2@)\")]");

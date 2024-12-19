@@ -34,8 +34,7 @@
 
         public void LogLinkingErrors(IProjectLoadLogger logger, IProgramSource programSource, string status)
         {
-            var isVertexError = true;
-            var isFragmentError = true;
+            SourceLines? sourceLines = null;
 
             foreach (var line in status.Trim().SplitLines())
             {
@@ -46,22 +45,21 @@
 
                 if (line == "Vertex info")
                 {
-                    isVertexError = true;
-                    isFragmentError = false;
+                    sourceLines = programSource.Vertex?.SourceLines;
                     continue;
                 }
 
                 if (line == "Fragment info")
                 {
-                    isFragmentError = true;
-                    isVertexError = false;
+                    sourceLines = programSource.Fragment?.SourceLines;
                     continue;
                 }
 
-                var sourceLines =
-                    isFragmentError ? programSource.Fragment.SourceLines :
-                    isVertexError ? programSource.Vertex.SourceLines :
-                    null;
+                if (line == "Compute info")
+                {
+                    sourceLines = programSource.Compute?.SourceLines;
+                    continue;
+                }
 
                 if (sourceLines != null && TryParseStatusLine(line, sourceLines, out var message, out var lineIndex))
                 {

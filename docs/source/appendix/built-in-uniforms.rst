@@ -66,10 +66,16 @@ Viewer Uniforms
 
 .. _built-in-uniforms-outputs:
 
-Output Variables
-----------------
+Output Uniforms / Variables
+---------------------------
 
-:glsl:`out vec4 FragColor#` (where **#** is a number between 0 and 7)
-    :glsl:`FragColor0` is set automatically to the :glsl:`mainImage` output variable :glsl:`fragColor`.
+Fragment Shader
+    :glsl:`out vec4 FragColor#` (where **#** is a number between 0 and 7)
+        :glsl:`FragColor0` is set automatically to the :glsl:`mainImage` output variable :glsl:`fragColor`.
+
+Compute Shader
+    :glsl:`writeonly image2D OutputTexture#` (where **#** is a number between 0 and 7)
+        Compute shader outputs can be set using :glsl:`imageStore` (for example:|br|
+        :glsl:`imageStore(OutputTexture0, texelCoord, vec4(1.0))`).
 
 By default only one texture is assigned, for additional textures the :ref:`Pass Outputs<definition-pass>` property can be set.

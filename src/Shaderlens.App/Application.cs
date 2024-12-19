@@ -372,7 +372,8 @@ namespace Shaderlens
             this.fileMonitor.Changed += OnProjectFileChanged;
             this.programSourceFactory = new ProgramSourceFactory(this.hashSource,
                 CreateSourceLines(this.settings.VertexHeader + Environment.NewLine, nameof(this.settings.VertexHeader) + " (settings)"),
-                CreateSourceLines(this.settings.FragmentHeader + Environment.NewLine, nameof(this.settings.FragmentHeader) + " (settings)"));
+                CreateSourceLines(this.settings.FragmentHeader + Environment.NewLine, nameof(this.settings.FragmentHeader) + " (settings)"),
+                CreateSourceLines(this.settings.ComputeHeader + Environment.NewLine, nameof(this.settings.ComputeHeader) + " (settings)"));
             this.csharpTransformer = CSharpTransformer.Instance;
             this.textureWriterFactory = new TextureWriterFactory();
 

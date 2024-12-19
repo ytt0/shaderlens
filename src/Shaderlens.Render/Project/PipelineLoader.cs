@@ -52,8 +52,8 @@
                 viewerPrograms.Add(viewer.Key, viewerProgram);
             }
 
-            var clearViewerPass = CreateProgram("Clear Viewer", this.programSourceFactory.Create(this.viewerSourceLines.Clear), framebuffers, ChannelBindingSource.Empty, Uniform.Empty, shaderCache, resources, logger);
-            var valuesOverlayViewerPass = CreateProgram("Values Overlay Viewer", this.programSourceFactory.Create(this.viewerSourceLines.ValuesOverlay), framebuffers, ChannelBindingSource.Empty, Uniform.Empty, shaderCache, resources, logger);
+            var clearViewerPass = CreateProgram("Clear Viewer", this.programSourceFactory.CreateFragment(this.viewerSourceLines.Clear), framebuffers, ChannelBindingSource.Empty, Uniform.Empty, null, null, shaderCache, resources, logger);
+            var valuesOverlayViewerPass = CreateProgram("Values Overlay Viewer", this.programSourceFactory.CreateFragment(this.viewerSourceLines.ValuesOverlay), framebuffers, ChannelBindingSource.Empty, Uniform.Empty, null, null, shaderCache, resources, logger);
             var viewerPassCollection = new ViewerPassCollection(clearViewerPass, valuesOverlayViewerPass, viewerPrograms);
 
             var resourceKey = new TypedResourceKey(typeof(IFramebufferResource), "ViewerCopy");
@@ -91,19 +91,19 @@
             return framebuffer;
         }
 
-        private RenderProgram LoadRenderProgam(IProjectSource project, IProjectPass pass, IChannelBindingSource defaultBinding, IPassCollection<IReadWriteFramebufferResources> framebuffers, IUniform uniforms, IShaderCache shaderCache, IProjectResources resources, IProjectLoadLogger logger)
+        private IRenderProgram LoadRenderProgam(IProjectSource project, IProjectPass pass, IChannelBindingSource defaultBinding, IPassCollection<IReadWriteFramebufferResources> framebuffers, IUniform uniforms, IShaderCache shaderCache, IProjectResources resources, IProjectLoadLogger logger)
         {
             var passProgramSource = CreateProgramSource(pass.Program, project.Common);
             return CreateProgram(pass.Program, defaultBinding, passProgramSource, framebuffers, uniforms, shaderCache, resources, logger);
         }
 
-        private RenderProgram CreateProgram(IProjectProgram renderProgram, IChannelBindingSource defaultBinding, IProgramSource programSource, IPassCollection<IReadWriteFramebufferResources> framebuffers, IUniform uniforms, IShaderCache shaderCache, IProjectResources resources, IProjectLoadLogger logger)
+        private IRenderProgram CreateProgram(IProjectProgram renderProgram, IChannelBindingSource defaultBinding, IProgramSource programSource, IPassCollection<IReadWriteFramebufferResources> framebuffers, IUniform uniforms, IShaderCache shaderCache, IProjectResources resources, IProjectLoadLogger logger)
         {
             var binding = !renderProgram.Binding.IsEmpty ? renderProgram.Binding : defaultBinding;
-            return CreateProgram(renderProgram.DisplayName, programSource, framebuffers, binding, uniforms, shaderCache, resources, logger);
+            return CreateProgram(renderProgram.DisplayName, programSource, framebuffers, binding, uniforms, renderProgram.WorkGroupSize, renderProgram.WorkGroups, shaderCache, resources, logger);
         }
 
-        private RenderProgram CreateProgram(string displayName, IProgramSource programSource, IPassCollection<IReadWriteFramebufferResources> framebuffers, IChannelBindingSource binding, IUniform uniforms, IShaderCache shaderCache, IProjectResources resources, IProjectLoadLogger logger)
+        private IRenderProgram CreateProgram(string displayName, IProgramSource programSource, IPassCollection<IReadWriteFramebufferResources> framebuffers, IChannelBindingSource binding, IUniform uniforms, Vector<int>? workGroupSize, Vector<int>? workGroups, IShaderCache shaderCache, IProjectResources resources, IProjectLoadLogger logger)
         {
             logger.SetState(displayName);
 
@@ -119,7 +119,9 @@
                 new RenderContextUniformBinding(this.threadAccess, program.Id),
                 uniforms.CreateBinding(program.Id));
 
-            return new RenderProgram(this.threadAccess, program, uniformBindings, this.vertexArray, displayName);
+            return programSource.Compute != null ?
+                new ComputeRenderProgram(this.threadAccess, program, uniformBindings, workGroupSize, workGroups, displayName) :
+                new FragmentRenderProgram(this.threadAccess, program, uniformBindings, this.vertexArray, displayName);
         }
 
         private IProgramSource CreateProgramSource(IProjectProgram program, IProjectProgramSource commonSource)
@@ -127,7 +129,12 @@
             var common = program.IncludeCommonSource ? GetSourceLines(commonSource) : SourceLines.Empty;
             var source = GetSourceLines(program.Source);
 
-            return this.programSourceFactory.Create(common, source);
+            switch (program.Type)
+            {
+                case ProjectProgramType.Fragment: return this.programSourceFactory.CreateFragment(common, source);
+                case ProjectProgramType.Compute: return this.programSourceFactory.CreateCompute(common, source, program.WorkGroupSize ?? Vector.Create(3, 1));
+                default: throw new NotSupportedException($"Unexpected {nameof(ProjectProgramType)} \"{program.Type}\"");
+            }
         }
 
         private SourceLines GetSourceLines(IProjectProgramSource resources)

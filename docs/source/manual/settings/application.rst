@@ -13,6 +13,11 @@ FragmentHeader (*string*)
 
     :Default: ``"#version 450"``.
 
+ComputeHeader (*string*)
+    Compute shader code header, defines the shading language version.
+
+    :Default: ``"#version 450"``.
+
 InactivityPauseSeconds (*integer*)
     Number of second used by the viewport menu :menuselection:`Options --> Pause On Inactivity` option.
 

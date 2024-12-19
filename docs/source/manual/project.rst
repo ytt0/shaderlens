@@ -53,14 +53,17 @@ Pass Definition
 - Can be an *object* with the following properties:
 
     :Source: :ref:`Source definition<definition-source>` **(required)**.
+    :Type: Shader type (*string*), can be **Fragment** (default), or **Compute** (:doc:`example</appendix/compute-shader-template>`).
     :Channel#: :ref:`Binding definition<definition-binding>` (where **#** is a number between 0 and 7).
     :Outputs: Number of output textures (*integer*), default value is 1. |br|
-        Output textures can be accessed using :ref:`output variables<built-in-uniforms-outputs>`.
+        Output textures can be accessed using :ref:`output uniforms / variables<built-in-uniforms-outputs>`.
     :DisplayName: Pass display name (*string*).
     :DefaultViewer: A key (*string*) of a :ref:`Viewer Pass<definition-viewer-pass>` that should be selected by default. Viewers keys should match the :ref:`Project<definition-project>`'s **Viewers** object properties name.
     :IncludeCommon: Include common sources (*boolean*), the default value is :json:`true`.
     :RenderSize: :ref:`RenderSize definition<definition-render-size>`.
     :Scalable: :ref:`Scalable definition<definition-scalable>`.
+    :WorkGroups: :ref:`WorkGroups definition<definition-work-groups>` (for Compute shaders).
+    :WorkGroupSize: :ref:`WorkGroupSize definition<definition-work-group-size>` (for Compute shaders).
 
 .. _definition-viewer-pass:
 
@@ -135,3 +138,22 @@ Scalable Definition
 -------------------
 A *boolean value*, allows :ref:`RenderSize<definition-render-size>`, if specified, to be downscaled when selecting a lower viewer resolution (from the viewport menu: :menuselection:`Resolution --> ...`), the default value is :json:`false`. |br|
 When specified at project level, defines a default behavior for all the passes.
+
+.. _definition-work-groups:
+
+WorkGroups Definition
+---------------------
+A *string value* of the format ``"<x>, <y> [, <z>]"`` (for example ``"20, 10"``), defines the number of compute work groups that should be dispatched for a Compute shader.
+
+When not specified, the number is relative to the buffer and the group size:|br|
+:glsl:`(ceil(RenderSize / WorkGroupSize.xy), 1)`.
+
+The value is accessible by the shader using the :glsl:`gl_NumWorkGroups` built-in input variable.
+
+.. _definition-work-group-size:
+
+WorkGroupSize Definition
+------------------------
+A *string value* of the format ``"<x>, <y> [, <z>]"`` (for example ``"8, 8"``), defines the compute work group size ("local size"), the default value is :json:`"1, 1, 1"`.
+
+The value is accessible by the shader using the :glsl:`gl_WorkGroupSize` built-in input variable.

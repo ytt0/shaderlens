@@ -9,7 +9,7 @@
             return text.Split(LineSeperator, StringSplitOptions.None);
         }
 
-        public static string JoinLines(this IEnumerable<string> lines)
+        public static string JoinLines(this IEnumerable<string?> lines)
         {
             return String.Join(Environment.NewLine, lines);
         }

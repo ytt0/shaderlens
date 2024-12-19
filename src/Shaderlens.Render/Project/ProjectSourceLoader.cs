@@ -27,7 +27,7 @@
             if (IsImageOnlyProject(projectKey))
             {
                 var imageProgramSource = new ProjectProgramSource(projectResource != null ? new[] { projectResource } : new[] { new FileResource<string>(projectKey, String.Empty) });
-                var imageProgram = new ProjectPass("Image", 1, new ProjectProgram("Image", imageProgramSource, ChannelBindingSource.Empty, false), null, null, null);
+                var imageProgram = new ProjectPass("Image", 1, new ProjectProgram(ProjectProgramType.Fragment, "Image", imageProgramSource, ChannelBindingSource.Empty, false, null, null), null, null, null);
 
                 projectResource = null;
                 passes = new PassCollection<IProjectPass>(imageProgram);
@@ -55,7 +55,7 @@
         private static ProjectSource LoadImageOnlyProject(IFileResource<string> projectResource, IFileSystem fileSystem)
         {
             var imageProgramSource = new ProjectProgramSource(new[] { projectResource });
-            var imageProgram = new ProjectPass("Image", 1, new ProjectProgram("Image", imageProgramSource, ChannelBindingSource.Empty, false), null, null, null);
+            var imageProgram = new ProjectPass("Image", 1, new ProjectProgram(ProjectProgramType.Fragment, "Image", imageProgramSource, ChannelBindingSource.Empty, false, null, null), null, null, null);
 
             return new ProjectSource(false, projectResource.Key.AbsolutePath, null,
                 GetDefaultProjectSettingsSource(projectResource.Key.AbsolutePath, fileSystem),

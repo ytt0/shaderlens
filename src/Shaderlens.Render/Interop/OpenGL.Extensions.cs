@@ -9,6 +9,9 @@
         public const int GL_DEBUG_SOURCE_APPLICATION = 0x824A;
         public const int GL_DEBUG_SOURCE_THIRD_PARTY = 0x8249;
         public const int GL_NUM_SHADING_LANGUAGE_VERSIONS = 0x82E9;
+        public const int GL_COMPUTE_SHADER = 0x91B9;
+
+        public const uint GL_SHADER_IMAGE_ACCESS_BARRIER_BIT = 0x00000020;
 
         [DllImport("opengl32.dll")]
         public static extern IntPtr wglCreateContext(IntPtr hWnd);
@@ -40,10 +43,22 @@
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         private delegate bool PFNWGLSWAPINTERVALEXTPROC(int interval);
 
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        private delegate void PFNGLDISPATCHCOMPUTEPROC(uint num_groups_x, uint num_groups_y, uint num_groups_z);
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        private delegate void PFNGLBINDIMAGETEXTUREPROC(uint unit, uint texture, int level, bool layered, int layer, int access, int format);
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        private delegate void PFNGLMEMORYBARRIERPROC(uint barriers);
+
         private static PFNGLGETPROGRAMBINARYPROC? _glGetProgramBinary;
         private static PFNGLPROGRAMBINARYPROC? _glProgramBinary;
         private static PFNGLPUSHDEBUGGROUP? _glPushDebugGroup;
         private static PFNGLPOPDEBUGGROUP? _glPopDebugGroup;
+        private static PFNGLDISPATCHCOMPUTEPROC? _glDispatchCompute;
+        private static PFNGLBINDIMAGETEXTUREPROC? _glBindImageTexture;
+        private static PFNGLMEMORYBARRIERPROC? _glMemoryBarrier;
         private static PFNWGLSWAPINTERVALEXTPROC? _wglSwapIntervalEXT;
 
         public static void Import()
@@ -71,6 +86,9 @@
             _glProgramBinary = Marshal.GetDelegateForFunctionPointer<PFNGLPROGRAMBINARYPROC>(loader.Invoke("glProgramBinary"));
             _glPushDebugGroup = Marshal.GetDelegateForFunctionPointer<PFNGLPUSHDEBUGGROUP>(loader.Invoke("glPushDebugGroup"));
             _glPopDebugGroup = Marshal.GetDelegateForFunctionPointer<PFNGLPOPDEBUGGROUP>(loader.Invoke("glPopDebugGroup"));
+            _glDispatchCompute = Marshal.GetDelegateForFunctionPointer<PFNGLDISPATCHCOMPUTEPROC>(loader.Invoke("glDispatchCompute"));
+            _glBindImageTexture = Marshal.GetDelegateForFunctionPointer<PFNGLBINDIMAGETEXTUREPROC>(loader.Invoke("glBindImageTexture"));
+            _glMemoryBarrier = Marshal.GetDelegateForFunctionPointer<PFNGLMEMORYBARRIERPROC>(loader.Invoke("glMemoryBarrier"));
             _wglSwapIntervalEXT = Marshal.GetDelegateForFunctionPointer<PFNWGLSWAPINTERVALEXTPROC>(loader.Invoke("wglSwapIntervalEXT"));
         }
 
@@ -147,6 +165,21 @@
 #if DEBUG
             _glPopDebugGroup!();
 #endif
+        }
+
+        public static void glDispatchCompute(uint num_groups_x, uint num_groups_y, uint num_groups_z)
+        {
+            _glDispatchCompute!(num_groups_x, num_groups_y, num_groups_z);
+        }
+
+        public static void glBindImageTexture(uint unit, uint texture, int level, bool layered, int layer, int access, int format)
+        {
+            _glBindImageTexture!(unit, texture, level, layered, layer, access, format);
+        }
+
+        public static void glMemoryBarrier(uint barriers)
+        {
+            _glMemoryBarrier!(barriers);
         }
 
         public static bool wglSwapIntervalEXT(int interval)

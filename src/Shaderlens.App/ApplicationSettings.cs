@@ -6,6 +6,7 @@
 
         string VertexHeader { get; }
         string FragmentHeader { get; }
+        string ComputeHeader { get; }
 
         WindowContainerState StartPageWindowState { get; }
         WindowContainerState ViewportWindowState { get; set; }
@@ -80,6 +81,7 @@
 
         public string VertexHeader { get; set; } = "#version 450";
         public string FragmentHeader { get; set; } = "#version 450";
+        public string ComputeHeader { get; set; } = "#version 450";
 
         public WindowContainerState StartPageWindowState { get; set; } = GetCenteredWindowContainerState(new Size(800, 500));
         public WindowContainerState ViewportWindowState { get; set; } = GetAbsoluteState(GetCenteredWindowContainerState(new Size(800, 500)));
@@ -137,7 +139,7 @@
 
         private readonly IJsonSettingsFile settingsFile;
         private readonly PointJsonSerializer pointSerializer;
-        private readonly SizeJsonSerializer sizeSerializer;
+        private readonly Presentation.Serialization.SizeJsonSerializer sizeSerializer;
         private readonly ValueJsonSerializer<bool> boolSerializer;
         private readonly ValueJsonSerializer<int> intSerializer;
         private readonly DoubleJsonSerializer doubleSerializer;
@@ -150,7 +152,7 @@
             this.settingsFile = settingsFile;
 
             this.pointSerializer = new PointJsonSerializer();
-            this.sizeSerializer = new SizeJsonSerializer();
+            this.sizeSerializer = new Presentation.Serialization.SizeJsonSerializer();
             this.boolSerializer = new ValueJsonSerializer<bool>();
             this.intSerializer = new ValueJsonSerializer<int>();
             this.doubleSerializer = new DoubleJsonSerializer(2);
@@ -162,6 +164,7 @@
 
             this.VertexHeader = settings.GetOrSetDefault(this.stringSerializer, nameof(this.VertexHeader), this.VertexHeader);
             this.FragmentHeader = settings.GetOrSetDefault(this.stringSerializer, nameof(this.FragmentHeader), this.FragmentHeader);
+            this.ComputeHeader = settings.GetOrSetDefault(this.stringSerializer, nameof(this.ComputeHeader), this.ComputeHeader);
 
             this.StartPageWindowState = GetOrSetDefaultWindowState(settings, this.StartPageWindowState, "StartPage");
             this.ViewportWindowState = GetOrSetDefaultWindowState(settings, this.ViewportWindowState, "Viewport");

@@ -74,4 +74,42 @@
             return value;
         }
     }
+
+    public class TextVectorJsonSerializer<T> : IJsonSerializer<Vector<T>>
+    {
+        private readonly ITextSerializer<T> serializer;
+
+        public TextVectorJsonSerializer(ITextSerializer<T> serializer)
+        {
+            this.serializer = serializer;
+        }
+
+        public JsonNode? Serialize(Vector<T> value)
+        {
+            return JsonValue.Create(String.Join(", ", value.Select(this.serializer.Serialize)));
+        }
+
+        public Vector<T> Deserialize(JsonNode? source)
+        {
+            if (source == null)
+            {
+                return default!;
+            }
+
+            var values = new List<T>();
+
+            foreach (var serializedValue in source.GetStringValue().Split(","))
+            {
+                if (!this.serializer.TryDeserialize(serializedValue, out var value))
+                {
+                    throw new JsonSourceException($"Failed to deserialized \"{serializedValue}\" as {typeof(T).Name}", source);
+                }
+
+                values.Add(value);
+            }
+
+            return Vector.Create(values.ToArray());
+
+        }
+    }
 }
