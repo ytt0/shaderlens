@@ -102,7 +102,7 @@
         private readonly IKeyboardTextureResource keyboardTextureResource;
         private readonly IMouseStateSource mouseStateSource;
         private readonly RenderContext renderContext;
-        private readonly IReadWriteFramebufferResource[] framebuffers;
+        private readonly IReadWriteFramebufferResources[] framebuffers;
         private readonly IRenderSizeSource[] framebufferSizes;
         private readonly Queue<State> states;
         private readonly ViewportFramebufferResource viewportFramebuffer;
@@ -125,7 +125,7 @@
         private ViewerPassSelection viewerPassSelection;
         private int framebuffersStateDepth;
 
-        public RenderPipeline(IThreadAccess threadAccess, IRenderProgram[] passPrograms, IReadWriteFramebufferResource[] framebuffers, IRenderSizeSource[] framebufferSizes, IViewerPassCollection viewerPassPrograms, IFramebufferResource viewerCopyFramebuffer, IKeyboardTextureResource keyboardTextureResource, IMouseStateSource mouseStateSource)
+        public RenderPipeline(IThreadAccess threadAccess, IRenderProgram[] passPrograms, IReadWriteFramebufferResources[] framebuffers, IRenderSizeSource[] framebufferSizes, IViewerPassCollection viewerPassPrograms, IFramebufferResource viewerCopyFramebuffer, IKeyboardTextureResource keyboardTextureResource, IMouseStateSource mouseStateSource)
         {
             this.locker = new object();
             this.threadAccess = threadAccess;
@@ -254,7 +254,7 @@
                 var program = this.passPrograms[i];
                 var framebuffer = this.framebuffers[i];
 
-                program.Render(this.renderContext, framebuffer);
+                program.Render(this.renderContext, framebuffer.WriteFramebuffer);
                 framebuffer.SwapBuffers();
             }
 
@@ -284,7 +284,7 @@
         {
             this.threadAccess.Verify();
 
-            var source = this.framebuffers[bufferIndex];
+            var source = this.framebuffers[bufferIndex].ReadFramebuffer;
 
             glBindTexture(GL_TEXTURE_2D, source.GetTextureId(bufferTextureIndex));
             glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_FLOAT, target);

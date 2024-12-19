@@ -16,9 +16,17 @@
         void ClearState();
     }
 
-    public interface IReadWriteFramebufferResource : IFramebufferResource
+    public interface IReadWriteFramebufferResources : IDisposable
     {
+        IFramebufferResource ReadFramebuffer { get; }
+        IFramebufferResource WriteFramebuffer { get; }
+
         void SwapBuffers();
+
+        void SetSize(int width, int height);
+        void PushState();
+        void PopState();
+        void ClearState();
     }
 
     public class FramebufferResource : IFramebufferResource
@@ -189,35 +197,83 @@
         }
     }
 
-    public class ReadWriteFramebufferResource : IReadWriteFramebufferResource
+    public class ReadWriteFramebufferResources : IReadWriteFramebufferResources
     {
-        public uint Id { get { return this.framebuffers[this.writeIndex].Id; } }
+        private class FramebufferResourceAdapter : IFramebufferResource
+        {
+            public uint Id { get { return this.framebuffer.Id; } }
+            public int TexturesCount { get { return this.framebuffer.TexturesCount; } }
 
-        public int TexturesCount { get; }
+            public int Width { get { return this.framebuffer.Width; } }
+            public int Height { get { return this.framebuffer.Height; } }
 
-        public int Width { get; private set; }
-        public int Height { get; private set; }
+            private IFramebufferResource framebuffer;
+
+            public FramebufferResourceAdapter(IFramebufferResource framebuffer)
+            {
+                this.framebuffer = framebuffer;
+            }
+
+            public void Dispose()
+            {
+            }
+
+            public void SetFramebuffer(IFramebufferResource framebuffer)
+            {
+                this.framebuffer = framebuffer;
+            }
+
+            public uint GetTextureId(int index)
+            {
+                return this.framebuffer.GetTextureId(index);
+            }
+
+            public void SetSize(int width, int height)
+            {
+            }
+
+            public void PushState()
+            {
+            }
+
+            public void PopState()
+            {
+            }
+
+            public void ClearState()
+            {
+            }
+        }
+
+        private const int BuffersCount = 2;
+
+        public IFramebufferResource ReadFramebuffer { get { return this.readFramebuffer; } }
+        public IFramebufferResource WriteFramebuffer { get { return this.writeFramebuffer; } }
 
         private readonly IThreadAccess threadAccess;
         private readonly IFramebufferResource[] framebuffers;
-        private int writeIndex;
-        private int readIndex;
 
-        public ReadWriteFramebufferResource(IThreadAccess threadAccess, int texturesCount)
+        private int readIndex;
+        private int writeIndex;
+        private FramebufferResourceAdapter readFramebuffer;
+        private FramebufferResourceAdapter writeFramebuffer;
+
+        public ReadWriteFramebufferResources(IThreadAccess threadAccess, int texturesCount)
         {
             this.threadAccess = threadAccess;
-            this.TexturesCount = texturesCount;
-            this.framebuffers = new[] { new FramebufferResource(threadAccess, texturesCount), new FramebufferResource(threadAccess, texturesCount) };
-
+            this.framebuffers = Enumerable.Range(0, BuffersCount).Select(i => new FramebufferResource(threadAccess, texturesCount)).ToArray();
             this.readIndex = 0;
             this.writeIndex = 1;
+
+            this.readFramebuffer = new FramebufferResourceAdapter(this.framebuffers[this.readIndex]);
+            this.writeFramebuffer = new FramebufferResourceAdapter(this.framebuffers[this.writeIndex]);
         }
 
         public void Dispose()
         {
             this.threadAccess.Verify();
 
-            for (var i = 0; i < 2; i++)
+            for (var i = 0; i < BuffersCount; i++)
             {
                 this.framebuffers[i].Dispose();
             }
@@ -228,22 +284,17 @@
             this.threadAccess.Verify();
 
             this.readIndex = this.writeIndex;
-            this.writeIndex = (this.writeIndex + 1) % 2;
-        }
+            this.writeIndex = (this.writeIndex + 1) % BuffersCount;
 
-        public uint GetTextureId(int index)
-        {
-            return this.framebuffers[this.readIndex].GetTextureId(index);
+            this.readFramebuffer.SetFramebuffer(this.framebuffers[this.readIndex]);
+            this.writeFramebuffer.SetFramebuffer(this.framebuffers[this.writeIndex]);
         }
 
         public void SetSize(int width, int height)
         {
             this.threadAccess.Verify();
 
-            this.Width = width;
-            this.Height = height;
-
-            for (var i = 0; i < 2; i++)
+            for (var i = 0; i < BuffersCount; i++)
             {
                 this.framebuffers[i].SetSize(width, height);
             }
@@ -253,7 +304,7 @@
         {
             this.threadAccess.Verify();
 
-            for (var i = 0; i < 2; i++)
+            for (var i = 0; i < BuffersCount; i++)
             {
                 this.framebuffers[i].PushState();
             }
@@ -263,7 +314,7 @@
         {
             this.threadAccess.Verify();
 
-            for (var i = 0; i < 2; i++)
+            for (var i = 0; i < BuffersCount; i++)
             {
                 this.framebuffers[i].PopState();
             }
@@ -273,7 +324,7 @@
         {
             this.threadAccess.Verify();
 
-            for (var i = 0; i < 2; i++)
+            for (var i = 0; i < BuffersCount; i++)
             {
                 this.framebuffers[i].ClearState();
             }

@@ -32,7 +32,7 @@
 
         public IRenderPipeline LoadPipeline(IProjectSource source, IUniform uniforms, IProjectResources resources, IShaderCache shaderCache, IFileSystem fileSystem, IProjectLoadLogger logger)
         {
-            var framebuffers = new PassCollection<IReadWriteFramebufferResource>(CreateFramebuffer(resources, "Image", source.Passes.Image!.Outputs), CreatePassFramebuffers(source, resources));
+            var framebuffers = new PassCollection<IReadWriteFramebufferResources>(CreateFramebuffer(resources, "Image", source.Passes.Image!.Outputs), CreatePassFramebuffers(source, resources));
             var renderSizes = new PassCollection<IRenderSizeSource>(CreateRenderSizeSource(source, source.Passes.Image!), CreateBuffersRenderSizeSource(source));
 
             var passPrograms = new Dictionary<string, IRenderProgram>();
@@ -66,9 +66,9 @@
             return new RenderPipeline(this.threadAccess, passProgramsOrdered, framebuffers.ToArray(), renderSizes.ToArray(), viewerPassCollection, viewerCopyFramebuffer, this.keyboardTextureResource, this.mouseStateSource);
         }
 
-        private Dictionary<string, IReadWriteFramebufferResource> CreatePassFramebuffers(IProjectSource project, IProjectResources resources)
+        private Dictionary<string, IReadWriteFramebufferResources> CreatePassFramebuffers(IProjectSource project, IProjectResources resources)
         {
-            var framebuffers = new Dictionary<string, IReadWriteFramebufferResource>();
+            var framebuffers = new Dictionary<string, IReadWriteFramebufferResources>();
 
             foreach (var buffer in project.Passes.Buffers)
             {
@@ -78,37 +78,38 @@
             return framebuffers;
         }
 
-        private IReadWriteFramebufferResource CreateFramebuffer(IProjectResources resources, string name, int texturesCount)
+        private IReadWriteFramebufferResources CreateFramebuffer(IProjectResources resources, string name, int texturesCount)
         {
-            var resourceKey = new TypedResourceKey(typeof(IReadWriteFramebufferResource), $"{name},{texturesCount}");
+            var resourceKey = new TypedResourceKey(typeof(IReadWriteFramebufferResources), $"{name},{texturesCount}");
 
-            if (!resources.TryGetResource<IReadWriteFramebufferResource>(resourceKey, out var framebuffer))
+            if (!resources.TryGetResource<IReadWriteFramebufferResources>(resourceKey, out var framebuffer))
             {
-                framebuffer = new ReadWriteFramebufferResource(this.threadAccess, texturesCount);
+                framebuffer = new ReadWriteFramebufferResources(this.threadAccess, texturesCount);
                 resources.AddResource(resourceKey, framebuffer);
             }
 
             return framebuffer;
         }
 
-        private RenderProgram LoadRenderProgam(IProjectSource project, IProjectPass pass, IChannelBindingSource defaultBinding, IPassCollection<IFramebufferResource> framebuffers, IUniform uniforms, IShaderCache shaderCache, IProjectResources resources, IProjectLoadLogger logger)
+        private RenderProgram LoadRenderProgam(IProjectSource project, IProjectPass pass, IChannelBindingSource defaultBinding, IPassCollection<IReadWriteFramebufferResources> framebuffers, IUniform uniforms, IShaderCache shaderCache, IProjectResources resources, IProjectLoadLogger logger)
         {
             var passProgramSource = CreateProgramSource(pass.Program, project.Common);
             return CreateProgram(pass.Program, defaultBinding, passProgramSource, framebuffers, uniforms, shaderCache, resources, logger);
         }
 
-        private RenderProgram CreateProgram(IProjectProgram renderProgram, IChannelBindingSource defaultBinding, IProgramSource programSource, IPassCollection<IFramebufferResource> framebuffers, IUniform uniforms, IShaderCache shaderCache, IProjectResources resources, IProjectLoadLogger logger)
+        private RenderProgram CreateProgram(IProjectProgram renderProgram, IChannelBindingSource defaultBinding, IProgramSource programSource, IPassCollection<IReadWriteFramebufferResources> framebuffers, IUniform uniforms, IShaderCache shaderCache, IProjectResources resources, IProjectLoadLogger logger)
         {
             var binding = !renderProgram.Binding.IsEmpty ? renderProgram.Binding : defaultBinding;
             return CreateProgram(renderProgram.DisplayName, programSource, framebuffers, binding, uniforms, shaderCache, resources, logger);
         }
 
-        private RenderProgram CreateProgram(string displayName, IProgramSource programSource, IPassCollection<IFramebufferResource> framebuffers, IChannelBindingSource binding, IUniform uniforms, IShaderCache shaderCache, IProjectResources resources, IProjectLoadLogger logger)
+        private RenderProgram CreateProgram(string displayName, IProgramSource programSource, IPassCollection<IReadWriteFramebufferResources> framebuffers, IChannelBindingSource binding, IUniform uniforms, IShaderCache shaderCache, IProjectResources resources, IProjectLoadLogger logger)
         {
             logger.SetState(displayName);
 
             var program = this.shaderCompiler.Compile(displayName, programSource, resources, shaderCache, logger);
-            var channelBindingBuilder = new ChannelBindingBuilder(this.threadAccess, program.Id, framebuffers, resources, this.textureReaderFactory, this.keyboardTextureResource);
+            var readFramebuffers = new PassCollection<IFramebufferResource>(framebuffers.Image!.ReadFramebuffer, framebuffers.BuffersKeys.Select(key => new KeyValuePair<string, IFramebufferResource>(key, framebuffers[key].ReadFramebuffer)).ToDictionary());
+            var channelBindingBuilder = new ChannelBindingBuilder(this.threadAccess, program.Id, readFramebuffers, resources, this.textureReaderFactory, this.keyboardTextureResource);
             channelBindingBuilder.SetViewerDefaultFramebufferBinding();
 
             binding.AddBinding(channelBindingBuilder);
