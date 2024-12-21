@@ -1,0 +1,9 @@
+﻿{
+  "Image": {
+    "Type": "Compute",
+    "Source": "ImagePassName.cs",
+    "WorkGroupSize": "8, 8", // group size, default value is (1, 1, 1)
+    //"WorkGroups": "20, 10", // groups count, default value is (ceil(RenderSize / WorkGroupSize.xy), 1)
+    //"RenderSize": "160, 80", // fixed buffer size
+  }
+}

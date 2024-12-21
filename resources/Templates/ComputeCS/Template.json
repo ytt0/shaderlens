@@ -1,0 +1,39 @@
+{
+  "DisplayName": "Compute shader project (C#)",
+  "Description": "A C# project with a single compute pass",
+  "Index": 7,
+
+  "ProjectName": "Shader1",
+  "ProjectNameReplace": "ProjectName",
+  "ProjectFile": "ProjectName.json",
+  "ReplaceContentExtensions": [ "json", "cs", "csproj", "sln" ],
+
+  "Parameters": [
+    {
+      "Type": "String",
+      "DisplayName": "Image Pass Name",
+      "Value": "Image",
+      "Replace": "ImagePassName"
+    },
+    {
+      "Type": "ApplicationPath",
+      "Replace": "ApplicationPath"
+    },
+    {
+      "Type": "CSharpEnvironmentPath",
+      "Replace": "CSharpEnvironmentPath"
+    },
+    {
+      "Type": "Guid",
+      "Replace": "ProjectGuid1"
+    },
+    {
+      "Type": "Guid",
+      "Replace": "ProjectGuid2"
+    },
+    {
+      "Type": "Guid",
+      "Replace": "ProjectGuid3"
+    }
+  ]
+}

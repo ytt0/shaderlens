@@ -1,0 +1,17 @@
+{
+  "DisplayName": "Compute shader project",
+  "Description": "A project with a single compute pass",
+  "Index": 6,
+
+  "ProjectName": "Shader1",
+  "ProjectNameReplace": "ProjectName",
+  "ProjectFile": "ProjectName.json",
+
+  "Parameters": [
+    {
+      "DisplayName": "Image Pass Name",
+      "Value": "Image",
+      "Replace": "ImagePassName"
+    }
+  ]
+}
