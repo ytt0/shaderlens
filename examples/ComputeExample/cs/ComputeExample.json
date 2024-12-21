@@ -1,0 +1,19 @@
+{
+  "Common": "Common.cs",
+  "Buffer1": {
+    "DisplayName": "Base Image",
+    "Source": "Buffer1.cs"
+  },
+  "Buffer2": {
+    "DisplayName": "Blur",
+    "Source": "Blur.cs",
+    "Type": "Compute",
+    "WorkGroupSize": "8, 8",
+    "Channel0": "Buffer1"
+  },
+  "Image": {
+    "DisplayName": "Composition",
+    "Source": "Image.cs",
+    "Channel0": "Buffer2"
+  }
+}

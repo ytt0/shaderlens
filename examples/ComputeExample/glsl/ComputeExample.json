@@ -1,0 +1,19 @@
+{
+  "Common": "Common.glsl",
+  "Buffer1": {
+    "DisplayName": "Base Image",
+    "Source": "Buffer1.glsl"
+  },
+  "Buffer2": {
+    "DisplayName": "Blur",
+    "Source": "Blur.glsl",
+    "Type": "Compute",
+    "WorkGroupSize": "8, 8",
+    "Channel0": "Buffer1"
+  },
+  "Image": {
+    "DisplayName": "Composition",
+    "Source": "Image.glsl",
+    "Channel0": "Buffer2"
+  }
+}

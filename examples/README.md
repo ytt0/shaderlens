@@ -28,6 +28,14 @@ To see a selected viewer effect, scale in or reduce the resolution, and change t
 
 Using `TextureFilter`, and `MipmapFilter`, to sample the previous buffer with `textureLod` at different levels.
 
+## Compute Example
+
+A single pass Gaussian blur with a radius of 4, using Compute shader.
+
+- Shared arrays are used for minimizing image access calls.
+- A memory barrier is used for synchronizing the horizontal and vertical blur steps.
+- A uniform is used for scaling the blur radius.
+
 # Download
 
 A zip file with the content of this folder can be downloaded from any [release](https://github.com/ytt0/shaderlens/releases/latest).
