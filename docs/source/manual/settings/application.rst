@@ -6,17 +6,17 @@ Settings are defined under the application folder, at :file:`Shaderlens.settings
 VertexHeader (*string*)
     Vertex shader code header, defines the shading language version.
 
-    :Default: ``"#version 450"``.
+    :Default: ``"#version 460"``.
 
 FragmentHeader (*string*)
     Fragment shader code header, defines the shading language version.
 
-    :Default: ``"#version 450"``.
+    :Default: ``"#version 460"``.
 
 ComputeHeader (*string*)
     Compute shader code header, defines the shading language version.
 
-    :Default: ``"#version 450"``.
+    :Default: ``"#version 460"``.
 
 InactivityPauseSeconds (*integer*)
     Number of second used by the viewport menu :menuselection:`Options --> Pause On Inactivity` option.

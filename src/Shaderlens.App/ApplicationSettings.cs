@@ -79,9 +79,9 @@
 
         public string Path { get { return this.settingsFile.Path; } }
 
-        public string VertexHeader { get; set; } = "#version 450";
-        public string FragmentHeader { get; set; } = "#version 450";
-        public string ComputeHeader { get; set; } = "#version 450";
+        public string VertexHeader { get; set; } = "#version 460";
+        public string FragmentHeader { get; set; } = "#version 460";
+        public string ComputeHeader { get; set; } = "#version 460";
 
         public WindowContainerState StartPageWindowState { get; set; } = GetCenteredWindowContainerState(new Size(800, 500));
         public WindowContainerState ViewportWindowState { get; set; } = GetAbsoluteState(GetCenteredWindowContainerState(new Size(800, 500)));

@@ -149,4 +149,46 @@
         public static bvec2 bvec2(uvec2 xy) { return default; }
         public static bvec2 bvec2(bvec2 xy) { return default; }
     }
+
+    public class dvec2
+    {
+        public double this[int index] { get { return default; } set { } }
+        public double this[uint index] { get { return default; } set { } }
+
+        public double x, y;
+        public dvec2 xy, yx;
+        public vec3 xxx, xxy, xyx, xyy, yxx, yxy, yyx, yyy;
+        public vec4 xxxx, xxxy, xxyx, xxyy, xyxx, xyxy, xyyx, xyyy, yxxx, yxxy, yxyx, yxyy, yyxx, yyxy, yyyx, yyyy;
+
+        public double r, g;
+        public dvec2 rg, gr;
+        public vec3 rrr, rrg, rgr, rgg, grr, grg, ggr, ggg;
+        public vec4 rrrr, rrrg, rrgr, rrgg, rgrr, rgrg, rggr, rggg, grrr, grrg, grgr, grgg, ggrr, ggrg, gggr, gggg;
+
+        public static dvec2 operator +(dvec2 v1, dvec2 v2) { return default; }
+        public static dvec2 operator +(double v1, dvec2 v2) { return default; }
+        public static dvec2 operator +(dvec2 v1, double v2) { return default; }
+        public static dvec2 operator -(dvec2 v) { return default; }
+        public static dvec2 operator -(dvec2 v1, dvec2 v2) { return default; }
+        public static dvec2 operator -(dvec2 v1, double v2) { return default; }
+        public static dvec2 operator -(double v1, dvec2 v2) { return default; }
+        public static dvec2 operator *(double v1, dvec2 v2) { return default; }
+        public static dvec2 operator *(dvec2 v1, double v2) { return default; }
+        public static dvec2 operator *(dvec2 v1, dvec2 v2) { return default; }
+        public static dvec2 operator /(double v1, dvec2 v2) { return default; }
+        public static dvec2 operator /(dvec2 v1, double v2) { return default; }
+        public static dvec2 operator /(dvec2 v1, dvec2 v2) { return default; }
+    }
+
+    public static partial class Environment
+    {
+        public static dvec2 dvec2(double xy) { return default; }
+        public static dvec2 dvec2(double x, double y) { return default; }
+
+        public static dvec2 dvec2(vec2 xy) { return default; }
+        public static dvec2 dvec2(dvec2 xy) { return default; }
+        public static dvec2 dvec2(ivec2 xy) { return default; }
+        public static dvec2 dvec2(uvec2 xy) { return default; }
+        public static dvec2 dvec2(bvec2 xy) { return default; }
+    }
 }

@@ -157,4 +157,48 @@
         public static bvec3 bvec3(uvec3 xyz) { return default; }
         public static bvec3 bvec3(bvec3 xyz) { return default; }
     }
+
+    public class dvec3
+    {
+        public double this[int index] { get { return default; } set { } }
+        public double this[uint index] { get { return default; } set { } }
+
+        public double x, y, z;
+        public vec2 xx, xy, xz, yx, yy, yz, zx, zy, zz;
+        public dvec3 xxx, xxy, xxz, xyx, xyy, xyz, xzx, xzy, xzz, yxx, yxy, yxz, yyx, yyy, yyz, yzx, yzy, yzz, zxx, zxy, zxz, zyx, zyy, zyz, zzx, zzy, zzz;
+        public vec4 xxxx, xxxy, xxxz, xxyx, xxyy, xxyz, xxzx, xxzy, xxzz, xyxx, xyxy, xyxz, xyyx, xyyy, xyyz, xyzx, xyzy, xyzz, xzxx, xzxy, xzxz, xzyx, xzyy, xzyz, xzzx, xzzy, xzzz, yxxx, yxxy, yxxz, yxyx, yxyy, yxyz, yxzx, yxzy, yxzz, yyxx, yyxy, yyxz, yyyx, yyyy, yyyz, yyzx, yyzy, yyzz, yzxx, yzxy, yzxz, yzyx, yzyy, yzyz, yzzx, yzzy, yzzz, zxxx, zxxy, zxxz, zxyx, zxyy, zxyz, zxzx, zxzy, zxzz, zyxx, zyxy, zyxz, zyyx, zyyy, zyyz, zyzx, zyzy, zyzz, zzxx, zzxy, zzxz, zzyx, zzyy, zzyz, zzzx, zzzy, zzzz;
+
+        public double r, g, b;
+        public vec2 rr, rg, rb, gr, gg, gb, br, bg, bb;
+        public dvec3 rrr, rrg, rrb, rgr, rgg, rgb, rbr, rbg, rbb, grr, grg, grb, ggr, ggg, ggb, gbr, gbg, gbb, brr, brg, brb, bgr, bgg, bgb, bbr, bbg, bbb;
+        public vec4 rrrr, rrrg, rrrb, rrgr, rrgg, rrgb, rrbr, rrbg, rrbb, rgrr, rgrg, rgrb, rggr, rggg, rggb, rgbr, rgbg, rgbb, rbrr, rbrg, rbrb, rbgr, rbgg, rbgb, rbbr, rbbg, rbbb, grrr, grrg, grrb, grgr, grgg, grgb, grbr, grbg, grbb, ggrr, ggrg, ggrb, gggr, gggg, gggb, ggbr, ggbg, ggbb, gbrr, gbrg, gbrb, gbgr, gbgg, gbgb, gbbr, gbbg, gbbb, brrr, brrg, brrb, brgr, brgg, brgb, brbr, brbg, brbb, bgrr, bgrg, bgrb, bggr, bggg, bggb, bgbr, bgbg, bgbb, bbrr, bbrg, bbrb, bbgr, bbgg, bbgb, bbbr, bbbg, bbbb;
+
+        public static dvec3 operator +(dvec3 v1, dvec3 v2) { return default; }
+        public static dvec3 operator +(dvec3 v1, double v2) { return default; }
+        public static dvec3 operator +(double v1, dvec3 v2) { return default; }
+        public static dvec3 operator -(dvec3 v) { return default; }
+        public static dvec3 operator -(dvec3 v1, dvec3 v2) { return default; }
+        public static dvec3 operator -(double v1, dvec3 v2) { return default; }
+        public static dvec3 operator -(dvec3 v1, double v2) { return default; }
+        public static dvec3 operator *(dvec3 v1, dvec3 v2) { return default; }
+        public static dvec3 operator *(double v1, dvec3 v2) { return default; }
+        public static dvec3 operator *(dvec3 v1, double v2) { return default; }
+        public static dvec3 operator /(dvec3 v1, dvec3 v2) { return default; }
+        public static dvec3 operator /(double v1, dvec3 v2) { return default; }
+        public static dvec3 operator /(dvec3 v1, double v2) { return default; }
+    }
+
+    public static partial class Environment
+    {
+        public static dvec3 dvec3(double xyz) { return default; }
+        public static dvec3 dvec3(double x, double y, double z) { return default; }
+        public static dvec3 dvec3(double x, vec2 yz) { return default; }
+        public static dvec3 dvec3(vec2 xy, double z) { return default; }
+
+        public static dvec3 dvec3(vec3 xyz) { return default; }
+        public static dvec3 dvec3(dvec3 xyz) { return default; }
+        public static dvec3 dvec3(ivec3 xyz) { return default; }
+        public static dvec3 dvec3(uvec3 xyz) { return default; }
+        public static dvec3 dvec3(bvec3 xyz) { return default; }
+    }
 }

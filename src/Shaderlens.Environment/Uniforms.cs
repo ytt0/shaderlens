@@ -21,15 +21,15 @@
         // image/buffer	xy = current pixel coords (if LMB is down). zw = click pixel
         public static vec4 iMouse = default;
         // image/buffer/sound	Sampler for input textures i
-        public static sampler3D iChannel0 = default;
-        public static sampler3D iChannel1 = default;
-        public static sampler3D iChannel2 = default;
-        public static sampler3D iChannel3 = default;
-        public static sampler3D iChannel4 = default;
-        public static sampler3D iChannel5 = default;
-        public static sampler3D iChannel6 = default;
-        public static sampler3D iChannel7 = default;
-        public static sampler3D iViewerChannel = default;
+        public static sampler2D iChannel0 = default;
+        public static sampler2D iChannel1 = default;
+        public static sampler2D iChannel2 = default;
+        public static sampler2D iChannel3 = default;
+        public static sampler2D iChannel4 = default;
+        public static sampler2D iChannel5 = default;
+        public static sampler2D iChannel6 = default;
+        public static sampler2D iChannel7 = default;
+        public static sampler2D iViewerChannel = default;
         // image/buffer/sound	Year, month, day, time in seconds in .xyzw
         public static vec4 iDate = default;
         // image/buffer/sound	The sound sample rate (typically 44100)
@@ -39,6 +39,7 @@
         public static vec3 iViewerChannelResolution = default;
         public static Float iViewerScale = default;
         public static vec2 iViewerOffset = default;
+
         // fragment outputs
         public static vec4 FragColor0 =  default;
         public static vec4 FragColor1 =  default;
@@ -49,6 +50,7 @@
         public static vec4 FragColor6 =  default;
         public static vec4 FragColor7 =  default;
 
+        // compute outputs
         public static image2D OutputTexture0 = default;
         public static image2D OutputTexture1 = default;
         public static image2D OutputTexture2 = default;
